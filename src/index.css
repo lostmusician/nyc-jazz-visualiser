@@ -1,0 +1,337 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-serif: 'Playfair Display', Georgia, serif;
+    --font-display: 'Fraunces', 'Playfair Display', serif;
+    --font-hand: 'Caveat', cursive;
+    --font-sketch: 'Kalam', cursive;
+    --font-typewriter: 'Special Elite', monospace;
+  }
+
+  body {
+    background-color: #f5efe2;
+    color: #231b14;
+    font-family: var(--font-sans);
+    overflow-x: hidden;
+  }
+
+  /* Archival sketchbook grain texture overlay */
+  body::after {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.055;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  }
+}
+
+/* Font utility shortcuts */
+.font-hand { font-family: var(--font-hand), cursive; }
+.font-sketch { font-family: var(--font-sketch), cursive; }
+.font-display { font-family: var(--font-display), Georgia, serif; }
+.font-typewriter { font-family: var(--font-typewriter), monospace; }
+
+/* Hand-drawn Sketchbook Paper Card */
+.sketchbook-card {
+  background: #fbf8f0;
+  border: 2px solid #2e241c;
+  border-radius: 12px 16px 14px 18px;
+  box-shadow: 6px 8px 0px #2e241c, 0 16px 40px rgba(35, 25, 17, 0.12);
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+/* Washi Tape / Archival Tape effect */
+.washi-tape {
+  position: absolute;
+  top: -12px;
+  left: 30px;
+  width: 90px;
+  height: 24px;
+  background: rgba(224, 210, 185, 0.85);
+  border: 1px dashed rgba(160, 140, 110, 0.6);
+  transform: rotate(-3deg);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+  z-index: 20;
+}
+
+.washi-tape-right {
+  position: absolute;
+  top: -10px;
+  right: 35px;
+  width: 75px;
+  height: 22px;
+  background: rgba(205, 185, 155, 0.8);
+  border: 1px dashed rgba(150, 130, 100, 0.6);
+  transform: rotate(4deg);
+  z-index: 20;
+}
+
+/* Organic hand-drawn sketchy underline */
+.sketch-underline {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 20' preserveAspectRatio='none'%3E%3Cpath d='M3,14 C40,4 90,18 197,8' fill='none' stroke='%23c59b4c' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: 100% 12px;
+  background-position: 0 95%;
+  padding-bottom: 4px;
+}
+
+/* Hand-drawn ink stamp badge */
+.sketch-stamp {
+  border: 2px dashed #a63d2b;
+  color: #a63d2b;
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-family: var(--font-typewriter);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  display: inline-block;
+  transform: rotate(-2deg);
+  background: rgba(245, 230, 225, 0.7);
+}
+
+/* Sketch Jitter subtle live animation */
+@keyframes sketchWiggle {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  25% { transform: translate(-0.8px, 0.6px) rotate(-0.2deg); }
+  50% { transform: translate(0.6px, -0.6px) rotate(0.1deg); }
+  75% { transform: translate(-0.5px, -0.5px) rotate(-0.1deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+.sketch-jitter {
+  animation: sketchWiggle 3.5s ease-in-out infinite alternate;
+}
+
+/* Vintage Map Warm Sepia/Patina Filter */
+.map-vintage-filter {
+  filter: sepia(0.42) saturate(1.25) contrast(0.96) brightness(0.94);
+}
+
+/* ==========================================================================
+   CUSTOM JAZZ VENUE MAP MARKERS (ACTIVE VS DISPLACED LIFECYCLE)
+   ========================================================================== */
+.custom-jazz-marker {
+  position: absolute !important;
+  width: 32px;
+  height: 32px;
+  z-index: 50 !important;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  transition: opacity 0.3s ease;
+}
+
+.marker-wrapper {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Hidden in eras before opening */
+.marker-wrapper.is-future {
+  display: none !important;
+}
+
+/* ── 1. ACTIVE & VIBRANT VENUE ────────────────────────────────────────── */
+.marker-wrapper.is-open .marker-pin {
+  width: 16px;
+  height: 16px;
+  background: #c59b4c;
+  border: 2px solid #231b14;
+  border-radius: 50% 50% 50% 10%;
+  transform: rotate(-45deg);
+  box-shadow: 2px 2px 0px #231b14;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.marker-wrapper.is-open.is-highlighted .marker-pin {
+  transform: scale(1.4) rotate(-45deg);
+  background: #c9402a;
+  border-color: #1a100a;
+}
+
+.marker-wrapper.is-open .marker-pulse {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px dashed rgba(197, 155, 76, 0.8);
+  animation: pulseSketch 2.2s infinite linear;
+}
+
+.marker-wrapper.is-open.is-highlighted .marker-pulse {
+  border-color: rgba(201, 64, 42, 0.9);
+  animation: pulseSketch 1.5s infinite linear;
+}
+
+@keyframes pulseSketch {
+  0% { transform: scale(0.6) rotate(0deg); opacity: 1; }
+  100% { transform: scale(2.2) rotate(30deg); opacity: 0; }
+}
+
+.marker-wrapper.is-open .marker-label {
+  position: absolute;
+  left: 24px;
+  top: -4px;
+  white-space: nowrap;
+  font-family: var(--font-hand);
+  font-size: 15px;
+  font-weight: 700;
+  color: #1c140e;
+  background: #fffdf9;
+  padding: 1px 8px;
+  border-radius: 4px;
+  border: 1.5px solid #2e241c;
+  box-shadow: 2px 2px 0px #2e241c;
+  transform: rotate(-1.5deg);
+  pointer-events: none;
+}
+
+/* ── 2. DISPLACED / CLOSED VENUE (GHOST FOOTPRINT) ────────────────────── */
+.marker-wrapper.is-closed {
+  opacity: 0.75;
+}
+
+.marker-wrapper.is-closed:hover {
+  opacity: 1;
+}
+
+.marker-wrapper.is-closed .marker-pin {
+  width: 14px;
+  height: 14px;
+  background: #4a3b2f;
+  border: 1.5px dashed #8c7456;
+  border-radius: 50%;
+  transform: scale(0.9);
+  box-shadow: 1px 1px 0px rgba(35, 27, 20, 0.4);
+}
+
+.marker-wrapper.is-closed .marker-pulse {
+  display: none;
+}
+
+.marker-wrapper.is-closed .marker-label {
+  position: absolute;
+  left: 20px;
+  top: -4px;
+  white-space: nowrap;
+  font-family: var(--font-hand);
+  font-size: 13px;
+  font-weight: 600;
+  color: #73604d;
+  background: #f5efe2;
+  text-decoration: line-through;
+  text-decoration-color: #a63d2b;
+  text-decoration-thickness: 1.5px;
+  padding: 0px 6px;
+  border-radius: 4px;
+  border: 1px dashed #8c7456;
+  box-shadow: 1px 1px 0px rgba(46, 36, 28, 0.2);
+  pointer-events: none;
+}
+
+.marker-wrapper.is-closed .displaced-badge {
+  display: inline-block;
+  margin-left: 4px;
+  color: #a63d2b;
+  font-family: var(--font-typewriter);
+  font-size: 9px;
+  text-decoration: none;
+}
+
+/* ── 3. ARCHIVAL MAP POPUPS ─────────────────────────────────────────── */
+.archival-popup .mapboxgl-popup-content {
+  background: #fbf8f0;
+  border: 2px solid #2e241c;
+  border-radius: 8px;
+  box-shadow: 5px 6px 0px #2e241c;
+  padding: 16px 18px;
+  max-width: 320px;
+  font-family: var(--font-sans);
+}
+
+.archival-popup .mapboxgl-popup-tip {
+  border-top-color: #2e241c;
+  border-bottom-color: #2e241c;
+}
+
+.popup-tag {
+  font-family: var(--font-typewriter);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #a63d2b;
+  font-weight: 700;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.archival-popup h4 {
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 700;
+  margin: 0 0 4px 0;
+  color: #1f1813;
+  line-height: 1.2;
+}
+
+.popup-lifespan {
+  font-family: var(--font-typewriter);
+  font-size: 11px;
+  color: #8c7456;
+  margin-bottom: 6px;
+}
+
+.popup-status-pill {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-family: var(--font-typewriter);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.popup-status-pill.open {
+  background: #e6f4ea;
+  color: #137333;
+  border: 1px solid #137333;
+}
+
+.popup-status-pill.closed {
+  background: #fce8e6;
+  color: #c5221f;
+  border: 1px solid #c5221f;
+}
+
+.popup-note {
+  font-size: 12px;
+  color: #4a3b2f;
+  margin: 6px 0 0 0;
+  line-height: 1.4;
+  font-family: var(--font-sans);
+}
+
+.popup-quote {
+  font-size: 13px;
+  color: #a63d2b;
+  font-style: italic;
+  font-family: var(--font-serif);
+  line-height: 1.45;
+  margin: 8px 0 0 0;
+  border-left: 2px solid #c59b4c;
+  padding-left: 8px;
+}
