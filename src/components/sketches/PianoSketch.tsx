@@ -78,9 +78,6 @@ export const PianoSketch: React.FC<SketchProps> = ({ className = "w-56 h-32", an
         viewBox="0 0 240 120"
         className="w-full h-full overflow-visible select-none"
       />
-      <div className="font-hand text-[15px] font-bold text-[#8c7456] text-center -mt-1">
-        ~ rough.js alternating piano keys ~
-      </div>
     </motion.div>
   );
 };

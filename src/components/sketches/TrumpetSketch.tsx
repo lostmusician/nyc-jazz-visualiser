@@ -145,9 +145,6 @@ export const TrumpetSketch: React.FC<SketchProps> = ({ className = "w-52 h-36", 
         viewBox="0 0 240 140"
         className="w-full h-full overflow-visible select-none"
       />
-      <div className="font-hand text-[15px] font-bold text-[#8c7456] text-center -mt-2">
-        ~ rough.js muted trumpet ~
-      </div>
     </motion.div>
   );
 };

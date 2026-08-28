@@ -44,6 +44,11 @@ export interface ChapterStep {
     value: string;
     label: string;
   };
+  framework?: {
+    scholar: string;
+    concept: string;
+    reading: string;
+  };
   map_camera: {
     center: [number, number];  // [lng, lat]
     zoom: number;

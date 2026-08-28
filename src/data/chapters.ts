@@ -4,20 +4,22 @@ export const NARRATIVE_CHAPTERS: ChapterStep[] = [
   {
     id: 'chapter-1950s',
     indexNumber: '01',
-    decade: '1950s',
-    title: 'The Golden Epicenter',
-    subtitle: 'Harlem Ballrooms & 52nd Street',
+    decade: '1950s–60s',
+    title: 'Culture needs a room',
+    subtitle: 'A scene is an urban ecology, not simply a genre',
     narrative_body: [
-      'Over 80 dedicated venues vibrated between 110th and 145th Streets in Harlem, while 52nd Street served as "Swing Street."',
+      'Lower Manhattan jazz depended on a dense, low-overhead network of clubs, rehearsal rooms, bars and informal encounters. Musicians could test unfinished work, find collaborators and build audiences within the same neighbourhood.',
+      'The music was rooted locally because its production was rooted locally. What the city sustained was not only performance, but the repeated social contact through which a vernacular culture could develop.'
     ],
     quote: {
       text: 'You could walk down the street and hear Monk from the sidewalk, then step two doors down for Art Blakey.',
       author: 'Archival Oral History',
       source: 'Institute of Jazz Studies'
     },
-    key_statistic: {
-      value: '84+',
-      label: 'Active jazz venues in Manhattan'
+    framework: {
+      scholar: 'The project’s premise',
+      concept: 'Cultural infrastructure',
+      reading: 'Distinct culture requires affordable spaces for production, experimentation and community—not only stages for finished work.'
     },
     map_camera: {
       center: [-73.946, 40.812],
@@ -32,19 +34,21 @@ export const NARRATIVE_CHAPTERS: ChapterStep[] = [
     id: 'chapter-1970s',
     indexNumber: '02',
     decade: '1970s',
-    title: 'The Loft Resistance',
-    subtitle: 'Bond Street & Industrial Lower Manhattan',
+    title: 'The rent gap opens',
+    subtitle: 'Disinvestment creates autonomy—and an opportunity for capital',
     narrative_body: [
-      'Deserted manufacturing floors in NoHo and SoHo became artist-run cooperatives, birthing the free jazz revolution.'
+      'Deindustrialisation left centrally located lofts underused and comparatively cheap. Musicians converted this neglected building stock into self-run venues such as Studio Rivbea, gaining space outside the commercial club circuit.',
+      'Yet the same gap that made experimentation possible also made Lower Manhattan attractive for reinvestment. Cultural use occupied the interval between a property’s depressed present return and its more profitable imagined future.'
     ],
     quote: {
       text: 'We had no grants and no commercial sponsors. We had raw floorboards, two amplifiers, and complete acoustic autonomy.',
       author: 'Sam Rivers',
       source: 'Studio Rivbea Archive'
     },
-    key_statistic: {
-      value: '62%',
-      label: 'Musician-operated experimental spaces'
+    framework: {
+      scholar: 'Neil Smith',
+      concept: 'Rent gap theory',
+      reading: 'Capital returns when the difference between current ground rent and potential ground rent becomes large enough to capture.'
     },
     map_camera: {
       center: [-73.993, 40.726],
@@ -59,19 +63,21 @@ export const NARRATIVE_CHAPTERS: ChapterStep[] = [
     id: 'chapter-1990s',
     indexNumber: '03',
     decade: '1990s–2000s',
-    title: 'The Rezoning Avalanche',
-    subtitle: 'Downtown Hyper-Gentrification',
+    title: 'Culture becomes value',
+    subtitle: 'Downtown distinction is translated into real-estate demand',
     narrative_body: [
-      'Landmarks were pushed out by triple-net commercial leases and residential noise complaints.'
+      'Artists and venues made disinvested districts legible as creative, authentic and desirable. That symbolic value travelled outward—from the scene into restaurant branding, lifestyle media, property marketing and the expectations of new residents.',
+      'The neighbourhood could then profit from the image of cultural vitality while becoming less able to host its production. Rising leases, redevelopment and noise conflict removed venues one by one.'
     ],
     quote: {
       text: 'Apartment high-rises went up on either side of the club. The new leases were engineered to price out culture.',
       author: 'John Zorn',
       source: 'Tonic Farewell Dispatch'
     },
-    key_statistic: {
-      value: '-73%',
-      label: 'Decline in independent downtown venues'
+    framework: {
+      scholar: 'Sharon Zukin',
+      concept: 'Artistic mode of production',
+      reading: 'Culture helps revalorise urban space; the creators of that value are rarely positioned to retain it.'
     },
     map_camera: {
       center: [-73.988, 40.721],
@@ -85,20 +91,22 @@ export const NARRATIVE_CHAPTERS: ChapterStep[] = [
   {
     id: 'chapter-present',
     indexNumber: '04',
-    decade: '2010s–Present',
-    title: 'Acoustic Diaspora',
-    subtitle: 'Cross-River Migration to Brooklyn',
+    decade: '2000s–Present',
+    title: 'The scene becomes a product',
+    subtitle: 'Jazz remains visible as its local conditions disappear',
     narrative_body: [
-      'The epicenter of live jazz migrated across the East River into Bed-Stuy, Crown Heights, and Gowanus.'
+      'Some grassroots activity moved into Brooklyn, but relocation is only part of the story. Jazz was also consolidated in conservatories, major institutions, festivals and destination venues: more stable, legible and polished forms of presentation.',
+      'The city continues to circulate jazz as heritage and global cultural prestige while shedding many of the inexpensive rooms that once generated new scenes. Production becomes precarious; the finished cultural commodity travels.'
     ],
     quote: {
       text: 'When Manhattan turned its back on the music, Brooklyn welcomed the masters home.',
       author: 'Viola Plummer',
       source: 'Sistas\' Place Oral History'
     },
-    key_statistic: {
-      value: '4.8 mi',
-      label: 'Average eastward centroid shift of NYC jazz'
+    framework: {
+      scholar: 'Saskia Sassen',
+      concept: 'The global city',
+      reading: 'Urban restructuring concentrates command, capital and prestige while displacing lower-overhead local functions.'
     },
     map_camera: {
       center: [-73.962, 40.690],

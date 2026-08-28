@@ -170,9 +170,6 @@ export const SaxophoneSketch: React.FC<SketchProps> = ({
         aria-label="Hand-drawn wire sculpture of a saxophone"
         className="h-full w-full select-none overflow-visible"
       />
-      <div className="mt-1 text-center font-hand text-[14px] font-bold text-[#8c7456]">
-        ~ wire sax sketch ~
-      </div>
     </motion.div>
   );
 };

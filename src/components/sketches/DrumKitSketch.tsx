@@ -114,9 +114,6 @@ export const DrumKitSketch: React.FC<SketchProps> = ({ className = "w-52 h-44", 
         viewBox="0 0 240 200"
         className="w-full h-full overflow-visible select-none"
       />
-      <div className="font-hand text-[15px] font-bold text-[#8c7456] text-center -mt-2">
-        ~ rough.js bebop drum kit ~
-      </div>
     </motion.div>
   );
 };

@@ -120,9 +120,6 @@ export const UprightBassSketch: React.FC<SketchProps> = ({ className = "w-44 h-6
         viewBox="0 0 180 270"
         className="w-full h-full overflow-visible select-none"
       />
-      <div className="font-hand text-[15px] font-bold text-[#8c7456] text-center -mt-2">
-        ~ rough.js upright bass ~
-      </div>
     </motion.div>
   );
 };

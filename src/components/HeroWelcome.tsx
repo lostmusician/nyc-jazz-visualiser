@@ -1,9 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { SaxophoneSketch } from './sketches/SaxophoneSketch';
-import { TrumpetSketch } from './sketches/TrumpetSketch';
-import { MusicianSketch } from './sketches/MusicianSketches';
-import { CoffeeStain, ArchivalStamp, MusicalStaffDoodle } from './sketches/SketchDoodles';
 
 interface HeroWelcomeProps {
   onStart: () => void;
@@ -11,121 +8,75 @@ interface HeroWelcomeProps {
 
 export const HeroWelcome: React.FC<HeroWelcomeProps> = ({ onStart }) => {
   return (
-    <header className="relative w-full min-h-screen flex flex-col items-center justify-center text-center px-6 py-16 bg-[#f5efe2] overflow-hidden">
-      {/* Background Musical Staff Doodles */}
-      <div className="absolute top-8 left-0 w-full">
-        <MusicalStaffDoodle />
+    <header className="hero-cover relative min-h-screen overflow-hidden bg-[#100d0b] px-6 text-[#eee5d6] sm:px-10 lg:px-16">
+      <div className="hero-rule" aria-hidden="true" />
+      <div className="hero-club-photo" aria-hidden="true">
+        <img src="/images/jazz-club-scenes-1940s-01.jpg" alt="" />
       </div>
-      <div className="absolute bottom-10 left-0 w-full">
-        <MusicalStaffDoodle />
-      </div>
+      <div className="hero-grain" aria-hidden="true" />
+      <div className="hero-door-glow" aria-hidden="true" />
 
-      {/* Decorative Coffee Ring Stain in corner */}
-      <div className="absolute top-12 right-12 hidden lg:block">
-        <CoffeeStain className="w-36 h-36" />
-      </div>
+      <div className="relative z-10 mx-auto grid min-h-screen max-w-[1500px] grid-cols-1 items-center lg:grid-cols-[minmax(0,1fr)_260px] lg:gap-12">
+        <div className="max-w-6xl py-24 sm:py-28 lg:py-20">
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="mb-8 flex items-center gap-4 font-typewriter text-[10px] uppercase tracking-[0.22em] text-[#c99a61] sm:text-xs"
+          >
+            <span>New York City</span>
+            <span className="h-px w-10 bg-[#c99a61]/60" />
+            <span>1950–Present</span>
+          </motion.div>
 
-      {/* Floating Instrument Sketches */}
-      <motion.div
-        initial={{ opacity: 0, x: -60, rotate: -10 }}
-        animate={{ opacity: 1, x: 0, rotate: -5 }}
-        transition={{ duration: 1.5, ease: "easeOut" }}
-        className="absolute left-4 sm:left-8 lg:left-20 top-1/4 hidden md:block sketch-jitter pointer-events-none"
-      >
-        <SaxophoneSketch className="w-44 h-44 lg:w-52 lg:h-52" />
-      </motion.div>
+          <motion.h1
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
+            className="hero-title font-display text-[#f1e8db]"
+          >
+            <span className="block">Fifths <i>&amp;</i> Sevenths,</span>
+            <span className="hero-title-indent block">Priced to the Nines</span>
+          </motion.h1>
 
-      <motion.div
-        initial={{ opacity: 0, x: 60, rotate: 10 }}
-        animate={{ opacity: 1, x: 0, rotate: 6 }}
-        transition={{ duration: 1.5, ease: "easeOut", delay: 0.2 }}
-        className="absolute right-4 sm:right-8 lg:right-20 top-1/4 hidden md:block sketch-jitter pointer-events-none"
-      >
-        <TrumpetSketch className="w-48 h-36 lg:w-56 lg:h-44" />
-      </motion.div>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.9, delay: 0.45 }}
+            className="mt-9 flex max-w-3xl flex-col gap-8 border-l border-[#c99a61]/35 pl-5 sm:mt-12 sm:pl-7 lg:flex-row lg:items-end lg:justify-between"
+          >
+            <p className="max-w-xl font-serif text-lg leading-relaxed text-[#bcae9d] sm:text-xl">
+              A spatial history of the rooms where New York jazz lived—and the rents, rezonings, and migrations that moved the music elsewhere.
+            </p>
 
-      {/* Archival Badge & Monogram */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1 }}
-        className="mb-4 relative z-10"
-      >
-        <div className="flex items-center gap-3 justify-center mb-3">
-          <ArchivalStamp label="Digital Humanities Archive" sub="ISM • NYC Spatial Studies" />
+            <button
+              onClick={onStart}
+              className="hero-entry group flex shrink-0 items-center gap-4 self-start font-typewriter text-xs font-semibold uppercase tracking-[0.16em] text-[#f1e8db] lg:self-auto"
+            >
+              <span className="hero-entry-disc" aria-hidden="true"><i /></span>
+              <span>Enter the listening room</span>
+              <span className="text-lg text-[#c99a61] transition-transform group-hover:translate-x-1" aria-hidden="true">→</span>
+            </button>
+          </motion.div>
         </div>
-        <div className="font-hand text-lg sm:text-xl text-[#8c7456] font-bold tracking-wide">
-          ~ Field Notes on Acoustic Erasure (1950 – Present) ~
-        </div>
-      </motion.div>
 
-      {/* Main Title with Hand-Drawn Display Font & Ink Underline */}
-      <motion.h1
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.9, delay: 0.2 }}
-        className="font-display text-5xl sm:text-7xl lg:text-8xl font-extrabold text-[#1f1712] max-w-5xl leading-[1.05] tracking-tight relative z-10"
-      >
-        The Vanishing <span className="sketch-underline inline-block">Cadence</span>
-      </motion.h1>
-
-      <motion.p
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.9, delay: 0.4 }}
-        className="mt-6 max-w-2xl font-serif text-lg sm:text-xl text-[#4a3b2f] leading-relaxed mx-auto italic relative z-10"
-      >
-        “A hand-drawn cartography tracing the hyper-gentrification, loft rent hikes, and cross-river displacement of New York City’s legendary jazz sanctuaries.”
-      </motion.p>
-
-      {/* Handwritten subtitle note */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.6 }}
-        className="mt-3 font-hand text-lg text-[#a63d2b] font-bold relative z-10"
-      >
-        ✎ Featuring field sketches of Miles Davis, John Coltrane & Thelonious Monk
-      </motion.div>
-
-      {/* Action Buttons */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.9, delay: 0.7 }}
-        className="mt-8 flex flex-wrap gap-5 justify-center items-center relative z-10"
-      >
-        <button
-          onClick={onStart}
-          className="px-8 py-4 rounded-xl bg-[#231b14] text-[#fbf8f0] font-sketch text-lg tracking-wide font-bold hover:bg-[#c59b4c] hover:text-[#1a120b] transition-all duration-300 shadow-[4px_4px_0px_#231b14] hover:shadow-[6px_6px_0px_#231b14] hover:-translate-y-0.5 cursor-pointer border-2 border-[#231b14]"
+        <motion.div
+          initial={{ opacity: 0, rotate: 5, x: 25 }}
+          animate={{ opacity: 0.72, rotate: -3, x: 0 }}
+          transition={{ duration: 1.2, delay: 0.35, ease: 'easeOut' }}
+          className="hero-instrument pointer-events-none absolute -bottom-12 -right-14 w-64 sm:bottom-2 sm:right-0 sm:w-80 lg:static lg:w-full"
+          aria-hidden="true"
         >
-          Open Sketchbook & Map ➔
-        </button>
-        <button
-          onClick={onStart}
-          className="px-8 py-4 rounded-xl bg-[#fbf8f0] text-[#231b14] font-sketch text-lg tracking-wide font-bold hover:bg-[#f0e4d0] transition-all duration-300 shadow-[4px_4px_0px_#231b14] hover:-translate-y-0.5 cursor-pointer border-2 border-[#231b14]"
-        >
-          Explore Modern Diaspora
-        </button>
-      </motion.div>
+          <SaxophoneSketch className="h-auto w-full" />
+        </motion.div>
+      </div>
 
-      {/* Mini Sketchbook Taped Line Art Portraits Row */}
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1.1, delay: 0.9 }}
-        className="mt-12 flex flex-wrap justify-center items-center gap-6 relative z-10 max-w-4xl"
-      >
-        {/* Miles Davis portrait card */}
-        <div className="bg-[#fbf8f0] p-3 rounded-lg border-2 border-[#231b14] shadow-[3px_3px_0px_#231b14] transform -rotate-2 hover:rotate-0 transition-transform">
-          <MusicianSketch musician="miles" className="w-28 h-32 sm:w-32 sm:h-36" />
-        </div>
-
-        {/* Coltrane & Monk duo card */}
-        <div className="bg-[#fbf8f0] p-3 rounded-lg border-2 border-[#231b14] shadow-[3px_3px_0px_#231b14] transform rotate-1 hover:rotate-0 transition-transform">
-          <MusicianSketch musician="monk_coltrane_duo" className="w-44 h-32 sm:w-56 sm:h-36" />
-        </div>
-      </motion.div>
+      <div className="hero-edition font-typewriter" aria-hidden="true">
+        No. 09 / urban sound archive
+      </div>
+      <div className="hero-threshold font-typewriter" aria-hidden="true">
+        Sound begins beyond this door <span>↓</span>
+      </div>
     </header>
   );
 };

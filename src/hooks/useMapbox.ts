@@ -9,7 +9,7 @@ interface UseMapboxProps {
   venues: VenueFeature[];
   activeVenueIds: string[];
   choroplethDataPath?: string;
-  selectedDecade?: string;
+  selectedYear?: number;
   onSelectVenue?: (venue: VenueFeature) => void;
 }
 
@@ -19,66 +19,64 @@ export function useMapbox({
   venues,
   activeVenueIds,
   choroplethDataPath,
-  selectedDecade = '1970',
+  selectedYear = 1970,
   onSelectVenue
 }: UseMapboxProps) {
   const mapInstanceRef = useRef<mapboxgl.Map | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
-  const markersRef = useRef<Map<string, { marker: mapboxgl.Marker; popup: mapboxgl.Popup; venue: VenueFeature }>>(new Map());
-  const currentDecadeRef = useRef<string>(selectedDecade);
+  const markersRef = useRef<Map<string, { marker: mapboxgl.Marker; venue: VenueFeature }>>(new Map());
+  const currentYearRef = useRef<number>(selectedYear);
   const venuesRef = useRef<VenueFeature[]>(venues);
   venuesRef.current = venues;
   const onSelectVenueRef = useRef(onSelectVenue);
   onSelectVenueRef.current = onSelectVenue;
+  const lifecycleYear = Math.floor(selectedYear);
 
-  // Helper to map any decade (including 1950-1970) to available census rent properties
-  const getCensusYearForDecade = (dec: string) => {
-    const d = parseInt(dec, 10);
-    if (d <= 1980) return '1980';
-    if (d <= 1990) return '1990';
-    if (d <= 2000) return '2000';
-    if (d <= 2010) return '2010';
-    return '2020';
-  };
+  // Interpolate rent values between census observations for each individual year.
+  const getChoroplethPaint = useCallback((year: number) => {
+    let valueExp: any;
 
-  // Helper to get paint color expression for a given decade
-  const getChoroplethPaint = useCallback((decade: string) => {
-    const censusYr = getCensusYearForDecade(decade);
-    const prop = `rent_${censusYr}`;
+    if (year < 1980) {
+      const multiplier = 0.25 + ((year - 1950) / 30) * 0.75;
+      valueExp = ['*', ['coalesce', ['get', 'rent_1980'], 0], multiplier];
+    } else if (year >= 2020) {
+      valueExp = ['coalesce', ['get', 'rent_2020'], 0];
+    } else {
+      const lowerYear = Math.floor(year / 10) * 10;
+      const upperYear = lowerYear + 10;
+      const progress = (year - lowerYear) / 10;
+      const lowerValue = ['coalesce', ['get', `rent_${lowerYear}`], ['get', `rent_${upperYear}`], 0];
+      const upperValue = ['coalesce', ['get', `rent_${upperYear}`], ['get', `rent_${lowerYear}`], 0];
+      valueExp = ['+', ['*', lowerValue, 1 - progress], ['*', upperValue, progress]];
+    }
+
     return [
-      'case',
-      ['==', ['get', prop], null],
-      'transparent',
-      [
-        'interpolate',
-        ['linear'],
-        ['get', prop],
-        100, '#f7f2e7',   // Light Archival Paper
-        350, '#ebd49d',   // Pale Gold
-        700, '#cda250',   // Warm Brass
-        1200, '#c25a38',  // Terracotta / Burnt Orange
-        2000, '#962d1d',  // Archival Crimson
-        3200, '#38140e'   // Deep Roast Espresso
-      ]
+      'interpolate',
+      ['linear'],
+      valueExp,
+      0, 'rgba(0,0,0,0)',
+      1, '#fbf8f0',     // Lightest Archival Parchment
+      100, '#fbf8f0',   // 1950s baseline
+      250, '#f5ecd7',   // Warm Antique Paper
+      500, '#edd59e',   // Pale Gold
+      850, '#c79d48',   // Warm Burnished Brass
+      1400, '#c25a38',  // Terracotta / Burnt Sienna
+      2200, '#9e3222',  // Archival Crimson
+      3200, '#38140e'   // Deep Roast Espresso
     ] as any;
   }, []);
 
   // Helper to build GeoJSON FeatureCollection for venues in a given era
-  const buildVenuesGeoJSON = useCallback((venueList: VenueFeature[], decade: string) => {
-    const decNum = parseInt(decade, 10);
-    const endDecYear = decNum + 9;
-
+  const buildVenuesGeoJSON = useCallback((venueList: VenueFeature[], year: number) => {
     return {
       type: 'FeatureCollection' as const,
       features: venueList.map(v => {
         const { id, name, open_year, close_year, scene_movement } = v.properties;
         let era_status = 'active';
 
-        if (open_year && open_year > endDecYear) {
+        if (open_year && open_year > year) {
           era_status = 'future';
-        } else if (close_year && close_year < decNum) {
-          era_status = 'closed';
-        } else if (close_year && close_year >= decNum && close_year <= endDecYear) {
+        } else if (close_year && close_year <= year) {
           era_status = 'closed';
         } else {
           era_status = 'active';
@@ -104,70 +102,24 @@ export function useMapbox({
     };
   }, []);
 
-  // Helper to generate rich popup HTML for a venue in a given era
-  const getVenuePopupHTML = useCallback((venue: VenueFeature, decade: string) => {
-    const { name, open_year, close_year, scene_movement, address, neighborhood, closing_reason, quote, notes } = venue.properties;
-    const decNum = parseInt(decade, 10);
-    const endDecYear = decNum + 9;
-
-    let statusText = '';
-    let statusClass = 'open';
-
-    if (open_year && open_year > endDecYear) {
-      statusText = `NOT FOUNDED YET (OPENS IN ${open_year})`;
-      statusClass = 'future';
-    } else if (close_year && close_year < decNum) {
-      statusText = `DISPLACED & CLOSED (IN ${close_year})`;
-      statusClass = 'closed';
-    } else if (close_year && close_year >= decNum && close_year <= endDecYear) {
-      statusText = `LOST IN THIS ERA (${close_year})`;
-      statusClass = 'closed';
-    } else {
-      statusText = 'VIBRANT & ACTIVE';
-      statusClass = 'open';
-    }
-
-    const lifespan = open_year
-      ? `${open_year} – ${close_year ? close_year : 'Present'}`
-      : 'Mid-20th Century';
-
-    return `
-      <div class="archival-popup">
-        <span class="popup-tag">${(scene_movement || '').replace(/_/g, ' ').toUpperCase()}</span>
-        <h4>${name}</h4>
-        <div class="popup-lifespan">${neighborhood} • ${lifespan}</div>
-        <div class="popup-status-pill ${statusClass}">${decade}s Era: ${statusText}</div>
-        
-        <p class="font-mono text-[11px] text-[#73604d] mb-1">📍 ${address}</p>
-
-        ${close_year && close_year <= endDecYear && closing_reason ? `
-          <div class="mt-2.5 p-2 bg-[#faebd7] border border-[#a63d2b]/40 rounded text-xs text-[#2e1d14]">
-            <strong class="text-[#a63d2b] font-sketch">Displacement Record:</strong> ${closing_reason}
-          </div>
-        ` : ''}
-
-        ${quote ? `<p class="popup-quote">"${quote}"</p>` : ''}
-        ${notes ? `<p class="popup-note text-[11px] mt-2 text-[#5c4d3c] italic">${notes}</p>` : ''}
-      </div>
-    `;
-  }, []);
-
-  // Update Choropleth & WebGL venue layers when decade or venues change
-  const updateChoroplethDecade = useCallback((decade: string) => {
-    currentDecadeRef.current = decade;
+  // Smooth A/B layer cross-fade for each year change.
+  const updateChoroplethYear = useCallback((year: number) => {
+    currentYearRef.current = year;
     const map = mapInstanceRef.current;
-    if (!map || !map.isStyleLoaded()) return;
+    if (!map) return;
 
-    if (map.getLayer('rent-choropleth')) {
-      map.setPaintProperty('rent-choropleth', 'fill-color', getChoroplethPaint(decade));
+    // Update the active layer directly; fractional years make the expression itself continuous.
+    try {
+      const nextPaint = getChoroplethPaint(year);
+      if (map.getLayer('rent-choropleth-a')) {
+        map.setPaintProperty('rent-choropleth-a', 'fill-color', nextPaint);
+        map.setPaintProperty('rent-choropleth-a', 'fill-opacity', 0.72);
+      }
+    } catch (err) {
+      console.warn('Could not cross-fade choropleth:', err);
     }
 
-    // Update WebGL venues source
-    const venuesSource = map.getSource('jazz-venues-webgl') as mapboxgl.GeoJSONSource | undefined;
-    if (venuesSource) {
-      venuesSource.setData(buildVenuesGeoJSON(venuesRef.current, decade));
-    }
-  }, [getChoroplethPaint, buildVenuesGeoJSON]);
+  }, [getChoroplethPaint]);
 
   // Initialize Mapbox Canvas
   useEffect(() => {
@@ -197,7 +149,7 @@ export function useMapbox({
     map.on('load', () => {
       mapInstanceRef.current = map;
 
-      // 1. ADD CHOROPLETH SOURCE & LAYER
+      // 1. ADD CHOROPLETH SOURCE & DUAL A/B CROSS-FADING FILL LAYERS
       if (choroplethDataPath) {
         map.addSource('rent-data', {
           type: 'geojson',
@@ -207,13 +159,33 @@ export function useMapbox({
 
         const firstSymbolId = map.getStyle().layers?.find(l => l.type === 'symbol')?.id;
 
+        // Buffer Layer A (Active initially)
         map.addLayer({
-          id: 'rent-choropleth',
+          id: 'rent-choropleth-a',
           type: 'fill',
           source: 'rent-data',
           paint: {
-            'fill-color': getChoroplethPaint(currentDecadeRef.current),
-            'fill-opacity': 0.7
+            'fill-color': getChoroplethPaint(currentYearRef.current),
+            'fill-opacity': 0.72,
+            'fill-opacity-transition': {
+              duration: 950,
+              delay: 0
+            }
+          }
+        }, firstSymbolId);
+
+        // Buffer Layer B (Standby for smooth cross-fading)
+        map.addLayer({
+          id: 'rent-choropleth-b',
+          type: 'fill',
+          source: 'rent-data',
+          paint: {
+            'fill-color': getChoroplethPaint(currentYearRef.current),
+            'fill-opacity': 0,
+            'fill-opacity-transition': {
+              duration: 950,
+              delay: 0
+            }
           }
         }, firstSymbolId);
         
@@ -236,39 +208,60 @@ export function useMapbox({
           className: 'tract-hover-popup'
         });
 
-        map.on('mousemove', 'rent-choropleth', (e) => {
+        const handleTractHover = (e: mapboxgl.MapLayerMouseEvent) => {
           if (!e.features || e.features.length === 0) return;
           map.getCanvas().style.cursor = 'pointer';
 
           const f = e.features[0];
           const boro = f.properties?.boro || 'NYC';
           const tract = f.properties?.tract || '';
-          const decade = currentDecadeRef.current;
-          const censusYr = getCensusYearForDecade(decade);
-          const rentVal = f.properties?.[`rent_${censusYr}`];
-          const rentDisplay = rentVal ? `$${rentVal}/mo` : 'Data Unavailable';
+          const year = currentYearRef.current;
+          let rentVal: number | null = null;
+          if (year < 1980) {
+            const base = Number(f.properties?.rent_1980);
+            rentVal = Number.isFinite(base) ? base * (0.25 + ((year - 1950) / 30) * 0.75) : null;
+          } else if (year >= 2020) {
+            const value = Number(f.properties?.rent_2020);
+            rentVal = Number.isFinite(value) ? value : null;
+          } else {
+            const lowerYear = Math.floor(year / 10) * 10;
+            const upperYear = lowerYear + 10;
+            const lower = Number(f.properties?.[`rent_${lowerYear}`]);
+            const upper = Number(f.properties?.[`rent_${upperYear}`]);
+            const progress = (year - lowerYear) / 10;
+            if (Number.isFinite(lower) && Number.isFinite(upper)) rentVal = lower + (upper - lower) * progress;
+            else if (Number.isFinite(lower)) rentVal = lower;
+            else if (Number.isFinite(upper)) rentVal = upper;
+          }
+
+          const rentDisplay = rentVal !== null ? `$${Math.round(rentVal)}/mo` : 'Data unavailable';
 
           hoverPopup
             .setLngLat(e.lngLat)
             .setHTML(`
               <div class="px-2.5 py-1.5 font-sans text-xs bg-[#fbf8f0] border border-[#2e241c] rounded shadow-[2px_2px_0px_#2e241c]">
                 <div class="font-typewriter text-[10px] text-[#8c7456]">${boro} // Tract ${tract}</div>
-                <div class="font-bold text-[#1f1813]">${decade}s Median Rent: <span class="text-[#a63d2b] font-sketch text-sm">${rentDisplay}</span></div>
+                <div class="font-bold text-[#1f1813]">${year} estimated rent: <span class="text-[#a63d2b] font-sketch text-sm">${rentDisplay}</span></div>
               </div>
             `)
             .addTo(map);
-        });
+        };
 
-        map.on('mouseleave', 'rent-choropleth', () => {
+        const handleTractLeave = () => {
           map.getCanvas().style.cursor = '';
           hoverPopup.remove();
-        });
+        };
+
+        map.on('mousemove', 'rent-choropleth-a', handleTractHover);
+        map.on('mouseleave', 'rent-choropleth-a', handleTractLeave);
+        map.on('mousemove', 'rent-choropleth-b', handleTractHover);
+        map.on('mouseleave', 'rent-choropleth-b', handleTractLeave);
       }
 
-      // 2. ADD NATIVE WEBGL JAZZ VENUES SOURCE & LAYERS (Guarantees 100% visible pins)
+      // 2. ADD NATIVE WEBGL JAZZ VENUES SOURCE & LAYERS
       map.addSource('jazz-venues-webgl', {
         type: 'geojson',
-        data: buildVenuesGeoJSON(venuesRef.current, currentDecadeRef.current)
+        data: buildVenuesGeoJSON(venuesRef.current, currentYearRef.current)
       });
 
       // Outer Halo Glow Layer
@@ -293,7 +286,10 @@ export function useMapbox({
           'circle-opacity': 0.35,
           'circle-stroke-width': 1.5,
           'circle-stroke-color': '#1c140e',
-          'circle-stroke-opacity': 0.6
+          'circle-stroke-opacity': 0.6,
+          'circle-radius-transition': { duration: 800, delay: 100 },
+          'circle-color-transition': { duration: 900, delay: 0 },
+          'circle-opacity-transition': { duration: 600, delay: 0 }
         }
       });
 
@@ -317,7 +313,9 @@ export function useMapbox({
             'transparent'
           ],
           'circle-stroke-width': 2,
-          'circle-stroke-color': '#fffdf9'
+          'circle-stroke-color': '#fffdf9',
+          'circle-radius-transition': { duration: 800, delay: 100 },
+          'circle-color-transition': { duration: 900, delay: 0 }
         }
       });
 
@@ -338,15 +336,17 @@ export function useMapbox({
         id: 'jazz-venues-labels',
         type: 'symbol',
         source: 'jazz-venues-webgl',
+        minzoom: 13.0,
         filter: ['!=', ['get', 'era_status'], 'future'],
         layout: {
           'text-field': ['get', 'display_label'],
           'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
-          'text-size': 12,
+          'text-size': 11,
           'text-offset': [0, 1.3],
           'text-anchor': 'top',
-          'text-allow-overlap': true,
-          'text-ignore-placement': true
+          'text-allow-overlap': false,
+          'text-ignore-placement': false,
+          'text-optional': true
         },
         paint: {
           'text-color': [
@@ -362,12 +362,6 @@ export function useMapbox({
       });
 
       // Interactive Click & Hover on WebGL pins
-      const venueClickPopup = new mapboxgl.Popup({
-        offset: 16,
-        closeButton: true,
-        className: 'custom-popup'
-      });
-
       map.on('click', 'jazz-venues-pin', (e) => {
         if (!e.features || e.features.length === 0) return;
         const feat = e.features[0];
@@ -375,11 +369,6 @@ export function useMapbox({
         const matchedVenue = venuesRef.current.find(v => v.properties.id === venueId);
 
         if (matchedVenue) {
-          venueClickPopup
-            .setLngLat(e.lngLat)
-            .setHTML(getVenuePopupHTML(matchedVenue, currentDecadeRef.current))
-            .addTo(map);
-
           if (onSelectVenueRef.current) {
             onSelectVenueRef.current(matchedVenue);
           }
@@ -432,7 +421,7 @@ export function useMapbox({
       map.remove();
       mapInstanceRef.current = null;
     };
-  }, [containerRef, initialCamera, choroplethDataPath, getChoroplethPaint, buildVenuesGeoJSON, getVenuePopupHTML]);
+  }, [containerRef, initialCamera, choroplethDataPath, getChoroplethPaint, buildVenuesGeoJSON]);
 
   // Smooth cinematic camera transitions (flyTo)
   const flyTo = useCallback((camera: MapCameraState) => {
@@ -456,15 +445,16 @@ export function useMapbox({
     const map = mapInstanceRef.current;
     if (!map || !isLoaded) return;
 
-    const decade = selectedDecade;
-    currentDecadeRef.current = decade;
-    const decNum = parseInt(decade, 10);
-    const endDecYear = decNum + 9;
+    const year = lifecycleYear;
 
     // Update WebGL Source
-    const venuesSource = map.getSource('jazz-venues-webgl') as mapboxgl.GeoJSONSource | undefined;
-    if (venuesSource) {
-      venuesSource.setData(buildVenuesGeoJSON(venues, decade));
+    try {
+      const venuesSource = map.getSource('jazz-venues-webgl') as mapboxgl.GeoJSONSource | undefined;
+      if (venuesSource) {
+        venuesSource.setData(buildVenuesGeoJSON(venues, year));
+      }
+    } catch (err) {
+      console.warn('Could not update venues source:', err);
     }
 
     // Clean up markers no longer in venues list
@@ -483,14 +473,11 @@ export function useMapbox({
       let lifecycleState: 'is-open' | 'is-closed' | 'is-future' = 'is-open';
       let labelSuffix = '';
 
-      if (open_year && open_year > endDecYear) {
+      if (open_year && open_year > year) {
         lifecycleState = 'is-future';
-      } else if (close_year && close_year < decNum) {
+      } else if (close_year && close_year <= year) {
         lifecycleState = 'is-closed';
         labelSuffix = `<span class="displaced-badge">† ${close_year}</span>`;
-      } else if (close_year && close_year >= decNum && close_year <= endDecYear) {
-        lifecycleState = 'is-closed';
-        labelSuffix = `<span class="displaced-badge">LOST ${close_year}</span>`;
       } else {
         lifecycleState = 'is-open';
       }
@@ -510,19 +497,15 @@ export function useMapbox({
           </div>
         `;
 
-        const popup = new mapboxgl.Popup({ offset: 16, closeButton: true, className: 'custom-popup' })
-          .setHTML(getVenuePopupHTML(venue, decade));
-
         el.addEventListener('click', () => {
           if (onSelectVenueRef.current) onSelectVenueRef.current(venue);
         });
 
         const marker = new mapboxgl.Marker({ element: el, anchor: 'center' })
           .setLngLat([lng, lat])
-          .setPopup(popup)
           .addTo(map);
 
-        markersRef.current.set(id, { marker, popup, venue });
+        markersRef.current.set(id, { marker, venue });
       } else {
         const el = existing.marker.getElement();
         const wrapper = el.querySelector('.marker-wrapper');
@@ -533,10 +516,9 @@ export function useMapbox({
             label.innerHTML = `${name} ${labelSuffix}`;
           }
         }
-        existing.popup.setHTML(getVenuePopupHTML(venue, decade));
       }
     });
-  }, [venues, activeVenueIds, selectedDecade, isLoaded, buildVenuesGeoJSON, getVenuePopupHTML]);
+  }, [venues, activeVenueIds, lifecycleYear, isLoaded, buildVenuesGeoJSON]);
 
-  return { map: mapInstanceRef.current, isLoaded, flyTo, updateChoroplethDecade };
+  return { map: mapInstanceRef.current, isLoaded, flyTo, updateChoroplethYear };
 }
