@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import type { MapCameraState, VenueFeature } from '../types';
+import type { MapCameraState, VenueFeature, VenueRelationship } from '../types';
 
 interface UseMapboxProps {
   containerRef: React.RefObject<HTMLDivElement | null>;
@@ -11,6 +11,10 @@ interface UseMapboxProps {
   choroplethDataPath?: string;
   selectedYear?: number;
   onSelectVenue?: (venue: VenueFeature) => void;
+  relationships?: VenueRelationship[];
+  relationshipVenues?: VenueFeature[];
+  selectedRelationshipId?: string | null;
+  onSelectRelationship?: (relationship: VenueRelationship) => void;
 }
 
 export function useMapbox({
@@ -20,7 +24,11 @@ export function useMapbox({
   activeVenueIds,
   choroplethDataPath,
   selectedYear = 1970,
-  onSelectVenue
+  onSelectVenue,
+  relationships = [],
+  relationshipVenues = venues,
+  selectedRelationshipId = null,
+  onSelectRelationship,
 }: UseMapboxProps) {
   const mapInstanceRef = useRef<mapboxgl.Map | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -30,6 +38,12 @@ export function useMapbox({
   venuesRef.current = venues;
   const onSelectVenueRef = useRef(onSelectVenue);
   onSelectVenueRef.current = onSelectVenue;
+  const relationshipsRef = useRef(relationships);
+  relationshipsRef.current = relationships;
+  const relationshipVenuesRef = useRef(relationshipVenues);
+  relationshipVenuesRef.current = relationshipVenues;
+  const onSelectRelationshipRef = useRef(onSelectRelationship);
+  onSelectRelationshipRef.current = onSelectRelationship;
   const lifecycleYear = Math.floor(selectedYear);
 
   // Interpolate rent values between census observations for each individual year.
@@ -102,6 +116,33 @@ export function useMapbox({
     };
   }, []);
 
+  const buildRelationshipsGeoJSON = useCallback((relationshipList: VenueRelationship[], venueList: VenueFeature[]) => ({
+    type: 'FeatureCollection' as const,
+    features: relationshipList.flatMap((relationship) => {
+      if (!relationship.confirmed) return [];
+      const from = venueList.find((venue) => venue.properties.id === relationship.fromVenueId);
+      const to = venueList.find((venue) => venue.properties.id === relationship.toVenueId);
+      if (!from || !to) return [];
+      const [fromLng, fromLat] = from.geometry.coordinates;
+      const [toLng, toLat] = to.geometry.coordinates;
+      const distance = Math.hypot(toLng - fromLng, toLat - fromLat);
+      const bend = Math.min(.018, distance * .16);
+      const midpoint: [number, number] = [
+        (fromLng + toLng) / 2 - (toLat - fromLat) / Math.max(distance, .0001) * bend,
+        (fromLat + toLat) / 2 + (toLng - fromLng) / Math.max(distance, .0001) * bend,
+      ];
+      return [{
+        type: 'Feature' as const,
+        geometry: { type: 'LineString' as const, coordinates: [from.geometry.coordinates, midpoint, to.geometry.coordinates] },
+        properties: {
+          relationship_id: relationship.id,
+          relationship_type: relationship.type,
+          label: relationship.label,
+        },
+      }];
+    }),
+  }), []);
+
   // Smooth A/B layer cross-fade for each year change.
   const updateChoroplethYear = useCallback((year: number) => {
     currentYearRef.current = year;
@@ -128,6 +169,7 @@ export function useMapbox({
     const token = import.meta.env.VITE_MAPBOX_TOKEN || '';
     if (!token) {
       console.warn('Mapbox Token is not set. Please set VITE_MAPBOX_TOKEN in your .env file.');
+      return;
     }
     mapboxgl.accessToken = token;
 
@@ -259,6 +301,32 @@ export function useMapbox({
       }
 
       // 2. ADD NATIVE WEBGL JAZZ VENUES SOURCE & LAYERS
+      map.addSource('venue-relationships', {
+        type: 'geojson',
+        data: buildRelationshipsGeoJSON(relationshipsRef.current, relationshipVenuesRef.current),
+      });
+
+      map.addLayer({
+        id: 'venue-relationship-lines',
+        type: 'line',
+        source: 'venue-relationships',
+        layout: { 'line-cap': 'round', 'line-join': 'round' },
+        paint: {
+          'line-color': ['case', ['==', ['get', 'relationship_type'], 'artist-organizer-continuity'], '#b44931', '#806f59'],
+          'line-width': 1.5,
+          'line-opacity': .52,
+          'line-dasharray': [2, 2.6],
+        },
+      });
+
+      map.on('click', 'venue-relationship-lines', (event) => {
+        const relationshipId = event.features?.[0]?.properties?.relationship_id;
+        const relationship = relationshipsRef.current.find((candidate) => candidate.id === relationshipId);
+        if (relationship) onSelectRelationshipRef.current?.(relationship);
+      });
+      map.on('mouseenter', 'venue-relationship-lines', () => { map.getCanvas().style.cursor = 'pointer'; });
+      map.on('mouseleave', 'venue-relationship-lines', () => { map.getCanvas().style.cursor = ''; });
+
       map.addSource('jazz-venues-webgl', {
         type: 'geojson',
         data: buildVenuesGeoJSON(venuesRef.current, currentYearRef.current)
@@ -421,7 +489,21 @@ export function useMapbox({
       map.remove();
       mapInstanceRef.current = null;
     };
-  }, [containerRef, initialCamera, choroplethDataPath, getChoroplethPaint, buildVenuesGeoJSON]);
+  }, [containerRef, initialCamera, choroplethDataPath, getChoroplethPaint, buildVenuesGeoJSON, buildRelationshipsGeoJSON]);
+
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map || !isLoaded || !map.getLayer('venue-relationship-lines')) return;
+    map.setPaintProperty('venue-relationship-lines', 'line-width', ['case', ['==', ['get', 'relationship_id'], selectedRelationshipId || ''], 3, 1.5]);
+    map.setPaintProperty('venue-relationship-lines', 'line-opacity', ['case', ['==', ['get', 'relationship_id'], selectedRelationshipId || ''], .95, .52]);
+  }, [isLoaded, selectedRelationshipId]);
+
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map || !isLoaded) return;
+    const source = map.getSource('venue-relationships') as mapboxgl.GeoJSONSource | undefined;
+    source?.setData(buildRelationshipsGeoJSON(relationships, relationshipVenues));
+  }, [isLoaded, relationships, relationshipVenues, buildRelationshipsGeoJSON]);
 
   // Smooth cinematic camera transitions (flyTo)
   const flyTo = useCallback((camera: MapCameraState) => {
@@ -482,7 +564,7 @@ export function useMapbox({
         lifecycleState = 'is-open';
       }
 
-      let existing = markersRef.current.get(id);
+      const existing = markersRef.current.get(id);
 
       if (!existing) {
         const el = document.createElement('div');

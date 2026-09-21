@@ -1,8 +1,8 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import 'mapbox-gl/dist/mapbox-gl.css'
 import App from './App'
 import './index.css'
+import './styles/address-journey.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

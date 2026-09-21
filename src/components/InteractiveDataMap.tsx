@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useMapbox } from '../hooks/useMapbox';
 import { NYC_JAZZ_VENUES } from '../data/venues';
-import type { VenueFeature, SceneMovement } from '../types';
+import type { VenueFeature, SceneMovement, VenueRelationship } from '../types';
 
 const YEAR_MIN = 1950;
 const YEAR_MAX = 2020;
@@ -14,6 +14,13 @@ const INITIAL_MAP_CAMERA = {
   bearing: -10,
 };
 
+const GREENE_STREET_CAMERA = {
+  center: [-74.0006, 40.7231] as [number, number],
+  zoom: 14.35,
+  pitch: 34,
+  bearing: -8,
+};
+
 const SCENE_FILTERS: { label: string; value: SceneMovement | 'all' }[] = [
   { label: 'All venues', value: 'all' },
   { label: 'Harlem', value: 'harlem_jazz' },
@@ -23,12 +30,32 @@ const SCENE_FILTERS: { label: string; value: SceneMovement | 'all' }[] = [
   { label: 'Brooklyn', value: 'brooklyn_continuation' },
 ];
 
-export const InteractiveDataMap: React.FC = () => {
-  const [selectedYear, setSelectedYear] = useState<number>(1970);
-  const [selectedScene, setSelectedScene] = useState<SceneMovement | 'all'>('all');
+interface InteractiveDataMapProps {
+  visitedVenueIds?: string[];
+  onEnter?: () => void;
+  initialScene?: SceneMovement | 'all';
+  initialYear?: number;
+  focusGreeneStreet?: boolean;
+  relationships?: VenueRelationship[];
+}
+
+export const InteractiveDataMap: React.FC<InteractiveDataMapProps> = ({
+  visitedVenueIds = [],
+  onEnter,
+  initialScene = 'all',
+  initialYear = 1970,
+  focusGreeneStreet = false,
+  relationships = [],
+}) => {
+  const mapConfigured = Boolean(import.meta.env.VITE_MAPBOX_TOKEN);
+  const [selectedYear, setSelectedYear] = useState<number>(initialYear);
+  const [selectedScene, setSelectedScene] = useState<SceneMovement | 'all'>(initialScene);
   const [selectedVenue, setSelectedVenue] = useState<VenueFeature | null>(null);
+  const [selectedRelationship, setSelectedRelationship] = useState<VenueRelationship | null>(null);
+  const [connectionsVisible, setConnectionsVisible] = useState(true);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const mapContainerRef = React.useRef<HTMLDivElement>(null);
+  const sectionRef = React.useRef<HTMLElement>(null);
 
   // Filter venues by scene
   const filteredVenues = useMemo(() => {
@@ -36,10 +63,22 @@ export const InteractiveDataMap: React.FC = () => {
     return NYC_JAZZ_VENUES.filter(v => v.properties.scene_movement === selectedScene);
   }, [selectedScene]);
 
-  const highlightedVenueIds = useMemo(
-    () => selectedVenue ? [selectedVenue.properties.id] : [],
-    [selectedVenue]
-  );
+  const highlightedVenueIds = useMemo(() => Array.from(new Set([
+    ...visitedVenueIds,
+    ...(selectedVenue ? [selectedVenue.properties.id] : []),
+  ])), [selectedVenue, visitedVenueIds]);
+
+  const visitedVenues = useMemo(() => NYC_JAZZ_VENUES.filter((venue) => visitedVenueIds.includes(venue.properties.id)), [visitedVenueIds]);
+
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section || !onEnter) return;
+    const observer = new IntersectionObserver((entries) => {
+      if (entries.some((entry) => entry.isIntersecting)) onEnter();
+    }, { threshold: .35 });
+    observer.observe(section);
+    return () => observer.disconnect();
+  }, [onEnter]);
 
   // Compute venue status for the exact selected year.
   const stats = useMemo(() => {
@@ -61,12 +100,20 @@ export const InteractiveDataMap: React.FC = () => {
   // Mapbox initialization
   const { isLoaded, flyTo, updateChoroplethYear } = useMapbox({
     containerRef: mapContainerRef,
-    initialCamera: INITIAL_MAP_CAMERA,
+    initialCamera: focusGreeneStreet ? GREENE_STREET_CAMERA : INITIAL_MAP_CAMERA,
     venues: filteredVenues,
     activeVenueIds: highlightedVenueIds,
     choroplethDataPath: '/data/nyc_rent_history.geojson',
     selectedYear,
+    relationships: connectionsVisible ? relationships : [],
+    relationshipVenues: NYC_JAZZ_VENUES,
+    selectedRelationshipId: selectedRelationship?.id,
+    onSelectRelationship: (relationship) => {
+      setSelectedVenue(null);
+      setSelectedRelationship(relationship);
+    },
     onSelectVenue: (venue) => {
+      setSelectedRelationship(null);
       setSelectedVenue(venue);
     }
   });
@@ -105,7 +152,7 @@ export const InteractiveDataMap: React.FC = () => {
   }, [isPlaying]);
 
   return (
-    <section id="evidence-map" className="relative w-full h-screen bg-[#1c140e] overflow-hidden flex flex-col scroll-mt-0">
+    <section ref={sectionRef} id="evidence-map" className="relative w-full h-screen bg-[#1c140e] overflow-hidden flex flex-col scroll-mt-0" aria-label="Citywide jazz venue and residential rent archive">
       {/* Mapbox Container */}
       <div className="absolute inset-0 z-0">
         <div 
@@ -114,6 +161,7 @@ export const InteractiveDataMap: React.FC = () => {
         />
         {/* Cinematic Vignette */}
         <div className="absolute inset-0 pointer-events-none shadow-[inset_0_0_140px_rgba(20,13,8,0.7)] z-10" />
+        {!mapConfigured && <div className="map-unavailable" role="status"><span>City archive unavailable</span><b>Mapbox access has not been configured.</b><p>Add a public Vite Mapbox token to explore the venue and residential-rent archive. The documented connections remain available below.</p><div className="map-fallback-connections">{relationships.map((relationship) => <a key={relationship.id} href={relationship.source.url} target="_blank" rel="noreferrer">{relationship.label} ↗</a>)}</div></div>}
       </div>
 
       {/* Top Header & Scene Filter Bar */}
@@ -122,11 +170,14 @@ export const InteractiveDataMap: React.FC = () => {
         {/* Left Badge */}
         <div className="pointer-events-auto bg-[#f8f3e9]/94 backdrop-blur-sm px-4 py-3 border border-[#3b2e24]/35 max-w-xs shadow-[0_8px_24px_rgba(35,27,20,0.12)]">
           <div className="font-typewriter text-[10px] uppercase tracking-[0.18em] text-[#8f3428] mb-1">
-            New York jazz venues · 1950–present
+            77 Greene Street · outward
           </div>
           <h2 className="font-display font-bold text-xl text-[#1f1712] leading-tight">
-            The displacement map
+            The city archive
           </h2>
+          <p className="mt-1 font-sans text-[11px] text-[#6e5a47]">Residential census rent shading · venue histories</p>
+          {visitedVenues.length > 0 && <div className="map-encountered"><span className="font-typewriter">DOWNTOWN LOFT NETWORK</span>{visitedVenues.map((venue) => <button type="button" key={venue.properties.id} onClick={() => { setSelectedScene('all'); setSelectedVenue(venue); flyTo({ center: venue.geometry.coordinates as [number, number], zoom: 15, pitch: 45, bearing: 10 }); }}>{venue.properties.name}</button>)}</div>}
+          {relationships.length > 0 && <div className="map-connections"><button type="button" className="map-connections-toggle" aria-pressed={connectionsVisible} onClick={() => { setConnectionsVisible((value) => !value); setSelectedRelationship(null); }}>{connectionsVisible ? 'Hide' : 'Show'} documented connections · {relationships.length}</button>{connectionsVisible && <div>{relationships.map((relationship) => <button type="button" key={relationship.id} className={selectedRelationship?.id === relationship.id ? 'is-active' : ''} onClick={() => { setSelectedVenue(null); setSelectedRelationship(relationship); }}>{relationship.type === 'collective-organizing' ? 'Collective' : 'Artist'} · {relationship.toVenueId === '0016' ? "Sistas’ Place" : relationship.toVenueId === '0011' ? 'Studio Rivbea' : "Ladies’ Fort"}</button>)}</div>}</div>}
         </div>
 
         {/* Scene Movement Pills */}
@@ -137,7 +188,7 @@ export const InteractiveDataMap: React.FC = () => {
               <button
                 key={filter.value}
                 onClick={() => setSelectedScene(filter.value)}
-                className={`shrink-0 px-3 py-1.5 rounded-full border text-[11px] font-sans font-semibold transition-colors duration-200 cursor-pointer ${
+                className={`map-scene-filter shrink-0 px-3 py-1.5 border text-[11px] font-sans font-semibold transition-colors duration-200 cursor-pointer ${
                   isSelected
                     ? 'bg-[#231b14] text-[#fbf8f0] border-[#231b14]'
                     : 'bg-[#fbf8f0]/88 text-[#3b2e24] border-[#3b2e24]/30 hover:bg-[#fbf8f0]'
@@ -152,7 +203,7 @@ export const InteractiveDataMap: React.FC = () => {
 
       {/* Selected Venue Detail Slide-out Card */}
       {selectedVenue && (
-        <aside className="absolute top-32 sm:top-28 right-4 sm:right-6 z-30 w-[calc(100%-2rem)] max-w-sm max-h-[calc(100vh-25rem)] sm:max-h-[calc(100vh-22rem)] overflow-y-auto bg-[#f8f3e9]/96 backdrop-blur-sm p-5 border border-[#3b2e24]/40 shadow-[0_16px_45px_rgba(20,13,8,0.24)] animate-fadeIn">
+        <aside className="map-archive-window absolute top-32 sm:top-28 right-4 sm:right-6 z-30 w-[calc(100%-2rem)] max-w-sm max-h-[calc(100vh-25rem)] sm:max-h-[calc(100vh-22rem)] overflow-y-auto bg-[#f8f3e9]/96 backdrop-blur-sm p-5 border border-[#3b2e24]/40 shadow-[0_16px_45px_rgba(20,13,8,0.24)] animate-fadeIn">
           <button
             onClick={() => setSelectedVenue(null)}
             className="absolute top-3 right-3 w-7 h-7 flex items-center justify-center rounded-full text-[#6e5a47] text-sm hover:bg-[#231b14] hover:text-white transition-colors cursor-pointer"
@@ -175,9 +226,13 @@ export const InteractiveDataMap: React.FC = () => {
               {selectedVenue.properties.open_year || 'Unknown'} – {selectedVenue.properties.close_year || 'Present'}
             </span>
             <span className={`font-typewriter text-[10px] uppercase ${
-              selectedVenue.properties.close_year ? 'text-[#a63d2b]' : 'text-[#46654b]'
+              selectedVenue.properties.status === 'open' ? 'text-[#46654b]' : 'text-[#a63d2b]'
             }`}>
-              {selectedVenue.properties.close_year ? 'Closed / Displaced' : 'Active Landmark'}
+              {selectedVenue.properties.status === 'open'
+                ? 'Open'
+                : selectedVenue.properties.status === 'relocated'
+                  ? 'Relocated'
+                  : 'Closed'}
             </span>
           </div>
 
@@ -188,9 +243,10 @@ export const InteractiveDataMap: React.FC = () => {
             </div>
           )}
 
-          {selectedVenue.properties.quote && (
+          {selectedVenue.properties.quote && selectedVenue.properties.source_url && (
             <blockquote className="font-serif italic text-sm text-[#5c4d3c] border-l-2 border-[#c59b4c] pl-3 mb-4 leading-relaxed">
               "{selectedVenue.properties.quote}"
+              {selectedVenue.properties.source_publisher && <cite className="block mt-2 font-typewriter text-[9px] not-italic uppercase">— {selectedVenue.properties.source_publisher}</cite>}
             </blockquote>
           )}
 
@@ -207,6 +263,27 @@ export const InteractiveDataMap: React.FC = () => {
           >
             Centre this venue on the map →
           </button>
+          {selectedVenue.properties.source_url && (
+            <a
+              href={selectedVenue.properties.source_url}
+              target="_blank"
+              rel="noreferrer"
+              className="ml-4 text-xs font-sans font-semibold text-[#73604d] hover:text-[#231b14] underline underline-offset-4"
+            >
+              View source ↗
+            </a>
+          )}
+        </aside>
+      )}
+
+      {selectedRelationship && (
+        <aside className="map-archive-window map-relationship-window absolute top-32 sm:top-28 right-4 sm:right-6 z-30 w-[calc(100%-2rem)] max-w-sm bg-[#f8f3e9]/96 backdrop-blur-sm p-5 border border-[#3b2e24]/40 shadow-[0_16px_45px_rgba(20,13,8,0.24)] animate-fadeIn" aria-label="Documented venue connection">
+          <button type="button" onClick={() => setSelectedRelationship(null)} className="absolute top-3 right-3 w-7 h-7 flex items-center justify-center text-[#6e5a47] hover:bg-[#231b14] hover:text-white" aria-label="Close connection details">✕</button>
+          <div className="font-typewriter text-[9px] tracking-[0.16em] uppercase text-[#a63d2b] mb-2">{selectedRelationship.type.replace(/-/g, ' ')}</div>
+          <h3 className="font-display font-bold text-2xl text-[#1f1712] mb-3 pr-8 leading-tight">{selectedRelationship.label}</h3>
+          <p className="font-serif text-sm text-[#5c4d3c] leading-relaxed">{selectedRelationship.evidenceNote}</p>
+          <p className="connection-caution">A documented relationship—not a claim of relocation, succession, or causation.</p>
+          <a href={selectedRelationship.source.url} target="_blank" rel="noreferrer" className="block mt-4 text-xs font-sans font-semibold text-[#8f3428] underline underline-offset-4">{selectedRelationship.source.publisher} · {selectedRelationship.source.locator} ↗</a>
         </aside>
       )}
 

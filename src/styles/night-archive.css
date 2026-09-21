@@ -1,0 +1,368 @@
+@layer base, museum;
+
+@layer base {
+  :root {
+    --night-ink: #0d0b0a;
+    --night-surface: #15110e;
+    --night-paper: #eee4d4;
+    --night-muted: #a99a87;
+    --night-brass: #c49a55;
+    --night-red: #a84b3a;
+  }
+
+  .night-archive {
+    min-height: 100vh;
+    color: var(--night-paper);
+    background: var(--night-ink);
+  }
+}
+
+@layer museum {
+  .night-threshold .hero-title { max-width: 13ch; }
+
+  .night-foyer {
+    position: relative;
+    min-height: 100vh;
+    padding: clamp(5rem, 8vw, 8rem) clamp(1.1rem, 5vw, 5rem) 3rem;
+    overflow: hidden;
+    color: var(--night-paper);
+    background:
+      radial-gradient(circle at 55% 38%, rgba(109, 79, 45, .16), transparent 30%),
+      linear-gradient(145deg, #0b0908, #15110e 50%, #0b0908);
+  }
+
+  .foyer-atmosphere {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      linear-gradient(90deg, transparent 49.8%, rgba(215, 181, 123, .05) 50%, transparent 50.2%),
+      linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px);
+    background-size: 100% 100%, 100% 5rem;
+    mask-image: linear-gradient(to bottom, black, transparent 90%);
+  }
+
+  .foyer-heading {
+    position: relative;
+    z-index: 2;
+    max-width: 52rem;
+    margin: 0 auto 2.5rem;
+    text-align: center;
+  }
+
+  .foyer-heading > p,
+  .room-departure > span {
+    color: var(--night-brass);
+    font: .6rem var(--font-typewriter);
+    letter-spacing: .2em;
+    text-transform: uppercase;
+  }
+
+  .foyer-heading h1 {
+    margin-top: .8rem;
+    font: 550 clamp(3.5rem, 8vw, 7.5rem)/.9 var(--font-display);
+    letter-spacing: -.055em;
+  }
+
+  .foyer-heading h1:focus { outline: none; }
+
+  .foyer-heading > span {
+    display: block;
+    max-width: 38rem;
+    margin: 1.25rem auto 0;
+    color: var(--night-muted);
+    font: italic clamp(.95rem, 1.5vw, 1.15rem)/1.6 var(--font-serif);
+  }
+
+  .foyer-plan {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: minmax(20rem, 1.2fr) minmax(20rem, .8fr);
+    gap: clamp(1.5rem, 5vw, 5rem);
+    align-items: center;
+    max-width: 82rem;
+    margin: 0 auto;
+  }
+
+  .foyer-plan-art {
+    position: relative;
+    min-height: min(55vw, 36rem);
+    perspective: 900px;
+  }
+
+  .foyer-render {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    background: #0a0807;
+    border: 1px solid rgba(229, 211, 179, .14);
+    box-shadow: 0 3rem 7rem rgba(0,0,0,.58);
+  }
+
+  .foyer-render::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, transparent 40%, rgba(7,5,4,.68) 100%);
+    pointer-events: none;
+  }
+
+  .foyer-render img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: saturate(.72) sepia(.08) brightness(.72) contrast(1.12);
+  }
+
+  .foyer-render-glow {
+    position: absolute;
+    z-index: 2;
+    width: 1.1rem;
+    height: 1.1rem;
+    border: 1px solid var(--room-accent);
+    border-radius: 50%;
+    opacity: .45;
+    box-shadow: 0 0 1.2rem color-mix(in srgb, var(--room-accent) 70%, transparent);
+    transition: opacity .4s ease, transform .4s ease, box-shadow .4s ease;
+  }
+  .foyer-render-glow::before {
+    content: "";
+    position: absolute;
+    inset: .3rem;
+    border-radius: inherit;
+    background: var(--room-accent);
+  }
+  .foyer-render-glow.is-complete {
+    opacity: 1;
+    transform: scale(1.18);
+    box-shadow: 0 0 2.4rem var(--room-accent), 0 0 5rem color-mix(in srgb, var(--room-accent) 52%, transparent);
+  }
+  .foyer-render-glow-1 { left: 45%; top: 25%; }
+  .foyer-render-glow-2 { left: 76%; top: 52%; }
+  .foyer-render-glow-3 { left: 25%; top: 51%; }
+  .foyer-render-glow-4 { left: 59%; top: 65%; }
+
+  .foyer-building {
+    position: absolute;
+    inset: 8% 5% 10%;
+    border: 1px solid rgba(229, 211, 179, .26);
+    background: linear-gradient(145deg, rgba(238,228,212,.055), rgba(0,0,0,.18));
+    box-shadow: 0 4rem 8rem rgba(0,0,0,.55), inset 0 0 4rem rgba(196,154,85,.04);
+    transform: rotateX(58deg) rotateZ(-31deg);
+    transform-style: preserve-3d;
+  }
+
+  .foyer-building::before,
+  .foyer-building::after {
+    content: "";
+    position: absolute;
+    background: rgba(229, 211, 179, .16);
+  }
+  .foyer-building::before { left: 50%; top: 0; width: 1px; height: 100%; }
+  .foyer-building::after { left: 0; top: 50%; width: 100%; height: 1px; }
+
+  .foyer-corridor {
+    position: absolute;
+    z-index: 2;
+    left: 46%;
+    top: 0;
+    width: 8%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(196,154,85,.12), transparent);
+  }
+
+  .foyer-room-shape {
+    position: absolute;
+    width: 39%;
+    height: 38%;
+    border: 1px solid color-mix(in srgb, var(--room-accent) 36%, transparent);
+    background: radial-gradient(circle at 50% 70%, color-mix(in srgb, var(--room-accent) 18%, transparent), transparent 65%);
+    transition: filter .5s ease, background .5s ease, box-shadow .5s ease;
+  }
+  .foyer-room-shape::after {
+    content: "";
+    position: absolute;
+    left: 44%;
+    bottom: -1px;
+    width: 12%;
+    height: 3px;
+    background: var(--room-accent);
+    box-shadow: 0 0 1.2rem var(--room-accent);
+  }
+  .foyer-room-shape.is-complete {
+    background: radial-gradient(circle at 50% 70%, color-mix(in srgb, var(--room-accent) 38%, transparent), transparent 70%);
+    box-shadow: inset 0 0 2.5rem color-mix(in srgb, var(--room-accent) 22%, transparent), 0 0 2rem color-mix(in srgb, var(--room-accent) 12%, transparent);
+  }
+  .foyer-room-shape-1 { left: 5%; top: 6%; }
+  .foyer-room-shape-2 { right: 5%; top: 6%; }
+  .foyer-room-shape-3 { left: 5%; bottom: 6%; }
+  .foyer-room-shape-4 { right: 5%; bottom: 6%; }
+
+  .foyer-door-list {
+    display: grid;
+    gap: .35rem;
+    list-style: none;
+  }
+  .foyer-door-list button {
+    --door-line: color-mix(in srgb, var(--room-accent) 28%, rgba(238,228,212,.14));
+    display: grid;
+    grid-template-columns: 2.5rem 1fr auto;
+    gap: 1rem;
+    align-items: center;
+    width: 100%;
+    padding: 1.2rem .25rem;
+    color: var(--night-paper);
+    text-align: left;
+    border-top: 1px solid var(--door-line);
+  }
+  .foyer-door-list li:last-child button { border-bottom: 1px solid var(--door-line); }
+  .foyer-door-list button:hover,
+  .foyer-door-list button:focus-visible { background: linear-gradient(90deg, color-mix(in srgb, var(--room-accent) 10%, transparent), transparent); }
+  .foyer-door-list button:focus-visible { outline-color: var(--room-accent); }
+  .foyer-door-number { color: var(--room-accent); font: 1rem var(--font-display); }
+  .foyer-door-copy b,
+  .foyer-door-copy small { display: block; }
+  .foyer-door-copy b { font: 500 clamp(1.35rem, 2.2vw, 2rem) var(--font-display); }
+  .foyer-door-copy small { margin-top: .2rem; color: var(--night-muted); font-size: .68rem; }
+  .foyer-door-action { color: var(--room-accent); font: .57rem var(--font-typewriter); letter-spacing: .1em; text-transform: uppercase; }
+
+  .foyer-card { position: relative; z-index: 2; max-width: 46rem; margin: 2.5rem auto 0; }
+  .foyer-card > p { margin-top: .8rem; color: rgba(169,154,135,.62); font-size: .58rem; text-align: center; }
+  .foyer-card > p span { color: var(--night-brass); text-transform: uppercase; letter-spacing: .08em; }
+
+  .night-room-shell { min-height: 100vh; background: var(--night-ink); }
+  .night-room-nav {
+    position: fixed;
+    z-index: 95;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: grid;
+    grid-template-columns: minmax(5rem, 1fr) auto minmax(5rem, 1fr);
+    align-items: center;
+    padding: .65rem clamp(.75rem, 2vw, 1.5rem);
+    color: var(--night-paper);
+    background: rgba(10, 8, 7, .86);
+    border-bottom: 1px solid rgba(229,211,179,.14);
+    backdrop-filter: blur(14px);
+  }
+  .night-room-nav > div { text-align: center; }
+  .night-room-nav > div span,
+  .night-room-nav > div b { display: block; }
+  .night-room-nav > div span { color: var(--room-accent); font: .5rem var(--font-typewriter); letter-spacing: .18em; text-transform: uppercase; }
+  .night-room-nav > div b { margin-top: .12rem; font: 500 .9rem var(--font-display); }
+  .night-room-nav > button { color: var(--night-muted); font: .56rem var(--font-typewriter); letter-spacing: .1em; text-transform: uppercase; }
+  .night-room-nav > button:last-child { justify-self: end; }
+  .night-room-nav > button:hover { color: var(--room-accent); }
+
+  .room-loading {
+    display: grid;
+    place-items: center;
+    min-height: 100vh;
+    color: var(--room-accent);
+    background: var(--night-ink);
+    font: .62rem var(--font-typewriter);
+    letter-spacing: .14em;
+    text-transform: uppercase;
+  }
+
+  .room-tableau {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    align-items: flex-end;
+    min-height: 78vh;
+    padding: clamp(5.5rem, 10vw, 8rem) clamp(1.25rem, 7vw, 7rem) clamp(3rem, 7vw, 6rem);
+    overflow: hidden;
+    color: var(--night-paper);
+    background: #090706;
+  }
+  .room-tableau > img,
+  .room-tableau-vignette { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .room-tableau > img { object-fit: cover; filter: saturate(.62) brightness(.63) contrast(1.14); }
+  .room-tableau-vignette {
+    background:
+      linear-gradient(90deg, rgba(8,6,5,.88), rgba(8,6,5,.28) 58%, rgba(8,6,5,.64)),
+      linear-gradient(0deg, rgba(8,6,5,.92), transparent 65%);
+  }
+  .room-tableau-copy { position: relative; z-index: 2; max-width: 56rem; }
+  .room-tableau-copy > span { color: var(--room-accent); font: .6rem var(--font-typewriter); letter-spacing: .2em; text-transform: uppercase; }
+  .room-tableau-copy h1 { max-width: 11ch; margin-top: .7rem; font: 550 clamp(3.8rem, 8vw, 8rem)/.86 var(--font-display); letter-spacing: -.055em; }
+  .room-tableau-copy h1:focus { outline: none; }
+  .room-tableau-copy p { max-width: 26ch; margin-top: 1.25rem; color: #d2c3af; font: italic clamp(1.05rem, 1.8vw, 1.4rem)/1.45 var(--font-serif); }
+  .room-tableau > small { position: absolute; z-index: 2; right: 1rem; bottom: 1rem; max-width: 28rem; color: rgba(238,228,212,.42); font-size: .52rem; text-align: right; }
+  .room-tableau-clubs > img { object-position: center 62%; }
+  .room-tableau-economics > img { object-position: center 56%; }
+  .room-tableau-map > img { object-position: center 58%; }
+
+  .ledger-progress { position: relative; height: 1.5rem; margin-bottom: 1.6rem; overflow: hidden; background: rgba(66,46,31,.08); }
+  .ledger-progress > span { position: absolute; inset: 0 auto 0 0; background: rgba(159,73,56,.22); transition: width .45s ease; }
+  .ledger-progress > b { position: relative; z-index: 1; display: block; padding: .35rem .5rem; color: #694f3a; font: .55rem var(--font-typewriter); letter-spacing: .08em; text-transform: uppercase; }
+  .ledger-controls > label > small { display: block; margin-bottom: .45rem; color: #9a4637; font: .52rem var(--font-typewriter); letter-spacing: .13em; }
+  .venue-ledger { transition: filter .45s ease, opacity .45s ease; }
+  .venue-ledger.is-veiled dl,
+  .venue-ledger.is-veiled .ledger-reflection,
+  .venue-ledger.is-veiled .experimental-nights { filter: blur(7px); opacity: .2; user-select: none; }
+  .ledger-veil { position: absolute; z-index: 4; inset: 5rem 1.5rem auto; display: grid; place-items: center; min-height: 15rem; padding: 2rem; color: #5c4432; text-align: center; border: 1px dashed rgba(84,60,41,.35); background: rgba(248,241,228,.72); }
+  .ledger-veil span { max-width: 24ch; font: italic 1.15rem/1.5 var(--font-serif); }
+
+  .club-image img { filter: saturate(.55) brightness(.52) contrast(1.18); }
+  .club-scene-jam-table .club-image::before,
+  .club-scene-handbills .club-image::before,
+  .club-scene-loft-mixer .club-image::before,
+  .club-scene-community-wall .club-image::before {
+    position: absolute;
+    z-index: 2;
+    right: 8%;
+    top: 12%;
+    color: var(--club-accent);
+    opacity: .68;
+    font: 500 clamp(2rem, 6vw, 5rem) var(--font-display);
+    letter-spacing: -.05em;
+  }
+  .club-scene-jam-table .club-image::before { content: "○  ○\A  ○  ○"; white-space: pre; }
+  .club-scene-handbills .club-image::before { content: "1957\A1959"; white-space: pre; transform: rotate(-4deg); }
+  .club-scene-loft-mixer .club-image::before { content: "¼  ½  ¾\A  1"; white-space: pre; }
+  .club-scene-community-wall .club-image::before { content: "✦—✦\A ╲│╱\A  ✦"; white-space: pre; }
+
+  .map-unavailable { position: absolute; z-index: 12; inset: 0; display: grid; place-content: center; gap: .6rem; padding: 2rem; color: #eadfce; text-align: center; background: radial-gradient(circle, rgba(52,92,86,.26), transparent 38%), linear-gradient(150deg, #0e0b09, #17110d); }
+  .map-unavailable span { color: #69a39b; font: .58rem var(--font-typewriter); letter-spacing: .17em; text-transform: uppercase; }
+  .map-unavailable b { font: 500 clamp(2rem, 5vw, 4.5rem)/.95 var(--font-display); }
+  .map-unavailable p { max-width: 37rem; color: #aa9b88; font-size: .82rem; line-height: 1.6; }
+  .map-scene-filter { border-radius: 0 !important; }
+
+  .room-departure {
+    position: relative;
+    z-index: 20;
+    display: grid;
+    place-items: center;
+    min-height: 62vh;
+    padding: 6rem 1.5rem;
+    text-align: center;
+    background: radial-gradient(circle at center, color-mix(in srgb, var(--room-accent) 8%, transparent), transparent 40%), #0b0908;
+  }
+  .room-departure p { margin-top: 1rem; color: var(--night-muted); font: italic 1.05rem var(--font-serif); }
+  .room-departure button { margin-top: 2rem; padding-bottom: .35rem; color: var(--night-paper); border-bottom: 1px solid var(--room-accent); font: .65rem var(--font-typewriter); letter-spacing: .1em; text-transform: uppercase; }
+  .room-departure button span { margin-left: .7rem; color: var(--room-accent); }
+
+  @media (max-width: 820px) {
+    .foyer-plan { grid-template-columns: 1fr; }
+    .foyer-plan-art { min-height: min(85vw, 29rem); }
+    .foyer-door-list { max-width: 42rem; width: 100%; margin: 0 auto; }
+  }
+
+  @media (max-width: 560px) {
+    .night-foyer { padding-top: 4rem; }
+    .foyer-plan-art { min-height: 18rem; }
+    .foyer-door-list button { grid-template-columns: 2rem 1fr; }
+    .foyer-door-action { grid-column: 2; }
+    .night-room-nav { grid-template-columns: 4rem 1fr 4rem; }
+    .night-room-nav > button { font-size: .48rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .foyer-room-shape,
+    .foyer-door-list li { transition: none !important; transform: none !important; }
+  }
+}

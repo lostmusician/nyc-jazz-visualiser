@@ -1,4 +1,5 @@
 import type { VenueFeature } from '../types';
+import { VILLAGE_PRESERVATION_VENUES } from './villagePreservationVenues';
 
 export const NYC_JAZZ_VENUES: VenueFeature[] = [
   // ── HARLEM RENAISSANCE & POST-WAR HARLEM ──────────────────────────
@@ -467,5 +468,6 @@ export const NYC_JAZZ_VENUES: VenueFeature[] = [
       quote: 'Founded by bassist Matthew Garrison as a 4,000-sq-ft haven for genre-defying creative experimentation.',
       notes: 'Industrial Gowanus space displaced when industrial properties were rezoned for high-density luxury residential.'
     }
-  }
+  },
+  ...VILLAGE_PRESERVATION_VENUES,
 ];

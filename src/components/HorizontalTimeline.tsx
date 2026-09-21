@@ -149,6 +149,8 @@ const AudioConductor: React.FC<AudioConductorProps> = ({ progress }) => {
     const handleStartEvent = () => void startAudio();
     window.addEventListener('start-immersive-audio', handleStartEvent);
     return () => window.removeEventListener('start-immersive-audio', handleStartEvent);
+    // This legacy event bridge intentionally binds once; audio refs provide current state.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => () => {
