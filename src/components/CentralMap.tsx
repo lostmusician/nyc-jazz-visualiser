@@ -38,13 +38,9 @@ export function CentralMap({ venues, decade, scene, hoveredVenueId, selectedVenu
 
   return (
     <section className="central-map" data-ui-layer aria-label={`New York jazz-club map in the ${decade}s`}>
-      <div className="map-heading">
-        <span>NYC / {decade}s</span>
-        <strong>THE NIGHT MAP</strong>
-        {decade < 1980 && <small>pre-1980 rent modeled from the 1980 census layer</small>}
-      </div>
       <div ref={containerRef} className="central-map-canvas" />
       <div className="map-glass" aria-hidden="true" />
+      {decade < 1980 && <small className="map-model-note">pre-1980 rent modeled from 1980 census data</small>}
       {!configured && (
         <div className="map-token-fallback" role="status">
           <span>NEW YORK</span>

@@ -4,7 +4,6 @@ export function DecadeTimeline({ value, onChange }: { value: Decade; onChange: (
   const index = DECADES.indexOf(value);
   return (
     <div className="decade-timeline" data-ui-layer>
-      <div className="timeline-heading"><span>Move through the city’s club ecology</span><strong>{value}s</strong></div>
       <input
         aria-label="Jazz-club decade"
         type="range"

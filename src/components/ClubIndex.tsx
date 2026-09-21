@@ -6,8 +6,8 @@ export function ClubIndex({ venues, onHover, onSelect }: {
   onSelect: (venueId: string) => void;
 }) {
   return (
-    <details className="club-index" data-ui-layer>
-      <summary>Club index <span>{venues.length}</span></summary>
+    <section className="club-index" aria-labelledby="club-index-heading">
+      <div className="club-index-heading" id="club-index-heading"><span>Club index</span><b>{venues.length}</b></div>
       <div className="club-index-list">
         {venues.length === 0 && <p>No featured clubs overlap this decade and scene.</p>}
         {venues.map((venue) => (
@@ -26,6 +26,6 @@ export function ClubIndex({ venues, onHover, onSelect }: {
           </button>
         ))}
       </div>
-    </details>
+    </section>
   );
 }
