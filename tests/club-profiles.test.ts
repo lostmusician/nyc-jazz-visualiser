@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
 import test from 'node:test';
-import { CLUB_PROFILES } from '../src/data/clubProfiles';
+import { CLUB_PROFILES, GALLERY_PROFILES } from '../src/data/clubProfiles';
 import { NYC_JAZZ_VENUES } from '../src/data/venues';
 
 test('launch collection contains 16 complete, uniquely linked profiles', () => {
@@ -16,6 +16,13 @@ test('launch collection contains 16 complete, uniquely linked profiles', () => {
     assert.ok(existsSync(`public${decodeURIComponent(profile.image)}`), profile.image);
     assert.ok(profile.tracks.length >= 1 && profile.tracks.length <= 3);
   }
+});
+
+test('all 42 sourced locations have distinct gallery records', () => {
+  assert.equal(GALLERY_PROFILES.length, 42);
+  assert.equal(new Set(GALLERY_PROFILES.map((profile) => profile.venueId)).size, 42);
+  assert.ok(GALLERY_PROFILES.every((profile) => profile.description.length > 40));
+  assert.ok(GALLERY_PROFILES.every((profile) => existsSync(`public${decodeURIComponent(profile.image)}`)));
 });
 
 test('every listening selection carries playback, evidence, and relationship metadata', () => {

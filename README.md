@@ -32,7 +32,7 @@ The production build regenerates `public/data/nyc_rent_history.geojson` from the
 - `src/infinite-canvas/` contains the adapted chunk-streaming WebGL gallery.
 - `src/components/CentralMap.tsx` and `src/hooks/useMapbox.ts` render the synchronized Mapbox venue and rent layers.
 - `src/data/venues.ts` and `src/data/villagePreservationVenues.ts` retain the 42 geographic source records.
-- `src/data/clubProfiles.ts` is a separate presentation layer for the 16 launch profiles and their listening research.
+- `src/data/clubProfiles.ts` gives all 42 sourced locations gallery cards while keeping 16 launch profiles as the richer listening-research tier.
 - `src/gallery/model.ts` owns decade overlap, lifecycle classification, and scene filtering.
 - `src/data/nhgis0001_csv/`, `src/data/nyct2010_26c/`, and `src/data/nyct2020_26c/` preserve the rent-generation inputs.
 

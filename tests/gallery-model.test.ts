@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { NYC_JAZZ_VENUES } from '../src/data/venues';
-import { FEATURED_VENUE_IDS } from '../src/data/clubProfiles';
+import { GALLERY_VENUE_IDS } from '../src/data/clubProfiles';
 import { filterGalleryVenues, overlapsDecade, statusForDecade } from '../src/gallery/model';
 
 const venue = (id: string) => {
@@ -29,10 +29,11 @@ test('lifecycle classification distinguishes future, active, and closed venues',
 });
 
 test('gallery filtering combines featured, decade, and scene constraints', () => {
-  const all1970s = filterGalleryVenues(NYC_JAZZ_VENUES, FEATURED_VENUE_IDS, 1970, 'all');
-  const lofts1970s = filterGalleryVenues(NYC_JAZZ_VENUES, FEATURED_VENUE_IDS, 1970, 'loft_jazz');
+  const all1970s = filterGalleryVenues(NYC_JAZZ_VENUES, GALLERY_VENUE_IDS, 1970, 'all');
+  const lofts1970s = filterGalleryVenues(NYC_JAZZ_VENUES, GALLERY_VENUE_IDS, 1970, 'loft_jazz');
   assert.ok(all1970s.length > lofts1970s.length);
+  assert.ok(all1970s.length >= 20, `expected a dense 1970s gallery, received ${all1970s.length} venues`);
   assert.ok(lofts1970s.length > 0);
   assert.ok(lofts1970s.every((item) => item.properties.scene_movement === 'loft_jazz'));
-  assert.ok(lofts1970s.every((item) => FEATURED_VENUE_IDS.has(item.properties.id)));
+  assert.ok(lofts1970s.every((item) => GALLERY_VENUE_IDS.has(item.properties.id)));
 });

@@ -2,7 +2,7 @@ import React from 'react';
 import { ClubDetail } from './components/ClubDetail';
 import { ClubIndex } from './components/ClubIndex';
 import { DecadeTimeline } from './components/DecadeTimeline';
-import { CLUB_PROFILE_BY_ID, FEATURED_VENUE_IDS } from './data/clubProfiles';
+import { GALLERY_PROFILE_BY_ID, GALLERY_VENUE_IDS } from './data/clubProfiles';
 import { NYC_JAZZ_VENUES } from './data/venues';
 import { filterGalleryVenues, overlapsDecade, SCENES, type Decade } from './gallery/model';
 import { InfiniteCanvas } from './infinite-canvas';
@@ -21,11 +21,11 @@ export const App = () => {
   const returnFocusRef = React.useRef<HTMLElement | null>(null);
 
   const galleryVenues = React.useMemo(
-    () => filterGalleryVenues(NYC_JAZZ_VENUES, FEATURED_VENUE_IDS, decade, scene),
+    () => filterGalleryVenues(NYC_JAZZ_VENUES, GALLERY_VENUE_IDS, decade, scene),
     [decade, scene],
   );
   const media = React.useMemo<ClubMediaItem[]>(() => galleryVenues.flatMap((venue) => {
-    const profile = CLUB_PROFILE_BY_ID.get(venue.properties.id);
+    const profile = GALLERY_PROFILE_BY_ID.get(venue.properties.id);
     return profile ? [{ venue, profile, width: 768, height: 1000 }] : [];
   }), [galleryVenues]);
   const selectedVenue = selectedVenueId
@@ -80,7 +80,7 @@ export const App = () => {
       </React.Suspense>
       <div id="club-index"><ClubIndex venues={galleryVenues} onHover={setHoveredVenueId} onSelect={openVenue} /></div>
       <DecadeTimeline value={decade} onChange={selectDecade} />
-      {selectedVenue && <ClubDetail venue={selectedVenue} profile={CLUB_PROFILE_BY_ID.get(selectedVenue.properties.id)} playingTrackId={playingTrackId} onPlayTrack={setPlayingTrackId} onClose={closeVenue} />}
+      {selectedVenue && <ClubDetail venue={selectedVenue} profile={GALLERY_PROFILE_BY_ID.get(selectedVenue.properties.id)} playingTrackId={playingTrackId} onPlayTrack={setPlayingTrackId} onClose={closeVenue} />}
     </main>
   );
 };

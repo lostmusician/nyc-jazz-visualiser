@@ -7,6 +7,13 @@ import type { ClubMediaItem } from './types';
 
 const textureCache = new Map<string, THREE.CanvasTexture>();
 const MAX_TEXTURE_CACHE = 64;
+const CARD_ACCENTS = ['#d7aa56', '#ba6542', '#7d9d8d', '#9b765c', '#b79968', '#8d6f78'] as const;
+
+const hashVenueId = (venueId: string) => {
+  let hash = 2166136261;
+  for (const character of venueId) hash = Math.imul(hash ^ character.charCodeAt(0), 16777619);
+  return hash >>> 0;
+};
 
 const wrapText = (context: CanvasRenderingContext2D, text: string, maxWidth: number) => {
   const words = text.split(' ');
@@ -27,6 +34,8 @@ const wrapText = (context: CanvasRenderingContext2D, text: string, maxWidth: num
 
 const paintCard = (context: CanvasRenderingContext2D, item: ClubMediaItem, image?: HTMLImageElement) => {
   const { venue, profile } = item;
+  const venueHash = hashVenueId(venue.properties.id);
+  const accent = CARD_ACCENTS[venueHash % CARD_ACCENTS.length];
   const width = 768;
   const height = 1000;
   context.clearRect(0, 0, width, height);
@@ -39,8 +48,14 @@ const paintCard = (context: CanvasRenderingContext2D, item: ClubMediaItem, image
     const drawWidth = image.naturalWidth * scale;
     const drawHeight = image.naturalHeight * scale;
     context.filter = 'sepia(.48) contrast(1.1) brightness(.78)';
-    context.drawImage(image, (width - drawWidth) / 2, (targetHeight - drawHeight) / 2, drawWidth, drawHeight);
+    const availableCrop = Math.max(0, drawWidth - width);
+    const cropBias = ((venueHash >>> 5) % 100) / 100;
+    context.drawImage(image, -availableCrop * cropBias, (targetHeight - drawHeight) / 2, drawWidth, drawHeight);
     context.filter = 'none';
+    context.fillStyle = `${accent}24`;
+    context.globalCompositeOperation = 'color';
+    context.fillRect(0, 0, width, targetHeight);
+    context.globalCompositeOperation = 'source-over';
     const fade = context.createLinearGradient(0, 390, 0, 700);
     fade.addColorStop(0, 'rgba(23,17,14,0)');
     fade.addColorStop(1, '#17110e');
@@ -54,10 +69,10 @@ const paintCard = (context: CanvasRenderingContext2D, item: ClubMediaItem, image
     context.fillRect(0, 0, width, 650);
   }
 
-  context.strokeStyle = '#d7aa56';
+  context.strokeStyle = accent;
   context.lineWidth = 8;
   context.strokeRect(22, 22, width - 44, height - 44);
-  context.fillStyle = '#d7aa56';
+  context.fillStyle = accent;
   context.font = '600 28px Arial';
   context.fillText(venue.properties.neighborhood.toUpperCase(), 62, 665);
 
@@ -70,7 +85,7 @@ const paintCard = (context: CanvasRenderingContext2D, item: ClubMediaItem, image
   context.font = '32px Arial';
   const years = `${venue.properties.open_year ?? 'Unknown'} — ${venue.properties.close_year ?? 'Present'}`;
   context.fillText(years, 62, 945);
-  context.fillStyle = '#d7aa56';
+  context.fillStyle = accent;
   context.beginPath();
   context.arc(690, 920, 27, 0, Math.PI * 2);
   context.fill();

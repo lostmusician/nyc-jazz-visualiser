@@ -1,4 +1,5 @@
 import type { ClubProfile } from '../gallery/model';
+import { NYC_JAZZ_VENUES } from './venues';
 
 const youtubeSearch = (query: string) => `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
 
@@ -89,3 +90,47 @@ export const CLUB_PROFILES: ClubProfile[] = [
 
 export const CLUB_PROFILE_BY_ID = new Map(CLUB_PROFILES.map((profile) => [profile.venueId, profile]));
 export const FEATURED_VENUE_IDS = new Set(CLUB_PROFILES.map((profile) => profile.venueId));
+
+const STUDY_IMAGES = [
+  '/images/jazz-club-scenes-1940s-01.jpg',
+  '/images/jazz-club-scenes-1940s-02.jpg',
+  '/images/jazz-club-scenes-1940s-03.jpg',
+  '/images/jazz-club-scenes-1940s-08.jpg',
+  '/images/jazz-club-scenes-1940s-09.jpg',
+  '/images/jazz-club-scenes-1940s-12.jpg',
+  '/images/Celebrated%20Female%20Jazz%20Artists%20Taken%20by%20William%20P.%20Gottlieb%20(5).jpg',
+  '/images/Celebrated%20Female%20Jazz%20Artists%20Taken%20by%20William%20P.%20Gottlieb%20(8).jpg',
+  '/images/Celebrated%20Female%20Jazz%20Artists%20Taken%20by%20William%20P.%20Gottlieb%20(16).jpg',
+  '/images/Celebrated%20Female%20Jazz%20Artists%20Taken%20by%20William%20P.%20Gottlieb%20(23).jpg',
+  '/images/Celebrated%20Female%20Jazz%20Artists%20Taken%20by%20William%20P.%20Gottlieb%20(24).jpg',
+  '/images/Celebrated%20Female%20Jazz%20Artists%20Taken%20by%20William%20P.%20Gottlieb%20(29).jpg',
+  '/images/Celebrated%20Female%20Jazz%20Artists%20Taken%20by%20William%20P.%20Gottlieb%20(32).jpg',
+] as const;
+
+const imageIndexForVenue = (venueId: string) => {
+  let hash = 0;
+  for (const character of venueId) hash = (hash * 31 + character.charCodeAt(0)) >>> 0;
+  return hash % STUDY_IMAGES.length;
+};
+
+const fallbackProfile = (venue: (typeof NYC_JAZZ_VENUES)[number]): ClubProfile => {
+  const { properties } = venue;
+  const kind = properties.venue_type.replace(/_/g, ' ');
+  const years = `${properties.open_year ?? 'an unknown date'} to ${properties.close_year ?? 'the present'}`;
+  return {
+    venueId: properties.id,
+    description: properties.quote
+      ?? `${properties.name} was a ${kind} at ${properties.address} in ${properties.neighborhood}, documented as operating from ${years}.`,
+    image: STUDY_IMAGES[imageIndexForVenue(properties.id)],
+    imageAlt: `Archival jazz performance study image representing the era of ${properties.name}.`,
+    imageCredit: 'William P. Gottlieb Collection archival study image; not presented as a photograph of this venue.',
+    imageSourceUrl: 'https://www.loc.gov/collections/william-p-gottlieb-jazz-photos/',
+    tracks: [],
+  };
+};
+
+/** All sourced venues receive a card; the 16 records above retain richer research. */
+export const GALLERY_PROFILES: ClubProfile[] = NYC_JAZZ_VENUES.map((venue) =>
+  CLUB_PROFILE_BY_ID.get(venue.properties.id) ?? fallbackProfile(venue));
+export const GALLERY_PROFILE_BY_ID = new Map(GALLERY_PROFILES.map((profile) => [profile.venueId, profile]));
+export const GALLERY_VENUE_IDS = new Set(GALLERY_PROFILES.map((profile) => profile.venueId));
