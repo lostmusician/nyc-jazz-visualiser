@@ -31,8 +31,8 @@ const getChoroplethPaint = (year: number) => {
     ];
   }
   return ['interpolate', ['linear'], valueExpression,
-    0, 'rgba(0,0,0,0)', 100, '#eee5d2', 250, '#d9bd82', 500, '#bd854d',
-    850, '#a35237', 1400, '#813525', 2200, '#572219', 3200, '#25100d',
+    0, 'rgba(11,8,7,0)', 100, '#211814', 250, '#35241d', 500, '#513124',
+    850, '#74452d', 1400, '#9a6138', 2200, '#c58b4d', 3200, '#edc273',
   ] as mapboxgl.Expression;
 };
 
@@ -91,7 +91,7 @@ export function useMapbox({
     mapboxgl.accessToken = token;
     const map = new mapboxgl.Map({
       container: containerRef.current,
-      style: 'mapbox://styles/mapbox/light-v11',
+      style: 'mapbox://styles/mapbox/dark-v11',
       center: initialCamera.center,
       zoom: initialCamera.zoom,
       pitch: initialCamera.pitch ?? 0,
@@ -106,11 +106,11 @@ export function useMapbox({
         map.addSource('rent-data', { type: 'geojson', data: choroplethDataPath, generateId: true });
         map.addLayer({
           id: 'rent-choropleth', type: 'fill', source: 'rent-data',
-          paint: { 'fill-color': getChoroplethPaint(yearRef.current), 'fill-opacity': 0.7, 'fill-opacity-transition': { duration: 700 } },
+          paint: { 'fill-color': getChoroplethPaint(yearRef.current), 'fill-opacity': 0.64, 'fill-opacity-transition': { duration: 700 } },
         }, firstSymbol);
         map.addLayer({
           id: 'rent-lines', type: 'line', source: 'rent-data',
-          paint: { 'line-color': '#3a241a', 'line-width': 0.45, 'line-opacity': 0.2 },
+          paint: { 'line-color': '#d0a56d', 'line-width': 0.45, 'line-opacity': 0.16 },
         }, firstSymbol);
       }
       map.addSource('jazz-venues', {
@@ -121,7 +121,7 @@ export function useMapbox({
         id: 'jazz-venue-halo', type: 'circle', source: 'jazz-venues',
         paint: {
           'circle-radius': ['case', ['boolean', ['get', 'highlighted'], false], 18, ['==', ['get', 'era_status'], 'active'], 10, 6],
-          'circle-color': ['case', ['boolean', ['get', 'highlighted'], false], '#ffd785', ['==', ['get', 'era_status'], 'active'], '#d34c32', ['==', ['get', 'era_status'], 'closed'], '#4a3027', '#a99076'],
+          'circle-color': ['case', ['boolean', ['get', 'highlighted'], false], '#fff0b5', ['==', ['get', 'era_status'], 'active'], '#e39a46', ['==', ['get', 'era_status'], 'closed'], '#55392f', '#84705f'],
           'circle-opacity': ['case', ['!', ['boolean', ['get', 'scene_match'], true]], 0.07, ['==', ['get', 'era_status'], 'future'], 0.15, 0.3],
           'circle-blur': 0.35,
         },
@@ -130,16 +130,16 @@ export function useMapbox({
         id: 'jazz-venue-pin', type: 'circle', source: 'jazz-venues',
         paint: {
           'circle-radius': ['case', ['boolean', ['get', 'highlighted'], false], 7, 4.5],
-          'circle-color': ['case', ['boolean', ['get', 'highlighted'], false], '#ffd785', ['==', ['get', 'era_status'], 'active'], '#bf3f2b', ['==', ['get', 'era_status'], 'closed'], '#35231d', '#796b5f'],
+          'circle-color': ['case', ['boolean', ['get', 'highlighted'], false], '#fff0b5', ['==', ['get', 'era_status'], 'active'], '#e7a04d', ['==', ['get', 'era_status'], 'closed'], '#4b342c', '#786859'],
           'circle-stroke-width': 1.4,
-          'circle-stroke-color': '#fff2d8',
+          'circle-stroke-color': '#f2d3a0',
           'circle-opacity': ['case', ['!', ['boolean', ['get', 'scene_match'], true]], 0.16, ['==', ['get', 'era_status'], 'future'], 0.28, 1],
         },
       });
       map.addLayer({
         id: 'jazz-venue-label', type: 'symbol', source: 'jazz-venues', minzoom: 12,
         layout: { 'text-field': ['get', 'display_label'], 'text-size': 10, 'text-offset': [0, 1.2], 'text-anchor': 'top', 'text-optional': true },
-        paint: { 'text-color': '#251a15', 'text-halo-color': '#f6ecd8', 'text-halo-width': 2 },
+        paint: { 'text-color': '#ead4b0', 'text-halo-color': '#0b0807', 'text-halo-width': 2 },
       });
       map.on('click', 'jazz-venue-pin', (event) => {
         const venueId = String(event.features?.[0]?.properties?.venue_id ?? '');
