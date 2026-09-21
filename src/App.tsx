@@ -17,7 +17,6 @@ export const App = () => {
   const [hoveredVenueId, setHoveredVenueId] = React.useState<string | null>(null);
   const [selectedVenueId, setSelectedVenueId] = React.useState<string | null>(null);
   const [playingTrackId, setPlayingTrackId] = React.useState<string | null>(null);
-  const [textureProgress, setTextureProgress] = React.useState(0);
   const returnFocusRef = React.useRef<HTMLElement | null>(null);
 
   const galleryVenues = React.useMemo(
@@ -66,11 +65,10 @@ export const App = () => {
   return (
     <main className="gallery-app">
       <a className="skip-link" href="#club-index">Skip to club index</a>
-      <InfiniteCanvas media={media} hoveredVenueId={hoveredVenueId} onHoverVenue={setHoveredVenueId} onSelectVenue={openVenue} onTextureProgress={setTextureProgress} />
+      <InfiniteCanvas media={media} hoveredVenueId={hoveredVenueId} onHoverVenue={setHoveredVenueId} onSelectVenue={openVenue} />
       <div className="atmosphere" aria-hidden="true" />
       <header className="gallery-header" data-ui-layer>
         <div><p>New York City · 1950–2029</p><h1>Rooms That Held the Night</h1></div>
-        <div className="loading-readout" aria-live="polite"><span style={{ width: `${textureProgress}%` }} /> archive {textureProgress}%</div>
       </header>
       <nav className="scene-nav" data-ui-layer aria-label="Jazz scenes">
         {SCENES.map((item) => <button key={item.id} type="button" className={scene === item.id ? 'active' : ''} style={{ '--scene-accent': item.accent } as React.CSSProperties} onClick={() => selectScene(item.id)}><i />{item.shortLabel}</button>)}

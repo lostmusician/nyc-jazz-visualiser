@@ -7,7 +7,7 @@ test.beforeEach(async ({ page }, testInfo) => {
 });
 
 test('decade and scene controls filter the accessible club index', async ({ page }) => {
-  await expect(page.locator('.loading-readout')).toHaveText(/archive 100%/);
+  await expect(page.locator('.loading-readout')).toHaveCount(0);
   const index = page.locator('.club-index');
   await index.locator('summary').click();
   await expect(index.locator('.club-index-list button')).not.toHaveCount(0);
