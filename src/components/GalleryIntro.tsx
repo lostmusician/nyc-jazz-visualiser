@@ -19,10 +19,34 @@ export function GalleryIntro({
   const frameRef = React.useRef<number | null>(null);
   const progressPathRef = React.useRef<SVGPathElement>(null);
   const clickAudioRef = React.useRef<HTMLAudioElement>(null);
+  const clickAudioPoolRef = React.useRef<HTMLAudioElement[]>([]);
+  const clickAudioIndexRef = React.useRef(0);
   const [pathLength, setPathLength] = React.useState(1);
 
   React.useLayoutEffect(() => {
     setPathLength(progressPathRef.current?.getTotalLength() ?? 1);
+  }, []);
+
+  React.useEffect(() => {
+    const seed = clickAudioRef.current;
+    if (!seed) return;
+    const pool = [seed, ...Array.from({ length: 5 }, () => {
+      const audio = new Audio('/audio/spacebar-click.mp3');
+      audio.preload = 'auto';
+      audio.load();
+      return audio;
+    })];
+    clickAudioPoolRef.current = pool;
+    return () => {
+      pool.forEach((audio, index) => {
+        audio.pause();
+        if (index > 0) {
+          audio.removeAttribute('src');
+          audio.load();
+        }
+      });
+      clickAudioPoolRef.current = [];
+    };
   }, []);
 
   const clearFrame = React.useCallback(() => {
@@ -37,7 +61,10 @@ export function GalleryIntro({
     armedRef.current = false;
     startedAtRef.current = performance.now();
     setProgress(0);
-    const clickAudio = clickAudioRef.current;
+    const pool = clickAudioPoolRef.current;
+    const clickAudio = pool.length
+      ? pool[clickAudioIndexRef.current++ % pool.length]
+      : clickAudioRef.current;
     if (clickAudio) {
       clickAudio.pause();
       clickAudio.currentTime = 0;

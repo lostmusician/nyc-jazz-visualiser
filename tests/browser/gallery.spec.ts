@@ -15,13 +15,24 @@ const enterGallery = async (page: import('@playwright/test').Page, keepTour = fa
 };
 
 test.beforeEach(async ({ page }, testInfo) => {
+  if (testInfo.title.includes('rapid successive presses')) {
+    await page.addInitScript(() => {
+      const trackedWindow = window as Window & { __spacebarPlayCalls?: number };
+      trackedWindow.__spacebarPlayCalls = 0;
+      const originalPlay = HTMLMediaElement.prototype.play;
+      HTMLMediaElement.prototype.play = function play() {
+        if (this.src.includes('spacebar-click.mp3')) trackedWindow.__spacebarPlayCalls = (trackedWindow.__spacebarPlayCalls ?? 0) + 1;
+        return originalPlay.call(this);
+      };
+    });
+  }
   if (testInfo.title.includes('audio is unavailable')) {
     await page.route('**/audio/skating-in-central-park.mp3', (route) => route.abort());
   }
   const path = testInfo.title.includes('WebGL is unavailable') ? '/?webgl=off' : '/';
   await page.goto(path);
   await expect(page.getByRole('button', { name: /Press and hold for four seconds/ })).toBeVisible();
-  const startsAtEntrance = ['early release', 'keyboard hold', 'audio is unavailable'].some((phrase) => testInfo.title.includes(phrase));
+  const startsAtEntrance = ['early release', 'keyboard hold', 'audio is unavailable', 'rapid successive presses'].some((phrase) => testInfo.title.includes(phrase));
   if (!startsAtEntrance) await enterGallery(page, testInfo.title.includes('guided tutorial'));
 });
 
@@ -48,6 +59,18 @@ test('keyboard hold completes the gallery transition', async ({ page }) => {
   await page.waitForTimeout(4100);
   await page.keyboard.up('Enter');
   await expect(page.locator('.gallery-app')).toBeVisible();
+});
+
+test('rapid successive presses replay the tactile Spacebar sound', async ({ page }) => {
+  const enter = page.getByRole('button', { name: /Press and hold for four seconds/ });
+  await enter.hover();
+  for (let press = 0; press < 4; press += 1) {
+    await page.mouse.down();
+    await page.waitForTimeout(45);
+    await page.mouse.up();
+    await page.waitForTimeout(20);
+  }
+  await expect.poll(() => page.evaluate(() => (window as Window & { __spacebarPlayCalls?: number }).__spacebarPlayCalls ?? 0)).toBe(4);
 });
 
 test('hold-to-enter remains available when audio is unavailable', async ({ page }) => {
@@ -123,14 +146,17 @@ test('soundtrack control mutes and resumes the looping gallery audio', async ({ 
   const mute = page.getByRole('button', { name: 'Mute gallery soundtrack' });
   await expect(mute).toBeVisible();
   await expect(page.locator('.vinyl-disc')).toHaveCSS('animation-name', 'record-spin');
+  await expect(page.locator('.vinyl-disc')).toHaveCSS('animation-play-state', 'running');
   await expect(page.locator('.tonearm')).toHaveCSS('animation-name', 'none');
   await mute.click();
   const play = page.getByRole('button', { name: 'Play gallery soundtrack' });
   await expect(play).toBeVisible();
-  await expect(page.locator('.vinyl-disc')).toHaveCSS('animation-name', 'none');
+  await expect(page.locator('.vinyl-disc')).toHaveCSS('animation-name', 'record-spin');
+  await expect(page.locator('.vinyl-disc')).toHaveCSS('animation-play-state', 'paused');
   await expect(page.locator('.tonearm')).not.toHaveCSS('transform', 'none');
   await play.click();
   await expect(page.getByRole('button', { name: 'Mute gallery soundtrack' })).toBeVisible();
+  await expect(page.locator('.vinyl-disc')).toHaveCSS('animation-play-state', 'running');
 });
 
 test('canvas accepts keyboard navigation and the layout does not overflow', async ({ page }) => {

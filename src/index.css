@@ -72,7 +72,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, input:focus-visibl
 .soundtrack-toggle { position: absolute; z-index: 19; top: 1rem; right: 4.7rem; width: 3rem; height: 3rem; display: grid; place-items: center; padding: 0; color: #d8c3a0; border: 1px solid rgba(223,188,125,.18); border-radius: 50%; background: rgba(17,12,10,.34); backdrop-filter: blur(13px); cursor: pointer; }
 .soundtrack-toggle:hover, .soundtrack-toggle:focus-visible { color: #ffe3a3; border-color: rgba(237,198,125,.48); background: rgba(24,16,12,.72); }
 .turntable-icon { width: 2.25rem; height: 2.25rem; overflow: visible; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
-.vinyl-disc { transform-origin: 29px 32px; }
+.vinyl-disc { transform-origin: 29px 32px; animation: record-spin 2.8s linear infinite; animation-play-state: paused; will-change: transform; }
 .vinyl-edge { fill: rgba(7,5,4,.72); stroke-width: 1.8; }
 .vinyl-grooves { stroke: rgba(218,185,132,.68); stroke-width: 1.15; }
 .vinyl-label { fill: rgba(190,133,69,.2); stroke-width: 1.4; }
@@ -80,7 +80,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, input:focus-visibl
 .tonearm { transform: rotate(-23deg); transform-origin: 53px 12px; transition: transform .42s cubic-bezier(.2,.8,.2,1); }
 .tonearm path:first-of-type { stroke-width: 2; }
 .tonearm-pivot, .tonearm-head { fill: currentColor; stroke: #17100c; stroke-width: 1; }
-.soundtrack-toggle.is-playing .vinyl-disc { animation: record-spin 2.8s linear infinite; }
+.soundtrack-toggle.is-playing .vinyl-disc { animation-play-state: running; }
 .soundtrack-toggle.is-playing .tonearm { transform: rotate(0deg); }
 .tour-toggle { position: absolute; z-index: 19; top: 1rem; right: 8.4rem; width: 3rem; height: 3rem; padding: 0; color: #bca789; border: 1px solid rgba(223,188,125,.18); border-radius: 50%; background: rgba(17,12,10,.34); backdrop-filter: blur(13px); cursor: pointer; font: 1rem 'Instrument Serif', serif; }
 .tour-toggle:hover, .tour-toggle:focus-visible { color: #ffe3a3; border-color: rgba(237,198,125,.48); background: rgba(24,16,12,.72); }
