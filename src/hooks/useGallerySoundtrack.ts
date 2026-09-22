@@ -1,10 +1,11 @@
 import React from 'react';
-import { shouldSoundtrackBeAudible } from '../gallery/entry-state';
+import { getTurntableSpeed, shouldSoundtrackBeAudible } from '../gallery/entry-state';
 
 const SOUNDTRACK_URL = '/audio/skating-in-central-park.mp3';
 const WORKLET_URL = '/audio/pitch-dropper-processor.js';
 const FULL_VOLUME = 0.72;
 const FADE_SECONDS = 0.55;
+const SPIN_SECONDS = 1.6;
 
 type SoundtrackStatus = 'idle' | 'loading' | 'playing' | 'dropping' | 'paused' | 'error';
 
@@ -25,7 +26,7 @@ export function useGallerySoundtrack() {
   const pauseTimerRef = React.useRef<number | null>(null);
   const manualMutedRef = React.useRef(false);
   const recordPausedRef = React.useRef(false);
-  const enteredRef = React.useRef(false);
+  const introStartedRef = React.useRef(false);
   const [status, setStatus] = React.useState<SoundtrackStatus>('idle');
   const [manualMuted, setManualMuted] = React.useState(false);
 
@@ -43,12 +44,12 @@ export function useGallerySoundtrack() {
       contextRef.current = context;
       await context.audioWorklet.addModule(WORKLET_URL);
     }
-    if (context.state === 'suspended') await context.resume();
     if (!bufferRef.current) {
       const response = await fetch(SOUNDTRACK_URL);
       if (!response.ok) throw new Error(`Soundtrack request failed: ${response.status}`);
       bufferRef.current = await context.decodeAudioData(await response.arrayBuffer());
     }
+    if (context.state === 'suspended') void context.resume().catch(() => undefined);
     return context;
   }, []);
 
@@ -71,8 +72,12 @@ export function useGallerySoundtrack() {
       if (!buffer) return false;
       const node = new AudioWorkletNode(context, 'pitch-dropper-processor', { parameterData: { speed: 1 } });
       const gain = context.createGain();
-      gain.gain.setValueAtTime(0.0001, context.currentTime);
-      gain.gain.exponentialRampToValueAtTime(FULL_VOLUME, context.currentTime + fadeSeconds);
+      if (fadeSeconds > 0) {
+        gain.gain.setValueAtTime(0.0001, context.currentTime);
+        gain.gain.exponentialRampToValueAtTime(FULL_VOLUME, context.currentTime + fadeSeconds);
+      } else {
+        gain.gain.setValueAtTime(FULL_VOLUME, context.currentTime);
+      }
       const left = new Float32Array(buffer.getChannelData(0));
       const right = new Float32Array(buffer.getChannelData(Math.min(1, buffer.numberOfChannels - 1)));
       node.port.postMessage({ leftBuffer: left.buffer, rightBuffer: right.buffer }, [left.buffer, right.buffer]);
@@ -88,13 +93,30 @@ export function useGallerySoundtrack() {
     }
   }, [clearAutomation, ensureContext, stopNode]);
 
+  const startIntro = React.useCallback(() => {
+    if (introStartedRef.current) return;
+    introStartedRef.current = true;
+    void startFresh(0);
+  }, [startFresh]);
+
   const beginHold = React.useCallback(() => {
-    enteredRef.current = false;
     recordPausedRef.current = false;
     manualMutedRef.current = false;
     setManualMuted(false);
-    void startFresh(4);
-  }, [startFresh]);
+    const context = contextRef.current;
+    const node = nodeRef.current;
+    const gain = gainRef.current;
+    const speed = node?.parameters.get('speed');
+    if (!context || !node || !gain || !speed) {
+      void startFresh(0);
+      return;
+    }
+    clearAutomation();
+    speed.setValueAtTime(1, context.currentTime);
+    gain.gain.setValueAtTime(FULL_VOLUME, context.currentTime);
+    setStatus('playing');
+    if (context.state === 'suspended') void context.resume().catch(() => undefined);
+  }, [clearAutomation, startFresh]);
 
   const abortHold = React.useCallback(() => {
     const context = contextRef.current;
@@ -124,19 +146,18 @@ export function useGallerySoundtrack() {
   }, [clearAutomation, stopNode]);
 
   const continueIntoGallery = React.useCallback(() => {
-    enteredRef.current = true;
     const context = contextRef.current;
     const gain = gainRef.current;
-    if (context && gain && !manualMutedRef.current) rampParam(gain.gain, context, FULL_VOLUME, 0.4);
+    if (context && gain && !manualMutedRef.current) gain.gain.setValueAtTime(FULL_VOLUME, context.currentTime);
   }, []);
 
-  const applyPauseState = React.useCallback((paused: boolean) => {
+  const applyRecordPauseState = React.useCallback((paused: boolean) => {
     const context = contextRef.current;
     const node = nodeRef.current;
     const gain = gainRef.current;
     const speed = node?.parameters.get('speed');
     if (!context || !gain || !speed) return;
-    if (pauseTimerRef.current !== null) window.clearTimeout(pauseTimerRef.current);
+    clearAutomation();
     if (paused) {
       rampParam(gain.gain, context, 0.0001);
       pauseTimerRef.current = window.setTimeout(() => {
@@ -148,29 +169,52 @@ export function useGallerySoundtrack() {
       rampParam(gain.gain, context, FULL_VOLUME);
       setStatus('playing');
     }
-  }, []);
+  }, [clearAutomation]);
+
+  const applyManualMuteState = React.useCallback((muted: boolean) => {
+    const context = contextRef.current;
+    const node = nodeRef.current;
+    const gain = gainRef.current;
+    const speed = node?.parameters.get('speed');
+    if (!context || !gain || !speed) return;
+    clearAutomation();
+    if (context.state === 'suspended') void context.resume().catch(() => undefined);
+    const startedAt = performance.now();
+    const fromSpeed = speed.value;
+    const targetSpeed = muted ? 0 : 1;
+    setStatus(muted ? 'dropping' : 'playing');
+    const tick = (now: number) => {
+      const progress = Math.min((now - startedAt) / (SPIN_SECONDS * 1000), 1);
+      const nextSpeed = getTurntableSpeed(fromSpeed, targetSpeed, progress);
+      speed.setValueAtTime(nextSpeed, context.currentTime);
+      gain.gain.setValueAtTime(Math.max(0.0001, FULL_VOLUME * nextSpeed), context.currentTime);
+      if (progress < 1) dropFrameRef.current = requestAnimationFrame(tick);
+      else setStatus(muted ? 'paused' : 'playing');
+    };
+    dropFrameRef.current = requestAnimationFrame(tick);
+  }, [clearAutomation]);
 
   const toggleMuted = React.useCallback(() => {
     const next = !manualMutedRef.current;
     manualMutedRef.current = next;
     setManualMuted(next);
-    if (!recordPausedRef.current) applyPauseState(next);
-  }, [applyPauseState]);
+    if (!recordPausedRef.current) applyManualMuteState(next);
+  }, [applyManualMuteState]);
 
   const pauseForRecord = React.useCallback(() => {
     recordPausedRef.current = true;
-    applyPauseState(true);
-  }, [applyPauseState]);
+    applyRecordPauseState(true);
+  }, [applyRecordPauseState]);
 
   const resumeAfterRecord = React.useCallback(() => {
     recordPausedRef.current = false;
-    if (!manualMutedRef.current) applyPauseState(false);
-  }, [applyPauseState]);
+    if (!manualMutedRef.current) applyRecordPauseState(false);
+  }, [applyRecordPauseState]);
 
   React.useEffect(() => {
     const onVisibilityChange = () => {
       const context = contextRef.current;
-      if (!context || !enteredRef.current) return;
+      if (!context) return;
       if (document.hidden) void context.suspend();
       else if (!manualMutedRef.current && !recordPausedRef.current) void context.resume();
     };
@@ -189,6 +233,7 @@ export function useGallerySoundtrack() {
     status,
     manualMuted,
     isAudible: shouldSoundtrackBeAudible({ status, manualMuted, recordPaused: recordPausedRef.current, pageHidden: document.hidden }),
+    startIntro,
     beginHold,
     abortHold,
     continueIntoGallery,

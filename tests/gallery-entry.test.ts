@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { getHoldProgress, getHoldReleaseOutcome, shouldSoundtrackBeAudible, wrapLoopCursor } from '../src/gallery/entry-state';
+import { getHoldProgress, getHoldReleaseOutcome, getTurntableSpeed, shouldSoundtrackBeAudible, wrapLoopCursor } from '../src/gallery/entry-state';
 
 test('four-second hold progress clamps and distinguishes an early release', () => {
   assert.equal(getHoldProgress(-100), 0);
@@ -23,4 +23,13 @@ test('soundtrack cursor wraps rather than ending at the final sample', () => {
   assert.equal(wrapLoopCursor(25, 100), 25);
   assert.equal(wrapLoopCursor(100, 100), 0);
   assert.equal(wrapLoopCursor(127, 100), 27);
+});
+
+test('turntable speed eases down to silence and back up to full speed', () => {
+  assert.equal(getTurntableSpeed(1, 0, 0), 1);
+  assert.equal(getTurntableSpeed(1, 0, 1), 0);
+  assert.equal(getTurntableSpeed(0, 1, 0), 0);
+  assert.equal(getTurntableSpeed(0, 1, 1), 1);
+  assert.ok(getTurntableSpeed(1, 0, 0.5) < 0.5);
+  assert.ok(getTurntableSpeed(0, 1, 0.5) > 0.5);
 });

@@ -31,6 +31,7 @@ export const App = () => {
   const {
     status: soundtrackStatus,
     isAudible: soundtrackAudible,
+    startIntro,
     beginHold,
     abortHold,
     continueIntoGallery,
@@ -38,6 +39,8 @@ export const App = () => {
     pauseForRecord,
     resumeAfterRecord,
   } = useGallerySoundtrack();
+
+  React.useEffect(() => startIntro(), [startIntro]);
 
   const galleryVenues = React.useMemo(
     () => filterGalleryVenues(NYC_JAZZ_VENUES, GALLERY_VENUE_IDS, decade, scene),
