@@ -71,6 +71,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, input:focus-visibl
 .browser-toggle span { position: absolute; right: -.15rem; top: -.15rem; min-width: 1.15rem; height: 1.15rem; display: grid; place-items: center; padding: 0 .2rem; color: #1a100b; border-radius: 1rem; background: #d4a354; font: .46rem 'DM Mono', monospace; }
 .soundtrack-toggle { position: absolute; z-index: 19; top: 1rem; right: 4.7rem; width: 3rem; height: 3rem; display: grid; place-items: center; padding: 0; color: #d8c3a0; border: 1px solid rgba(223,188,125,.18); border-radius: 50%; background: rgba(17,12,10,.34); backdrop-filter: blur(13px); cursor: pointer; }
 .soundtrack-toggle:hover, .soundtrack-toggle:focus-visible { color: #ffe3a3; border-color: rgba(237,198,125,.48); background: rgba(24,16,12,.72); }
+.soundtrack-toggle:hover .turntable-icon, .soundtrack-toggle:focus-visible .turntable-icon { filter: drop-shadow(0 0 6px rgba(255,211,139,.38)); }
 .turntable-icon { width: 2.25rem; height: 2.25rem; overflow: visible; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
 .vinyl-disc { transform-origin: 29px 32px; animation: record-spin 2.8s linear infinite; animation-play-state: paused; will-change: transform; }
 .vinyl-edge { fill: rgba(7,5,4,.72); stroke-width: 1.8; }
@@ -81,6 +82,8 @@ button:focus-visible, a:focus-visible, summary:focus-visible, input:focus-visibl
 .tonearm path:first-of-type { stroke-width: 2; }
 .tonearm-pivot, .tonearm-head { fill: currentColor; stroke: #17100c; stroke-width: 1; }
 .soundtrack-toggle.is-playing .vinyl-disc { animation-play-state: running; }
+.soundtrack-toggle.is-playing:hover .vinyl-disc { animation-play-state: running; }
+.soundtrack-toggle:not(.is-playing):hover .vinyl-disc { animation-play-state: paused; }
 .soundtrack-toggle.is-playing .tonearm { transform: rotate(0deg); }
 .tour-toggle { position: absolute; z-index: 19; top: 1rem; right: 8.4rem; width: 3rem; height: 3rem; padding: 0; color: #bca789; border: 1px solid rgba(223,188,125,.18); border-radius: 50%; background: rgba(17,12,10,.34); backdrop-filter: blur(13px); cursor: pointer; font: 1rem 'Instrument Serif', serif; }
 .tour-toggle:hover, .tour-toggle:focus-visible { color: #ffe3a3; border-color: rgba(237,198,125,.48); background: rgba(24,16,12,.72); }

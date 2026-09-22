@@ -148,12 +148,17 @@ test('soundtrack control mutes and resumes the looping gallery audio', async ({ 
   await expect(page.locator('.vinyl-disc')).toHaveCSS('animation-name', 'record-spin');
   await expect(page.locator('.vinyl-disc')).toHaveCSS('animation-play-state', 'running');
   await expect(page.locator('.tonearm')).toHaveCSS('animation-name', 'none');
+  await mute.hover();
+  await expect(page.locator('.vinyl-disc')).toHaveCSS('animation-play-state', 'running');
   await mute.click();
   const play = page.getByRole('button', { name: 'Play gallery soundtrack' });
   await expect(play).toBeVisible();
   await expect(page.locator('.vinyl-disc')).toHaveCSS('animation-name', 'record-spin');
   await expect(page.locator('.vinyl-disc')).toHaveCSS('animation-play-state', 'paused');
   await expect(page.locator('.tonearm')).not.toHaveCSS('transform', 'none');
+  await page.mouse.move(0, page.viewportSize()!.height / 2);
+  await play.hover();
+  await expect(page.locator('.vinyl-disc')).toHaveCSS('animation-play-state', 'paused');
   await play.click();
   await expect(page.getByRole('button', { name: 'Mute gallery soundtrack' })).toBeVisible();
   await expect(page.locator('.vinyl-disc')).toHaveCSS('animation-play-state', 'running');

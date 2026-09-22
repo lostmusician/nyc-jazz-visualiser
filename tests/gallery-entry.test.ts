@@ -32,4 +32,6 @@ test('turntable speed eases down to silence and back up to full speed', () => {
   assert.equal(getTurntableSpeed(0, 1, 1), 1);
   assert.ok(getTurntableSpeed(1, 0, 0.5) < 0.5);
   assert.ok(getTurntableSpeed(0, 1, 0.5) > 0.5);
+  const partiallyCooled = getTurntableSpeed(1, 0, 0.4);
+  assert.ok(getTurntableSpeed(partiallyCooled, 1, 0.25) > partiallyCooled);
 });

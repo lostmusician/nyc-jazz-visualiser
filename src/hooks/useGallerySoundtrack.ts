@@ -6,6 +6,7 @@ const WORKLET_URL = '/audio/pitch-dropper-processor.js';
 const FULL_VOLUME = 0.72;
 const FADE_SECONDS = 0.55;
 const SPIN_SECONDS = 1.6;
+const HOLD_RECOVERY_SECONDS = 0.9;
 
 type SoundtrackStatus = 'idle' | 'loading' | 'playing' | 'dropping' | 'paused' | 'error';
 
@@ -27,6 +28,7 @@ export function useGallerySoundtrack() {
   const manualMutedRef = React.useRef(false);
   const recordPausedRef = React.useRef(false);
   const introStartedRef = React.useRef(false);
+  const playbackSpeedRef = React.useRef(1);
   const [status, setStatus] = React.useState<SoundtrackStatus>('idle');
   const [manualMuted, setManualMuted] = React.useState(false);
 
@@ -84,6 +86,7 @@ export function useGallerySoundtrack() {
       node.connect(gain).connect(context.destination);
       nodeRef.current = node;
       gainRef.current = gain;
+      playbackSpeedRef.current = 1;
       setStatus('playing');
       return true;
     } catch (error) {
@@ -111,11 +114,23 @@ export function useGallerySoundtrack() {
       void startFresh(0);
       return;
     }
+    const generation = ++generationRef.current;
     clearAutomation();
-    speed.setValueAtTime(1, context.currentTime);
     gain.gain.setValueAtTime(FULL_VOLUME, context.currentTime);
     setStatus('playing');
     if (context.state === 'suspended') void context.resume().catch(() => undefined);
+    const startedAt = performance.now();
+    const fromSpeed = playbackSpeedRef.current;
+    const duration = Math.max(0.12, HOLD_RECOVERY_SECONDS * (1 - fromSpeed));
+    const tick = (now: number) => {
+      if (generation !== generationRef.current) return;
+      const progress = Math.min((now - startedAt) / (duration * 1000), 1);
+      const nextSpeed = getTurntableSpeed(fromSpeed, 1, progress);
+      playbackSpeedRef.current = nextSpeed;
+      rampParam(speed, context, nextSpeed, 0.035);
+      if (progress < 1) dropFrameRef.current = requestAnimationFrame(tick);
+    };
+    dropFrameRef.current = requestAnimationFrame(tick);
   }, [clearAutomation, startFresh]);
 
   const abortHold = React.useCallback(() => {
@@ -126,15 +141,19 @@ export function useGallerySoundtrack() {
     clearAutomation();
     if (!context || !node || !speed) {
       stopNode();
+      playbackSpeedRef.current = 0;
       setStatus('idle');
       return;
     }
     setStatus('dropping');
     const startedAt = performance.now();
+    const fromSpeed = playbackSpeedRef.current;
+    const duration = Math.max(0.18, 3 * fromSpeed);
     const tick = (now: number) => {
       if (generation !== generationRef.current) return;
-      const progress = Math.min((now - startedAt) / 3000, 1);
-      const nextSpeed = Math.pow(1 - progress, 3);
+      const progress = Math.min((now - startedAt) / (duration * 1000), 1);
+      const nextSpeed = getTurntableSpeed(fromSpeed, 0, progress);
+      playbackSpeedRef.current = nextSpeed;
       rampParam(speed, context, nextSpeed, 0.05);
       if (progress < 1) dropFrameRef.current = requestAnimationFrame(tick);
       else {
@@ -162,10 +181,12 @@ export function useGallerySoundtrack() {
       rampParam(gain.gain, context, 0.0001);
       pauseTimerRef.current = window.setTimeout(() => {
         speed.setValueAtTime(0, context.currentTime);
+        playbackSpeedRef.current = 0;
         setStatus('paused');
       }, FADE_SECONDS * 1000);
     } else {
       speed.setValueAtTime(1, context.currentTime);
+      playbackSpeedRef.current = 1;
       rampParam(gain.gain, context, FULL_VOLUME);
       setStatus('playing');
     }
@@ -180,12 +201,13 @@ export function useGallerySoundtrack() {
     clearAutomation();
     if (context.state === 'suspended') void context.resume().catch(() => undefined);
     const startedAt = performance.now();
-    const fromSpeed = speed.value;
+    const fromSpeed = playbackSpeedRef.current;
     const targetSpeed = muted ? 0 : 1;
     setStatus(muted ? 'dropping' : 'playing');
     const tick = (now: number) => {
       const progress = Math.min((now - startedAt) / (SPIN_SECONDS * 1000), 1);
       const nextSpeed = getTurntableSpeed(fromSpeed, targetSpeed, progress);
+      playbackSpeedRef.current = nextSpeed;
       speed.setValueAtTime(nextSpeed, context.currentTime);
       gain.gain.setValueAtTime(Math.max(0.0001, FULL_VOLUME * nextSpeed), context.currentTime);
       if (progress < 1) dropFrameRef.current = requestAnimationFrame(tick);
