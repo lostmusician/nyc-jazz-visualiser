@@ -189,7 +189,7 @@ const initialControllerState = (): ControllerState => ({
   touches: [], touchDistance: 0, lastChunkKey: '', lastChunkUpdate: 0, pendingChunk: null,
 });
 
-function SceneController(props: Pick<InfiniteCanvasProps, 'media' | 'hoveredVenueId' | 'onHoverVenue' | 'onSelectVenue' | 'onTextureProgress'>) {
+function SceneController(props: Pick<InfiniteCanvasProps, 'media' | 'hoveredVenueId' | 'onHoverVenue' | 'onSelectVenue' | 'onTextureProgress' | 'entryDepthImpulse'>) {
   const { camera, gl } = useThree();
   const [, getKeys] = useKeyboardControls<keyof KeyboardKeys>();
   const state = React.useRef(initialControllerState());
@@ -198,8 +198,15 @@ function SceneController(props: Pick<InfiniteCanvasProps, 'media' | 'hoveredVenu
   const reducedMotion = React.useMemo(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches, []);
   const textureProgressCallback = props.onTextureProgress;
   const mediaForProgress = props.media;
+  const entryImpulseAppliedRef = React.useRef(false);
 
   React.useEffect(() => { textureProgressCallback?.(100); }, [textureProgressCallback, mediaForProgress]);
+
+  React.useEffect(() => {
+    if (entryImpulseAppliedRef.current || !props.entryDepthImpulse) return;
+    entryImpulseAppliedRef.current = true;
+    state.current.scroll += props.entryDepthImpulse;
+  }, [props.entryDepthImpulse]);
 
   React.useEffect(() => {
     const canvas = gl.domElement;
@@ -324,6 +331,7 @@ export function InfiniteCanvasScene({
   onHoverVenue,
   onSelectVenue,
   onTextureProgress,
+  entryDepthImpulse,
   showControls = true,
   cameraFov = 60,
   cameraNear = 1,
@@ -341,9 +349,9 @@ export function InfiniteCanvasScene({
         <Canvas camera={{ position: [0, 0, INITIAL_CAMERA_Z], fov: cameraFov, near: cameraNear, far: cameraFar }} dpr={dpr} flat gl={{ antialias: false, powerPreference: 'high-performance' }}>
           <color attach="background" args={[backgroundColor]} />
           <fog attach="fog" args={[fogColor, fogNear, fogFar]} />
-          <SceneController media={media} hoveredVenueId={hoveredVenueId} onHoverVenue={onHoverVenue} onSelectVenue={onSelectVenue} onTextureProgress={onTextureProgress} />
+          <SceneController media={media} hoveredVenueId={hoveredVenueId} onHoverVenue={onHoverVenue} onSelectVenue={onSelectVenue} onTextureProgress={onTextureProgress} entryDepthImpulse={entryDepthImpulse} />
         </Canvas>
-        {showControls && <div className="canvas-controls" aria-hidden="true">{touch ? <><b>Drag</b> pan · <b>Pinch</b> depth</> : <><b>Drag</b> pan · <b>Scroll</b> depth · <b>WASD / QE</b> move</>}</div>}
+        {showControls && <div className="canvas-controls" data-tour="controls" aria-hidden="true">{touch ? <><b>Drag</b> pan · <b>Pinch</b> depth</> : <><b>Drag</b> pan · <b>Scroll</b> depth · <b>WASD / QE</b> move</>}</div>}
       </div>
     </KeyboardControls>
   );

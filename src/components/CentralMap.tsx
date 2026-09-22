@@ -37,7 +37,7 @@ export function CentralMap({ venues, decade, scene, hoveredVenueId, selectedVenu
   }, [decade, isLoaded, updateChoroplethYear]);
 
   return (
-    <section className="central-map" data-ui-layer aria-label={`New York jazz-club map in the ${decade}s`}>
+    <section className="central-map" data-ui-layer data-tour="map" aria-label={`New York jazz-club map in the ${decade}s`}>
       <div ref={containerRef} className="central-map-canvas" />
       <div className="map-glass" aria-hidden="true" />
       {decade < 1980 && <small className="map-model-note">pre-1980 rent modeled from 1980 census data</small>}

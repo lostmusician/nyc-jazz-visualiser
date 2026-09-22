@@ -1,4 +1,5 @@
 import React from 'react';
+import { shouldSoundtrackBeAudible } from '../gallery/entry-state';
 
 const SOUNDTRACK_URL = '/audio/skating-in-central-park.mp3';
 const WORKLET_URL = '/audio/pitch-dropper-processor.js';
@@ -187,7 +188,7 @@ export function useGallerySoundtrack() {
   return {
     status,
     manualMuted,
-    isAudible: status === 'playing' && !manualMuted,
+    isAudible: shouldSoundtrackBeAudible({ status, manualMuted, recordPaused: recordPausedRef.current, pageHidden: document.hidden }),
     beginHold,
     abortHold,
     continueIntoGallery,

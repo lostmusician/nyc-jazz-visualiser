@@ -4,7 +4,11 @@ html, body, #root { width: 100%; height: 100%; margin: 0; overflow: hidden; }
 button, input { font: inherit; }
 button, summary, a { -webkit-tap-highlight-color: transparent; }
 button:focus-visible, a:focus-visible, summary:focus-visible, input:focus-visible { outline: 2px solid #ffd785; outline-offset: 3px; }
+.experience-shell { position: relative; width: 100%; height: 100%; overflow: hidden; background: #0b0807; }
+.intro-layer { position: absolute; inset: 0; z-index: 80; opacity: 1; transform: scale(1); transition: opacity .9s cubic-bezier(.2,.7,.2,1), transform .9s cubic-bezier(.2,.7,.2,1); }
+.intro-layer.is-leaving { opacity: 0; transform: scale(1.085); pointer-events: none; }
 .gallery-app { position: relative; width: 100%; height: 100%; overflow: hidden; background: #0b0807; isolation: isolate; }
+.gallery-app.is-entering { animation: gallery-enter .9s cubic-bezier(.2,.7,.2,1) both; }
 .gallery-app::before { content: ''; position: absolute; inset: 0; z-index: 2; pointer-events: none; background: radial-gradient(circle at 50% 46%, transparent 8%, rgba(8,5,4,.12) 45%, rgba(3,2,2,.72) 100%); }
 .gallery-app::after { content: ''; position: absolute; inset: 0; z-index: 30; pointer-events: none; opacity: .08; mix-blend-mode: soft-light; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.92' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
 .atmosphere { position: absolute; inset: 0; z-index: 1; pointer-events: none; background: radial-gradient(circle at 18% 25%, rgba(148,48,27,.14), transparent 30%), radial-gradient(circle at 85% 70%, rgba(198,135,48,.11), transparent 28%); }
@@ -21,7 +25,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, input:focus-visibl
 .hold-enter svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
 .hold-enter path { fill: none; vector-effect: non-scaling-stroke; }
 .hold-track { stroke: rgba(218,177,108,.22); stroke-width: 1; }
-.hold-progress { stroke: #ffd785; stroke-width: 1.5; stroke-dasharray: 100; stroke-linecap: round; filter: drop-shadow(0 0 6px rgba(255,215,133,.72)); }
+.hold-progress { stroke: #ffd785; stroke-width: 1.5; stroke-linecap: round; filter: drop-shadow(0 0 6px rgba(255,215,133,.72)); }
 .hold-enter span { position: relative; z-index: 1; }
 .intro-ritual > p { max-width: 31rem; margin: 0; color: #a18e76; font-size: .82rem; line-height: 1.7; }
 .sr-status { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
@@ -36,7 +40,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, input:focus-visibl
 .scene-nav button:hover, .scene-nav button.active { color: #f2dfbf; background: rgba(225,190,126,.07); }
 .scene-nav button.active i { background: var(--scene-accent); box-shadow: 0 0 12px var(--scene-accent); }
 .scene-nav, .club-index-list { scrollbar-width: thin; scrollbar-color: #796047 transparent; }
-.central-map { position: absolute; z-index: 8; top: 1rem; right: 1rem; width: min(31vw, 29rem); height: min(38vh, 23rem); overflow: hidden; background: transparent; }
+.central-map { position: absolute; z-index: 8; top: 1rem; left: 1rem; width: min(31vw, 29rem); height: min(38vh, 23rem); overflow: hidden; background: transparent; }
 .map-loading { display: grid; place-items: center; color: #bba17d; text-transform: uppercase; letter-spacing: .14em; font: .58rem 'DM Mono', monospace; }
 .central-map-canvas { position: absolute; inset: 0; opacity: .7; background: #0b0807; filter: sepia(.88) saturate(.7) hue-rotate(345deg) brightness(.72) contrast(1.12); -webkit-mask-image: radial-gradient(ellipse at 58% 42%, #000 40%, rgba(0,0,0,.92) 58%, transparent 92%); mask-image: radial-gradient(ellipse at 58% 42%, #000 40%, rgba(0,0,0,.92) 58%, transparent 92%); }
 .central-map .mapboxgl-canvas { mix-blend-mode: normal; }
@@ -52,7 +56,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, input:focus-visibl
 .map-token-fallback b { font: .65rem 'DM Mono', monospace; text-transform: uppercase; letter-spacing: .12em; }
 .map-token-fallback small { color: #9d8873; }
 .mapboxgl-ctrl-bottom-left, .mapboxgl-ctrl-bottom-right { display: none; }
-.decade-timeline { position: absolute; z-index: 14; left: 50%; bottom: 1.2rem; width: min(48rem, calc(100vw - 12rem)); transform: translateX(-50%); padding: .5rem .25rem 0; background: linear-gradient(90deg, transparent, rgba(11,8,7,.58) 12%, rgba(11,8,7,.58) 88%, transparent); }
+.decade-timeline { position: absolute; z-index: 14; left: 50%; bottom: 3.75rem; width: min(48rem, calc(100vw - 12rem)); transform: translateX(-50%); padding: .5rem .25rem 0; background: linear-gradient(90deg, transparent, rgba(11,8,7,.58) 12%, rgba(11,8,7,.58) 88%, transparent); }
 .decade-timeline input { width: 100%; height: 2px; display: block; appearance: none; background: linear-gradient(90deg, #573329, #d5a752); cursor: ew-resize; }
 .decade-timeline input::-webkit-slider-thumb { width: 1rem; height: 1rem; appearance: none; border: 2px solid #17110e; border-radius: 50%; background: #ffd785; box-shadow: 0 0 0 1px #ffd785, 0 0 15px rgba(255,215,133,.5); }
 .decade-ticks { display: flex; justify-content: space-between; margin-top: .55rem; }
@@ -66,6 +70,8 @@ button:focus-visible, a:focus-visible, summary:focus-visible, input:focus-visibl
 .soundtrack-toggle > i { width: 1.6rem; height: 1.6rem; display: grid; place-items: center; border-radius: 50%; background: repeating-radial-gradient(circle, #100d0b 0 2px, #4b3528 3px 4px); }
 .soundtrack-toggle > i b { width: .45rem; height: .45rem; border-radius: 50%; background: #d09b4d; }
 .soundtrack-toggle.is-playing > i { animation: record-spin 2.8s linear infinite; }
+.tour-toggle { position: absolute; z-index: 19; top: 1rem; right: 8.4rem; width: 3rem; height: 3rem; padding: 0; color: #bca789; border: 1px solid rgba(223,188,125,.18); border-radius: 50%; background: rgba(17,12,10,.34); backdrop-filter: blur(13px); cursor: pointer; font: 1rem 'Instrument Serif', serif; }
+.tour-toggle:hover, .tour-toggle:focus-visible { color: #ffe3a3; border-color: rgba(237,198,125,.48); background: rgba(24,16,12,.72); }
 .club-browser { position: absolute; z-index: 18; top: 4.5rem; right: 1rem; width: min(21rem, calc(100vw - 2rem)); max-height: calc(100vh - 10rem); overflow: hidden; color: #d7c5aa; border: 1px solid rgba(229,197,139,.14); border-radius: .9rem; background: linear-gradient(145deg, rgba(36,25,20,.72), rgba(10,7,6,.54)); box-shadow: 0 20px 65px rgba(0,0,0,.3); backdrop-filter: blur(24px) saturate(.72); opacity: 0; visibility: hidden; transform: translateY(-.5rem) scale(.98); transform-origin: top right; pointer-events: none; transition: opacity .35s, transform .35s, visibility .35s; }
 .club-browser.is-open { visibility: visible; opacity: .42; transform: none; pointer-events: auto; }
 .club-browser.is-open:hover, .club-browser.is-open:focus-within { opacity: .98; }
@@ -111,23 +117,35 @@ button:focus-visible, a:focus-visible, summary:focus-visible, input:focus-visibl
 .listening-note, .no-audio { color: #806a57 !important; font-size: .66rem !important; }
 .club-dialog footer { display: flex; flex-wrap: wrap; gap: .6rem 1rem; margin-top: 2rem; padding-top: 1.1rem; border-top: 1px solid rgba(55,37,27,.2); color: #705b49; font: .57rem 'DM Mono', monospace; }
 .club-dialog footer a { color: #9f3f29; }
+.gallery-tour { position: fixed; inset: 0; z-index: 55; pointer-events: none; }
+.tour-spotlight { position: fixed; border: 1px solid rgba(255,215,133,.88); border-radius: .55rem; box-shadow: 0 0 0 9999px rgba(4,3,3,.38), 0 0 24px rgba(255,190,92,.28); transition: inset .3s, width .3s, height .3s; }
+.tour-callout { position: fixed; width: min(19rem, calc(100vw - 1.5rem)); padding: 1.1rem; color: #e8d9bf; border: 1px solid rgba(233,198,137,.24); border-radius: .8rem; background: rgba(18,12,10,.9); box-shadow: 0 18px 60px rgba(0,0,0,.5); backdrop-filter: blur(22px); pointer-events: auto; }
+.tour-count { color: #b4754d; text-transform: uppercase; letter-spacing: .12em; font: .5rem 'DM Mono', monospace; }
+.tour-callout h2 { margin: .55rem 0 .35rem; color: #f5dfb7; font: 400 1.55rem 'Instrument Serif', serif; }
+.tour-callout p { margin: 0; color: #a9957b; font-size: .72rem; line-height: 1.55; }
+.tour-actions { display: flex; align-items: center; gap: .5rem; margin-top: 1rem; }
+.tour-actions span { flex: 1; }
+.tour-actions button { padding: .4rem .55rem; color: #d7c3a0; border: 1px solid rgba(221,184,119,.2); background: rgba(255,255,255,.025); cursor: pointer; text-transform: uppercase; letter-spacing: .08em; font: .52rem 'DM Mono', monospace; }
+.tour-actions .tour-skip { color: #8f7a63; border-color: transparent; background: none; }
 @keyframes fade-in { from { opacity: 0; } }
 @keyframes rise-in { from { opacity: 0; transform: translateY(2rem) scale(.98); } }
 @keyframes record-spin { to { transform: rotate(360deg); } }
+@keyframes gallery-enter { from { opacity: .18; transform: scale(.88); filter: blur(10px); } to { opacity: 1; transform: scale(1); filter: blur(0); } }
 @media (max-width: 800px) {
   .gallery-intro { min-height: 100%; padding: 1.25rem; }
   .hold-enter { width: min(21rem, 88vw); height: 6.8rem; }
   .intro-ritual > p { font-size: .76rem; }
-  .central-map { top: .2rem; right: .2rem; width: min(82vw, 24rem); height: min(30vh, 17rem); }
+  .central-map { top: .2rem; left: .2rem; width: min(82vw, 24rem); height: min(30vh, 17rem); }
   .map-legend { display: none; }
   .map-model-note { display: none; }
   .browser-toggle { top: .7rem; right: .7rem; }
   .soundtrack-toggle { top: .7rem; right: 4.35rem; }
+  .tour-toggle { top: .7rem; right: 8rem; }
   .club-browser { top: 4.2rem; right: .7rem; width: min(21rem, calc(100vw - 1.4rem)); max-height: calc(100vh - 9rem); }
   .club-browser.is-open { opacity: .96; }
   .club-index-list { max-height: 42vh; }
-  .canvas-controls { display: none; }
-  .decade-timeline { bottom: .7rem; width: calc(100vw - 1.4rem); }
+  .canvas-controls { left: .75rem; bottom: .7rem; display: block; max-width: calc(100vw - 1.5rem); font-size: .55rem; }
+  .decade-timeline { bottom: 3rem; width: calc(100vw - 1.4rem); }
   .decade-ticks button { font-size: .48rem; }
   .club-dialog-backdrop { padding: 0; }
   .club-dialog { width: 100%; height: 100%; max-height: none; display: block; }

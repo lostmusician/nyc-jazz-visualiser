@@ -3,6 +3,7 @@ import { ClubDetail } from './components/ClubDetail';
 import { ClubIndex } from './components/ClubIndex';
 import { DecadeTimeline } from './components/DecadeTimeline';
 import { GalleryIntro } from './components/GalleryIntro';
+import { GalleryTour } from './components/GalleryTour';
 import { GALLERY_PROFILE_BY_ID, GALLERY_VENUE_IDS } from './data/clubProfiles';
 import { NYC_JAZZ_VENUES } from './data/venues';
 import { filterGalleryVenues, overlapsDecade, SCENES, type Decade } from './gallery/model';
@@ -12,16 +13,21 @@ import { useGallerySoundtrack } from './hooks/useGallerySoundtrack';
 import type { SceneMovement } from './types';
 
 const CentralMap = React.lazy(() => import('./components/CentralMap').then((module) => ({ default: module.CentralMap })));
+const TOUR_STORAGE_KEY = 'nyc-jazz-gallery-tour-v1';
 
 export const App = () => {
-  const [hasEntered, setHasEntered] = React.useState(false);
+  const [entryPhase, setEntryPhase] = React.useState<'intro' | 'transitioning' | 'gallery'>('intro');
   const [decade, setDecade] = React.useState<Decade>(1970);
   const [scene, setScene] = React.useState<SceneMovement | 'all'>('all');
   const [hoveredVenueId, setHoveredVenueId] = React.useState<string | null>(null);
   const [selectedVenueId, setSelectedVenueId] = React.useState<string | null>(null);
   const [playingTrackId, setPlayingTrackId] = React.useState<string | null>(null);
   const [browserOpen, setBrowserOpen] = React.useState(false);
+  const [tourStep, setTourStep] = React.useState<number | null>(null);
   const returnFocusRef = React.useRef<HTMLElement | null>(null);
+  const transitionTimerRef = React.useRef<number | null>(null);
+  const tourTimerRef = React.useRef<number | null>(null);
+  const reducedMotion = React.useMemo(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches, []);
   const {
     status: soundtrackStatus,
     isAudible: soundtrackAudible,
@@ -91,33 +97,44 @@ export const App = () => {
     return () => window.removeEventListener('keydown', closeOnEscape);
   }, [browserOpen, selectedVenueId]);
 
-  if (!hasEntered) return (
-    <GalleryIntro
-      audioStatus={soundtrackStatus}
-      onHoldStart={beginHold}
-      onHoldAbort={abortHold}
-      onEnter={() => {
-        continueIntoGallery();
-        setHasEntered(true);
-      }}
-    />
-  );
+  React.useEffect(() => () => {
+    if (transitionTimerRef.current !== null) window.clearTimeout(transitionTimerRef.current);
+    if (tourTimerRef.current !== null) window.clearTimeout(tourTimerRef.current);
+  }, []);
+
+  const enterGallery = React.useCallback(() => {
+    continueIntoGallery();
+    setEntryPhase('transitioning');
+    transitionTimerRef.current = window.setTimeout(() => setEntryPhase('gallery'), reducedMotion ? 80 : 900);
+    tourTimerRef.current = window.setTimeout(() => {
+      try {
+        if (window.localStorage.getItem(TOUR_STORAGE_KEY) !== 'complete') setTourStep(0);
+      } catch { setTourStep(0); }
+    }, reducedMotion ? 180 : 1250);
+  }, [continueIntoGallery, reducedMotion]);
+
+  const finishTour = React.useCallback(() => {
+    setTourStep(null);
+    try { window.localStorage.setItem(TOUR_STORAGE_KEY, 'complete'); } catch { /* storage is optional */ }
+  }, []);
 
   return (
-    <main className="gallery-app">
+    <div className="experience-shell">
+    {entryPhase !== 'intro' && <main className={`gallery-app${entryPhase === 'transitioning' ? ' is-entering' : ''}`}>
       <a className="skip-link" href="#club-index">Skip to filters and club index</a>
-      <InfiniteCanvas media={media} hoveredVenueId={hoveredVenueId} onHoverVenue={setHoveredVenueId} onSelectVenue={openVenue} />
+      <InfiniteCanvas media={media} hoveredVenueId={hoveredVenueId} onHoverVenue={setHoveredVenueId} onSelectVenue={openVenue} entryDepthImpulse={reducedMotion ? 0 : 1.45} />
       <div className="atmosphere" aria-hidden="true" />
       <React.Suspense fallback={<section className="central-map map-loading" aria-label="Loading the New York jazz-club map">Mapping the night…</section>}>
         <CentralMap venues={NYC_JAZZ_VENUES} decade={decade} scene={scene} hoveredVenueId={hoveredVenueId} selectedVenueId={selectedVenueId} onHoverVenue={setHoveredVenueId} onSelectVenue={openVenue} />
       </React.Suspense>
-      <button className="browser-toggle" type="button" data-ui-layer aria-label="Browse and filter clubs" aria-expanded={browserOpen} aria-controls="club-browser" onClick={() => setBrowserOpen((open) => !open)}>
+      <button className="browser-toggle" type="button" data-ui-layer data-tour="filter" aria-label="Browse and filter clubs" aria-expanded={browserOpen} aria-controls="club-browser" onClick={() => setBrowserOpen((open) => !open)}>
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10M14 4v6M6 14v6" /></svg>
         <span>{galleryVenues.length}</span>
       </button>
       <button className={`soundtrack-toggle${soundtrackAudible ? ' is-playing' : ''}`} type="button" data-ui-layer aria-label={soundtrackAudible ? 'Mute gallery soundtrack' : 'Play gallery soundtrack'} onClick={toggleMuted}>
         <i aria-hidden="true"><b /></i>
       </button>
+      <button className="tour-toggle" type="button" data-ui-layer aria-label="Show gallery tour" onClick={() => { setBrowserOpen(false); setTourStep(0); }}>?</button>
       <aside id="club-browser" className={`club-browser${browserOpen ? ' is-open' : ''}`} data-ui-layer aria-hidden={!browserOpen}>
         <div className="browser-heading"><span>Find a room</span><button type="button" aria-label="Close filters" onClick={() => setBrowserOpen(false)}>×</button></div>
         <nav className="scene-nav" aria-label="Scenes and places">
@@ -127,7 +144,14 @@ export const App = () => {
       </aside>
       <DecadeTimeline value={decade} onChange={selectDecade} />
       {selectedVenue && <ClubDetail venue={selectedVenue} profile={GALLERY_PROFILE_BY_ID.get(selectedVenue.properties.id)} playingTrackId={playingTrackId} onPlayTrack={selectTrack} onClose={closeVenue} />}
-    </main>
+      {tourStep !== null && <GalleryTour step={tourStep} onStep={setTourStep} onFinish={finishTour} />}
+    </main>}
+    {entryPhase !== 'gallery' && (
+      <div className={`intro-layer${entryPhase === 'transitioning' ? ' is-leaving' : ''}`}>
+        <GalleryIntro audioStatus={soundtrackStatus} onHoldStart={beginHold} onHoldAbort={abortHold} onEnter={enterGallery} />
+      </div>
+    )}
+    </div>
   );
 };
 

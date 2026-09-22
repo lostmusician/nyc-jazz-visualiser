@@ -3,7 +3,7 @@ import { DECADES, type Decade } from '../gallery/model';
 export function DecadeTimeline({ value, onChange }: { value: Decade; onChange: (decade: Decade) => void }) {
   const index = DECADES.indexOf(value);
   return (
-    <div className="decade-timeline" data-ui-layer>
+    <div className="decade-timeline" data-ui-layer data-tour="timeline">
       <input
         aria-label="Jazz-club decade"
         type="range"

@@ -1,6 +1,5 @@
 import React from 'react';
-
-const HOLD_DURATION_MS = 4000;
+import { getHoldProgress, getHoldReleaseOutcome } from '../gallery/entry-state';
 
 export function GalleryIntro({
   audioStatus,
@@ -18,6 +17,12 @@ export function GalleryIntro({
   const armedRef = React.useRef(false);
   const startedAtRef = React.useRef(0);
   const frameRef = React.useRef<number | null>(null);
+  const progressPathRef = React.useRef<SVGPathElement>(null);
+  const [pathLength, setPathLength] = React.useState(1);
+
+  React.useLayoutEffect(() => {
+    setPathLength(progressPathRef.current?.getTotalLength() ?? 1);
+  }, []);
 
   const clearFrame = React.useCallback(() => {
     if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
@@ -34,7 +39,7 @@ export function GalleryIntro({
     onHoldStart();
     const tick = (now: number) => {
       if (!holdingRef.current) return;
-      const next = Math.min((now - startedAtRef.current) / HOLD_DURATION_MS, 1);
+      const next = getHoldProgress(now - startedAtRef.current);
       setProgress(next);
       if (next >= 1) armedRef.current = true;
       else frameRef.current = requestAnimationFrame(tick);
@@ -46,7 +51,7 @@ export function GalleryIntro({
     if (!holdingRef.current) return;
     holdingRef.current = false;
     clearFrame();
-    if (armedRef.current || performance.now() - startedAtRef.current >= HOLD_DURATION_MS) {
+    if (armedRef.current || getHoldReleaseOutcome(performance.now() - startedAtRef.current) === 'enter') {
       setProgress(1);
       onEnter();
     } else {
@@ -94,8 +99,15 @@ export function GalleryIntro({
           }}
         >
           <svg viewBox="0 0 300 100" preserveAspectRatio="none" aria-hidden="true">
-            <path className="hold-track" pathLength="100" d="M1 50V14Q1 1 14 1H286Q299 1 299 14V86Q299 99 286 99H14Q1 99 1 86V50" />
-            <path className="hold-progress" pathLength="100" style={{ strokeDashoffset: 100 - progress * 100 }} d="M1 50V14Q1 1 14 1H286Q299 1 299 14V86Q299 99 286 99H14Q1 99 1 86V50" />
+            <path className="hold-track" d="M1 50V14Q1 1 14 1H286Q299 1 299 14V86Q299 99 286 99H14Q1 99 1 86V50" />
+            <path
+              ref={progressPathRef}
+              className="hold-progress"
+              strokeDasharray={pathLength}
+              strokeDashoffset={pathLength * (1 - progress)}
+              style={{ opacity: progress === 0 ? 0 : 1 }}
+              d="M1 50V14Q1 1 14 1H286Q299 1 299 14V86Q299 99 286 99H14Q1 99 1 86V50"
+            />
           </svg>
           <span>{progress >= 1 ? 'release to enter' : 'press and hold'}</span>
         </button>

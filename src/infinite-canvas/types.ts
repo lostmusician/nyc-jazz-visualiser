@@ -15,6 +15,7 @@ export interface InfiniteCanvasProps {
   onHoverVenue: (venueId: string | null) => void;
   onSelectVenue: (venueId: string) => void;
   onTextureProgress?: (progress: number) => void;
+  entryDepthImpulse?: number;
   showControls?: boolean;
   cameraFov?: number;
   cameraNear?: number;
