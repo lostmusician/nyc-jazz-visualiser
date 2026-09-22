@@ -27,12 +27,18 @@ test.beforeEach(async ({ page }, testInfo) => {
 
 test('early release slows down and resets the entrance', async ({ page }) => {
   const enter = page.getByRole('button', { name: /Press and hold for four seconds/ });
+  await expect(page.locator('.launch-prompt')).toContainText('HoldSpacebarto launch gallery');
+  await expect(page.locator('audio[src="/audio/spacebar-click.mp3"]')).toHaveAttribute('preload', 'auto');
   await enter.hover();
   await page.mouse.down();
+  await expect(enter).toHaveClass(/is-holding/);
+  await expect(enter).not.toHaveCSS('transform', 'none');
+  await expect.poll(() => page.locator('audio[src="/audio/spacebar-click.mp3"]').evaluate((audio) => (audio as HTMLAudioElement).currentTime)).toBeGreaterThan(0);
   await page.waitForTimeout(450);
   await page.mouse.up();
   await expect(page.locator('.gallery-app')).toHaveCount(0);
-  await expect(enter).toContainText('press and hold');
+  await expect(enter).toContainText('Spacebar');
+  await expect(enter).not.toHaveClass(/is-holding/);
 });
 
 test('keyboard hold completes the gallery transition', async ({ page }) => {
