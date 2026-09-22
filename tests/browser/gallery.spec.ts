@@ -116,9 +116,13 @@ test('club details manage focus, listening state, and Escape dismissal', async (
 test('soundtrack control mutes and resumes the looping gallery audio', async ({ page }) => {
   const mute = page.getByRole('button', { name: 'Mute gallery soundtrack' });
   await expect(mute).toBeVisible();
+  await expect(page.locator('.vinyl-disc')).toHaveCSS('animation-name', 'record-spin');
+  await expect(page.locator('.tonearm')).toHaveCSS('animation-name', 'none');
   await mute.click();
   const play = page.getByRole('button', { name: 'Play gallery soundtrack' });
   await expect(play).toBeVisible();
+  await expect(page.locator('.vinyl-disc')).toHaveCSS('animation-name', 'none');
+  await expect(page.locator('.tonearm')).not.toHaveCSS('transform', 'none');
   await play.click();
   await expect(page.getByRole('button', { name: 'Mute gallery soundtrack' })).toBeVisible();
 });

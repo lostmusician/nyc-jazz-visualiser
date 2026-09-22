@@ -132,7 +132,19 @@ export const App = () => {
         <span>{galleryVenues.length}</span>
       </button>
       <button className={`soundtrack-toggle${soundtrackAudible ? ' is-playing' : ''}`} type="button" data-ui-layer aria-label={soundtrackAudible ? 'Mute gallery soundtrack' : 'Play gallery soundtrack'} onClick={toggleMuted}>
-        <i aria-hidden="true"><b /></i>
+        <svg className="turntable-icon" viewBox="0 0 64 64" aria-hidden="true">
+          <g className="vinyl-disc">
+            <circle className="vinyl-edge" cx="29" cy="32" r="24" />
+            <path className="vinyl-grooves" d="M31 11a21 21 0 0 1 18 17M31 15a17 17 0 0 1 14 13M31 19a13 13 0 0 1 10 9M27 53A21 21 0 0 1 9 36M27 49a17 17 0 0 1-14-13M27 45a13 13 0 0 1-10-9" />
+            <circle className="vinyl-label" cx="29" cy="32" r="8.5" />
+            <circle className="vinyl-spindle" cx="29" cy="32" r="1.7" />
+          </g>
+          <g className="tonearm">
+            <circle className="tonearm-pivot" cx="53" cy="12" r="3.2" />
+            <path d="M53 13c1.2 14.5-2.8 27.2-12.6 34.2" />
+            <path className="tonearm-head" d="m40.3 44.8 5.2 6.6-8.2 6.4-5.2-6.6z" />
+          </g>
+        </svg>
       </button>
       <button className="tour-toggle" type="button" data-ui-layer aria-label="Show gallery tour" onClick={() => { setBrowserOpen(false); setTourStep(0); }}>?</button>
       <aside id="club-browser" className={`club-browser${browserOpen ? ' is-open' : ''}`} data-ui-layer aria-hidden={!browserOpen}>
