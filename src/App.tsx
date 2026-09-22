@@ -8,6 +8,7 @@ import { NYC_JAZZ_VENUES } from './data/venues';
 import { filterGalleryVenues, overlapsDecade, SCENES, type Decade } from './gallery/model';
 import { InfiniteCanvas } from './infinite-canvas';
 import type { ClubMediaItem } from './infinite-canvas/types';
+import { useGallerySoundtrack } from './hooks/useGallerySoundtrack';
 import type { SceneMovement } from './types';
 
 const CentralMap = React.lazy(() => import('./components/CentralMap').then((module) => ({ default: module.CentralMap })));
@@ -21,6 +22,16 @@ export const App = () => {
   const [playingTrackId, setPlayingTrackId] = React.useState<string | null>(null);
   const [browserOpen, setBrowserOpen] = React.useState(false);
   const returnFocusRef = React.useRef<HTMLElement | null>(null);
+  const {
+    status: soundtrackStatus,
+    isAudible: soundtrackAudible,
+    beginHold,
+    abortHold,
+    continueIntoGallery,
+    toggleMuted,
+    pauseForRecord,
+    resumeAfterRecord,
+  } = useGallerySoundtrack();
 
   const galleryVenues = React.useMemo(
     () => filterGalleryVenues(NYC_JAZZ_VENUES, GALLERY_VENUE_IDS, decade, scene),
@@ -61,9 +72,15 @@ export const App = () => {
 
   const closeVenue = React.useCallback(() => {
     setSelectedVenueId(null);
+    if (playingTrackId) resumeAfterRecord();
     setPlayingTrackId(null);
     window.requestAnimationFrame(() => returnFocusRef.current?.focus());
-  }, []);
+  }, [playingTrackId, resumeAfterRecord]);
+
+  const selectTrack = React.useCallback((trackId: string | null) => {
+    setPlayingTrackId(trackId);
+    if (trackId) pauseForRecord();
+  }, [pauseForRecord]);
 
   React.useEffect(() => {
     if (!browserOpen) return;
@@ -74,7 +91,17 @@ export const App = () => {
     return () => window.removeEventListener('keydown', closeOnEscape);
   }, [browserOpen, selectedVenueId]);
 
-  if (!hasEntered) return <GalleryIntro onEnter={() => setHasEntered(true)} />;
+  if (!hasEntered) return (
+    <GalleryIntro
+      audioStatus={soundtrackStatus}
+      onHoldStart={beginHold}
+      onHoldAbort={abortHold}
+      onEnter={() => {
+        continueIntoGallery();
+        setHasEntered(true);
+      }}
+    />
+  );
 
   return (
     <main className="gallery-app">
@@ -88,6 +115,9 @@ export const App = () => {
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10M14 4v6M6 14v6" /></svg>
         <span>{galleryVenues.length}</span>
       </button>
+      <button className={`soundtrack-toggle${soundtrackAudible ? ' is-playing' : ''}`} type="button" data-ui-layer aria-label={soundtrackAudible ? 'Mute gallery soundtrack' : 'Play gallery soundtrack'} onClick={toggleMuted}>
+        <i aria-hidden="true"><b /></i>
+      </button>
       <aside id="club-browser" className={`club-browser${browserOpen ? ' is-open' : ''}`} data-ui-layer aria-hidden={!browserOpen}>
         <div className="browser-heading"><span>Find a room</span><button type="button" aria-label="Close filters" onClick={() => setBrowserOpen(false)}>×</button></div>
         <nav className="scene-nav" aria-label="Scenes and places">
@@ -96,7 +126,7 @@ export const App = () => {
         <div id="club-index"><ClubIndex venues={galleryVenues} onHover={setHoveredVenueId} onSelect={openVenue} /></div>
       </aside>
       <DecadeTimeline value={decade} onChange={selectDecade} />
-      {selectedVenue && <ClubDetail venue={selectedVenue} profile={GALLERY_PROFILE_BY_ID.get(selectedVenue.properties.id)} playingTrackId={playingTrackId} onPlayTrack={setPlayingTrackId} onClose={closeVenue} />}
+      {selectedVenue && <ClubDetail venue={selectedVenue} profile={GALLERY_PROFILE_BY_ID.get(selectedVenue.properties.id)} playingTrackId={playingTrackId} onPlayTrack={selectTrack} onClose={closeVenue} />}
     </main>
   );
 };
