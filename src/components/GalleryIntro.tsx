@@ -77,7 +77,7 @@ export function GalleryIntro({
       <div className="intro-ritual">
         <button
           type="button"
-          className={`hold-enter${progress >= 1 ? ' is-ready' : ''}`}
+          className={`hold-enter${progress > 0 && progress < 1 ? ' is-holding' : ''}${progress >= 1 ? ' is-ready' : ''}`}
           aria-label="Press and hold for four seconds to enter the gallery with audio"
           onPointerDown={(event) => {
             event.currentTarget.setPointerCapture(event.pointerId);
@@ -98,15 +98,22 @@ export function GalleryIntro({
             }
           }}
         >
-          <svg viewBox="0 0 300 100" preserveAspectRatio="none" aria-hidden="true">
-            <path className="hold-track" d="M1 50V14Q1 1 14 1H286Q299 1 299 14V86Q299 99 286 99H14Q1 99 1 86V50" />
+          <svg viewBox="0 0 300 88" preserveAspectRatio="none" aria-hidden="true">
+            <defs>
+              <linearGradient id="hold-stroke" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0" stopColor="#ff742f" />
+                <stop offset=".48" stopColor="#813d78" />
+                <stop offset="1" stopColor="#ff7a2f" />
+              </linearGradient>
+            </defs>
+            <path className="hold-track" d="M1 44A43 43 0 0 1 44 1H256A43 43 0 0 1 299 44A43 43 0 0 1 256 87H44A43 43 0 0 1 1 44" />
             <path
               ref={progressPathRef}
               className="hold-progress"
               strokeDasharray={pathLength}
               strokeDashoffset={pathLength * (1 - progress)}
               style={{ opacity: progress === 0 ? 0 : 1 }}
-              d="M1 50V14Q1 1 14 1H286Q299 1 299 14V86Q299 99 286 99H14Q1 99 1 86V50"
+              d="M1 44A43 43 0 0 1 44 1H256A43 43 0 0 1 299 44A43 43 0 0 1 256 87H44A43 43 0 0 1 1 44"
             />
           </svg>
           <span>{progress >= 1 ? 'release to enter' : 'press and hold'}</span>

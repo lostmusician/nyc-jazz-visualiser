@@ -19,13 +19,15 @@ button:focus-visible, a:focus-visible, summary:focus-visible, input:focus-visibl
 .gallery-intro::after { content: ''; position: absolute; z-index: -1; inset: 0; background: radial-gradient(circle, transparent 0 20%, rgba(0,0,0,.58) 85%); }
 .intro-grain { position: absolute; inset: 0; z-index: 5; pointer-events: none; opacity: .08; mix-blend-mode: soft-light; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.92' numOctaves='3' stitchTiles='stitchTiles'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
 .intro-ritual { width: min(32rem, 100%); display: grid; justify-items: center; gap: 2rem; text-align: center; }
-.hold-enter { position: relative; width: min(22rem, 82vw); height: 7.4rem; display: grid; place-items: center; padding: 0; color: #bfa986; border: 0; background: rgba(17,11,9,.2); cursor: pointer; touch-action: none; user-select: none; text-transform: uppercase; letter-spacing: .2em; font: .65rem 'DM Mono', monospace; transition: color .25s, background .25s, transform .25s; }
-.hold-enter:hover, .hold-enter:focus-visible, .hold-enter.is-ready { color: #ffe5ad; background: rgba(82,45,27,.12); }
-.hold-enter:active { transform: scale(.985); }
+.hold-enter { position: relative; width: min(18.75rem, 82vw); height: 5.5rem; display: grid; place-items: center; padding: 0; color: #eadfce; border: 0; border-radius: 999px; background: rgba(20,15,13,.28); box-shadow: inset 0 0 24px rgba(255,255,255,.025); cursor: pointer; touch-action: none; user-select: none; text-transform: lowercase; letter-spacing: .045em; font: 1rem 'DM Mono', monospace; transition: color .25s, background .25s, transform .35s cubic-bezier(.2,.8,.2,1); }
+.hold-enter::after { content: ''; position: absolute; inset: 5px 1px -5px; z-index: -1; border: 1.5px solid rgba(242,231,215,.42); border-radius: inherit; opacity: .62; transition: transform .25s, opacity .25s; }
+.hold-enter:hover, .hold-enter:focus-visible, .hold-enter.is-holding, .hold-enter.is-ready { color: #fff8eb; background: rgba(91,53,36,.18); }
+.hold-enter.is-holding, .hold-enter.is-ready { transform: scale(1.035); }
+.hold-enter:active::after, .hold-enter.is-holding::after { transform: translateY(-3px); opacity: .35; }
 .hold-enter svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
 .hold-enter path { fill: none; vector-effect: non-scaling-stroke; }
-.hold-track { stroke: rgba(218,177,108,.22); stroke-width: 1; }
-.hold-progress { stroke: #ffd785; stroke-width: 1.5; stroke-linecap: round; filter: drop-shadow(0 0 6px rgba(255,215,133,.72)); }
+.hold-track { stroke: rgba(246,237,224,.86); stroke-width: 1.6; }
+.hold-progress { stroke: url(#hold-stroke); stroke-width: 5; stroke-linecap: round; filter: drop-shadow(0 0 7px rgba(255,112,47,.5)); }
 .hold-enter span { position: relative; z-index: 1; }
 .intro-ritual > p { max-width: 31rem; margin: 0; color: #a18e76; font-size: .82rem; line-height: 1.7; }
 .sr-status { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
@@ -142,7 +144,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, input:focus-visibl
 @keyframes gallery-enter { from { opacity: .18; transform: scale(.88); filter: blur(10px); } to { opacity: 1; transform: scale(1); filter: blur(0); } }
 @media (max-width: 800px) {
   .gallery-intro { min-height: 100%; padding: 1.25rem; }
-  .hold-enter { width: min(21rem, 88vw); height: 6.8rem; }
+  .hold-enter { width: min(18rem, 86vw); height: 5.25rem; }
   .intro-ritual > p { font-size: .76rem; }
   .central-map { top: .2rem; left: .2rem; width: min(82vw, 24rem); height: min(30vh, 17rem); }
   .map-legend { display: none; }
