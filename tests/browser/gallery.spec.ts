@@ -32,7 +32,7 @@ test.beforeEach(async ({ page }, testInfo) => {
   const path = testInfo.title.includes('WebGL is unavailable') ? '/?webgl=off' : '/';
   await page.goto(path);
   await expect(page.getByRole('button', { name: /Press and hold for four seconds/ })).toBeVisible();
-  const startsAtEntrance = ['early release', 'keyboard hold', 'audio is unavailable', 'rapid successive presses'].some((phrase) => testInfo.title.includes(phrase));
+  const startsAtEntrance = ['early release', 'keyboard hold', 'global Spacebar', 'audio is unavailable', 'rapid successive presses'].some((phrase) => testInfo.title.includes(phrase));
   if (!startsAtEntrance) await enterGallery(page, testInfo.title.includes('guided tutorial'));
 });
 
@@ -58,6 +58,23 @@ test('keyboard hold completes the gallery transition', async ({ page }) => {
   await page.keyboard.down('Enter');
   await page.waitForTimeout(4100);
   await page.keyboard.up('Enter');
+  await expect(page.locator('.gallery-app')).toBeVisible();
+});
+
+test('global Spacebar visibly presses the key and completes at four seconds', async ({ page }) => {
+  const enter = page.getByRole('button', { name: /Press and hold for four seconds/ });
+  await expect(enter).not.toBeFocused();
+  await page.keyboard.down('Space');
+  await expect(enter).toHaveAttribute('aria-pressed', 'true');
+  await expect(enter).toHaveClass(/is-holding/);
+  await page.waitForTimeout(3250);
+  await expect(enter).not.toHaveClass(/is-ready/);
+  const beforeFourSeconds = Number(await enter.getAttribute('data-hold-progress'));
+  expect(beforeFourSeconds).toBeGreaterThan(0.7);
+  expect(beforeFourSeconds).toBeLessThan(1);
+  await page.waitForTimeout(850);
+  await expect(enter).toHaveClass(/is-ready/);
+  await page.keyboard.up('Space');
   await expect(page.locator('.gallery-app')).toBeVisible();
 });
 

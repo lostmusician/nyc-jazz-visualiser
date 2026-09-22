@@ -13,6 +13,7 @@ export function GalleryIntro({
   onEnter: () => void;
 }) {
   const [progress, setProgress] = React.useState(0);
+  const [isHolding, setIsHolding] = React.useState(false);
   const holdingRef = React.useRef(false);
   const armedRef = React.useRef(false);
   const startedAtRef = React.useRef(0);
@@ -58,6 +59,7 @@ export function GalleryIntro({
     if (holdingRef.current) return;
     clearFrame();
     holdingRef.current = true;
+    setIsHolding(true);
     armedRef.current = false;
     startedAtRef.current = performance.now();
     setProgress(0);
@@ -84,6 +86,7 @@ export function GalleryIntro({
   const endHold = React.useCallback(() => {
     if (!holdingRef.current) return;
     holdingRef.current = false;
+    setIsHolding(false);
     clearFrame();
     if (armedRef.current || getHoldReleaseOutcome(performance.now() - startedAtRef.current) === 'enter') {
       setProgress(1);
@@ -97,13 +100,34 @@ export function GalleryIntro({
   const cancelHold = React.useCallback(() => {
     if (!holdingRef.current) return;
     holdingRef.current = false;
+    setIsHolding(false);
     armedRef.current = false;
     clearFrame();
     setProgress(0);
     onHoldAbort();
   }, [clearFrame, onHoldAbort]);
 
-  React.useEffect(() => () => clearFrame(), [clearFrame]);
+  React.useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.code !== 'Space') return;
+      event.preventDefault();
+      if (!event.repeat) startHold();
+    };
+    const onKeyUp = (event: KeyboardEvent) => {
+      if (event.code !== 'Space') return;
+      event.preventDefault();
+      endHold();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    window.addEventListener('keyup', onKeyUp);
+    window.addEventListener('blur', cancelHold);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('keyup', onKeyUp);
+      window.removeEventListener('blur', cancelHold);
+      clearFrame();
+    };
+  }, [cancelHold, clearFrame, endHold, startHold]);
 
   return (
     <main className="gallery-intro">
@@ -113,8 +137,10 @@ export function GalleryIntro({
           <span>Hold</span>
           <button
             type="button"
-            className={`hold-enter${progress > 0 && progress < 1 ? ' is-holding' : ''}${progress >= 1 ? ' is-ready' : ''}`}
+            className={`hold-enter${isHolding ? ' is-holding' : ''}${progress >= 1 ? ' is-ready' : ''}`}
             aria-label="Press and hold for four seconds to enter the gallery with audio"
+            aria-pressed={isHolding}
+            data-hold-progress={progress.toFixed(4)}
             onPointerDown={(event) => {
               event.currentTarget.setPointerCapture(event.pointerId);
               startHold();

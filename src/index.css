@@ -27,8 +27,8 @@ button:focus-visible, a:focus-visible, summary:focus-visible, input:focus-visibl
 .hold-enter:active::after, .hold-enter.is-holding::after, .hold-enter.is-ready::after { transform: translateY(-5px); opacity: .2; }
 .hold-enter svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
 .hold-enter path { fill: none; vector-effect: non-scaling-stroke; }
-.hold-track { stroke: rgba(246,237,224,.86); stroke-width: 1.6; }
-.hold-progress { stroke: url(#hold-stroke); stroke-width: 5; stroke-linecap: round; filter: drop-shadow(0 0 7px rgba(255,112,47,.5)); }
+.hold-track { stroke: rgba(246,237,224,.34); stroke-width: 1.6; }
+.hold-progress { stroke: url(#hold-stroke); stroke-width: 5; stroke-linecap: butt; filter: drop-shadow(0 0 7px rgba(255,112,47,.5)); }
 .hold-enter span { position: relative; z-index: 1; }
 .intro-ritual > p { max-width: 31rem; margin: 0; color: #a18e76; font-size: .82rem; line-height: 1.7; }
 .sr-status { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
