@@ -1,5 +1,8 @@
 import type { VenueFeature } from '../types';
+import { EARLY_JAZZ_VENUES } from './earlyJazzVenues';
 import { VILLAGE_PRESERVATION_VENUES } from './villagePreservationVenues';
+import { CURRENT_JAZZ_VENUES } from './currentJazzVenues';
+import { OUTER_BOROUGH_JAZZ_VENUES } from './outerBoroughJazzVenues';
 
 export const NYC_JAZZ_VENUES: VenueFeature[] = [
   // ── HARLEM RENAISSANCE & POST-WAR HARLEM ──────────────────────────
@@ -469,5 +472,8 @@ export const NYC_JAZZ_VENUES: VenueFeature[] = [
       notes: 'Industrial Gowanus space displaced when industrial properties were rezoned for high-density luxury residential.'
     }
   },
+  ...EARLY_JAZZ_VENUES,
   ...VILLAGE_PRESERVATION_VENUES,
+  ...CURRENT_JAZZ_VENUES,
+  ...OUTER_BOROUGH_JAZZ_VENUES,
 ];

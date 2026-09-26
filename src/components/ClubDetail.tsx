@@ -74,7 +74,7 @@ export function ClubDetail({ venue, profile, playingTrackId, onPlayTrack, onClos
           ) : <p className="no-audio">Listening research for this venue is still in progress.</p>}
           <footer>
             <span>{properties.address}</span>
-            {properties.source_url && <a href={properties.source_url} target="_blank" rel="noreferrer">Venue source ↗</a>}
+            {properties.source_url && <a href={properties.source_url} target="_blank" rel="noreferrer">{properties.source_publisher ? `Source: ${properties.source_publisher}` : 'Venue source'} ↗</a>}
             {profile && <a href={profile.imageSourceUrl} target="_blank" rel="noreferrer">Image context ↗</a>}
           </footer>
         </div>

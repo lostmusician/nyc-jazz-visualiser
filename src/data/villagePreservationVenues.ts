@@ -5,8 +5,9 @@ import type { VenueFeature } from '../types';
  *
  * Scope: performance venues in Greenwich Village, the East Village, and NoHo.
  * Homes, recording studios, parks, and records that merge several incarnations
- * of a venue were deliberately excluded. The source supplies discovery facts
- * (name, address, and operating-date label), not a verified cause of closure.
+ * of a venue were deliberately excluded. The directory supplies discovery facts
+ * (name, address, and operating-date label); closure reasons are added only when
+ * a separate source documents them directly.
  */
 export const VILLAGE_PRESERVATION_IMPORT = {
   sourceUrl: 'https://jazzmap.villagepreservation.org/',
@@ -17,7 +18,7 @@ export const VILLAGE_PRESERVATION_IMPORT = {
 } as const;
 
 const sourceNote = (dateLabel: string) =>
-  `Village Preservation directory date label: ${dateLabel}. Address and dates are source-derived; no cause of closure is inferred.`;
+  `Village Preservation directory date label: ${dateLabel}. Address and dates are source-derived.`;
 
 export const VILLAGE_PRESERVATION_VENUES: VenueFeature[] = [
   {
@@ -48,9 +49,11 @@ export const VILLAGE_PRESERVATION_VENUES: VenueFeature[] = [
     properties: {
       id: 'vp-bottom-line', name: 'The Bottom Line', venue_type: 'commercial_club',
       scene_movement: 'downtown_avant_garde', borough: 'Manhattan', neighborhood: 'Greenwich Village',
-      address: '15 W 4th St', open_year: 1974, close_year: 2004, status: 'closed', closing_reason: null,
-      notes: sourceNote('1974–2004'), source_url: VILLAGE_PRESERVATION_IMPORT.sourceUrl,
-      source_publisher: VILLAGE_PRESERVATION_IMPORT.sourcePublisher,
+      address: '15 W 4th St', open_year: 1974, close_year: 2004, status: 'closed',
+      closing_reason: 'New York University evicted the club after failed lease negotiations and roughly $190,000 in back rent.',
+      notes: `${sourceNote('1974–2004')} Contemporary reporting documents the rent dispute and eviction.`,
+      source_url: 'https://www.latimes.com/archives/la-xpm-2003-dec-23-et-duke23-story.html',
+      source_publisher: 'Los Angeles Times',
     },
   },
   {
@@ -70,9 +73,11 @@ export const VILLAGE_PRESERVATION_VENUES: VenueFeature[] = [
     properties: {
       id: 'vp-cafe-society', name: 'Caf\u00e9 Society', venue_type: 'commercial_club',
       scene_movement: 'bebop_mainstream', borough: 'Manhattan', neighborhood: 'West Village',
-      address: '2 Sheridan Square', open_year: 1938, close_year: 1948, status: 'closed', closing_reason: null,
-      notes: sourceNote('1938–1948'), source_url: VILLAGE_PRESERVATION_IMPORT.sourceUrl,
-      source_publisher: VILLAGE_PRESERVATION_IMPORT.sourcePublisher,
+      address: '2 Sheridan Square', open_year: 1938, close_year: 1949, status: 'closed',
+      closing_reason: 'HUAC-era guilt-by-association attacks over owner Barney Josephson’s brother caused attendance to collapse and forced the club out of business.',
+      notes: `${sourceNote('1938–1948')} Later scholarship dates the downtown club’s final closure to March 1949.`,
+      source_url: 'https://core.ac.uk/download/56111693.pdf',
+      source_publisher: 'University of Maryland dissertation via CORE',
     },
   },
   {
@@ -92,9 +97,11 @@ export const VILLAGE_PRESERVATION_VENUES: VenueFeature[] = [
     properties: {
       id: 'vp-cookery', name: 'The Cookery', venue_type: 'commercial_club',
       scene_movement: 'bebop_mainstream', borough: 'Manhattan', neighborhood: 'Greenwich Village',
-      address: '21 University Pl', open_year: 1970, close_year: 1984, status: 'closed', closing_reason: null,
-      notes: sourceNote('1970–1984'), source_url: VILLAGE_PRESERVATION_IMPORT.sourceUrl,
-      source_publisher: VILLAGE_PRESERVATION_IMPORT.sourcePublisher,
+      address: '21 University Pl', open_year: 1970, close_year: 1984, status: 'closed',
+      closing_reason: 'Owner Barney Josephson had grown weary of the club business and of contemporary musical styles he did not wish to program.',
+      notes: `${sourceNote('1970–1984')} Josephson later described why he ended his final music venue.`,
+      source_url: 'https://www.latimes.com/archives/la-xpm-1988-10-01-mn-3945-story.html',
+      source_publisher: 'Los Angeles Times',
     },
   },
   {
@@ -114,9 +121,11 @@ export const VILLAGE_PRESERVATION_VENUES: VenueFeature[] = [
     properties: {
       id: 'vp-eddie-condons', name: "Eddie Condon's", venue_type: 'commercial_club',
       scene_movement: 'bebop_mainstream', borough: 'Manhattan', neighborhood: 'Greenwich Village',
-      address: '47 W 3rd St', open_year: 1945, close_year: 1961, status: 'closed', closing_reason: null,
-      notes: sourceNote('1945–1961'), source_url: VILLAGE_PRESERVATION_IMPORT.sourceUrl,
-      source_publisher: VILLAGE_PRESERVATION_IMPORT.sourcePublisher,
+      address: '47 W 3rd St', open_year: 1945, close_year: 1958, status: 'relocated',
+      closing_reason: 'The West 3rd Street lease expired, and Condon moved the club to 330 E 56th St.',
+      notes: `${sourceNote('1945–1961')} The original downtown room actually ended in 1958; the later date conflates it with the uptown incarnation.`,
+      source_url: 'https://chiaroscurojazz.org/eddie-condon/',
+      source_publisher: 'Chiaroscuro Jazz / WVIA Public Media',
     },
   },
   {
@@ -147,9 +156,11 @@ export const VILLAGE_PRESERVATION_VENUES: VenueFeature[] = [
     properties: {
       id: 'vp-lush-life', name: 'Lush Life', venue_type: 'commercial_club',
       scene_movement: 'downtown_avant_garde', borough: 'Manhattan', neighborhood: 'Greenwich Village',
-      address: '184 Thompson St', open_year: 1981, close_year: 1985, status: 'closed', closing_reason: null,
-      notes: sourceNote('1981–1985'), source_url: VILLAGE_PRESERVATION_IMPORT.sourceUrl,
-      source_publisher: VILLAGE_PRESERVATION_IMPORT.sourcePublisher,
+      address: '184 Thompson St', open_year: 1981, close_year: 1985, status: 'closed',
+      closing_reason: 'New York City’s cabaret “no-horns” restriction prevented its horn-led live-jazz program; the space became a restaurant.',
+      notes: `${sourceNote('1981–1985')} Leonard Feather identified the no-horns rule as the cause.`,
+      source_url: 'https://www.latimes.com/archives/la-xpm-1986-05-11-ca-5382-story.html',
+      source_publisher: 'Los Angeles Times',
     },
   },
   {
@@ -158,9 +169,11 @@ export const VILLAGE_PRESERVATION_VENUES: VenueFeature[] = [
     properties: {
       id: 'vp-nicks-tavern', name: "Nick's Tavern", venue_type: 'commercial_club',
       scene_movement: 'bebop_mainstream', borough: 'Manhattan', neighborhood: 'West Village',
-      address: '140 7th Ave S', open_year: 1922, close_year: 1963, status: 'closed', closing_reason: null,
-      notes: sourceNote('1922–1963'), source_url: VILLAGE_PRESERVATION_IMPORT.sourceUrl,
-      source_publisher: VILLAGE_PRESERVATION_IMPORT.sourcePublisher,
+      address: '140 7th Ave S', open_year: 1922, close_year: 1963, status: 'closed',
+      closing_reason: 'The final incarnation lost its lease after years of waning demand for Dixieland jazz.',
+      notes: `${sourceNote('1922–1963')} The directory record combines several locations; the documented closure concerns the final Seventh Avenue South room.`,
+      source_url: 'https://www.villagevoice.com/dixieland-in-the-village-old-nicks-is-nixed/',
+      source_publisher: 'The Village Voice',
     },
   },
   {
