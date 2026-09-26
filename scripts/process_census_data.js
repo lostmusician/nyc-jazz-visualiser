@@ -22,6 +22,9 @@ const DECADE_MAPPINGS = {
   2020: { file: 'nhgis0001_ds249_20205_tract.csv', col: 'AMVTE001' }  // 2016-2020 ACS
 };
 
+const CPI_U_ANNUAL = { 1980: 82.4, 1990: 130.7, 2000: 172.2, 2010: 218.056, 2020: 258.811 };
+const in2020Dollars = (rent, year) => rent ? Math.round(rent * (CPI_U_ANNUAL[2020] / CPI_U_ANNUAL[year])) : null;
+
 const NYC_COUNTIES = ['005', '047', '061', '081', '085'];
 
 function transformCoords(coords) {
@@ -103,15 +106,21 @@ async function processData() {
         feature.geometry.coordinates = transformCoords(feature.geometry.coordinates);
       }
 
+      const nominalRents = Object.fromEntries(Object.keys(DECADE_MAPPINGS).map((year) => [year, rentDataByDecade[year]?.get(geoid) || null]));
       const props = {
         geoid: geoid,
         boro: feature.properties.BoroName,
         tract: tractCode,
-        rent_1980: rentDataByDecade['1980']?.get(geoid) || null,
-        rent_1990: rentDataByDecade['1990']?.get(geoid) || null,
-        rent_2000: rentDataByDecade['2000']?.get(geoid) || null,
-        rent_2010: rentDataByDecade['2010']?.get(geoid) || null,
-        rent_2020: rentDataByDecade['2020']?.get(geoid) || null,
+        rent_1980: nominalRents['1980'],
+        rent_1990: nominalRents['1990'],
+        rent_2000: nominalRents['2000'],
+        rent_2010: nominalRents['2010'],
+        rent_2020: nominalRents['2020'],
+        rent_2020_dollars_1980: in2020Dollars(nominalRents['1980'], 1980),
+        rent_2020_dollars_1990: in2020Dollars(nominalRents['1990'], 1990),
+        rent_2020_dollars_2000: in2020Dollars(nominalRents['2000'], 2000),
+        rent_2020_dollars_2010: in2020Dollars(nominalRents['2010'], 2010),
+        rent_2020_dollars_2020: in2020Dollars(nominalRents['2020'], 2020),
       };
       
       feature.properties = props;

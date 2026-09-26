@@ -1,9 +1,11 @@
 import type { SceneMovement, VenueFeature } from '../types';
 
-export const DECADES = [1950, 1960, 1970, 1980, 1990, 2000, 2010, 2020] as const;
+export const DECADES = [1920, 1930, 1940, 1950, 1960, 1970, 1980, 1990, 2000, 2010, 2020] as const;
 export type Decade = (typeof DECADES)[number];
 
 export type VenueEraStatus = 'active' | 'closed' | 'future';
+
+export const HISTORICAL_VENUE_MIN_ZOOM = 12.5;
 
 export interface ListeningTrack {
   id: string;
@@ -39,7 +41,7 @@ export const SCENES: SceneDefinition[] = [
   { id: 'bebop_mainstream', label: 'Swing Street & the Village', shortLabel: 'Swing Street', accent: '#e8c578' },
   { id: 'loft_jazz', label: 'Loft jazz', shortLabel: 'Lofts', accent: '#d56d4c' },
   { id: 'downtown_avant_garde', label: 'Downtown avant-garde', shortLabel: 'Downtown', accent: '#c95646' },
-  { id: 'brooklyn_continuation', label: 'Brooklyn continuation', shortLabel: 'Brooklyn', accent: '#75a092' },
+  { id: 'brooklyn_continuation', label: 'Outer-borough networks', shortLabel: 'Boroughs', accent: '#75a092' },
   { id: 'mainstream_jazz', label: 'Contemporary rooms', shortLabel: 'Contemporary', accent: '#8fa9c2' },
 ];
 
@@ -49,12 +51,23 @@ export function overlapsDecade(venue: VenueFeature, decade: Decade): boolean {
   return start <= decade + 9 && end >= decade;
 }
 
-export function statusForDecade(venue: VenueFeature, decade: Decade): VenueEraStatus {
+export function statusForDecade(venue: VenueFeature, decade: number): VenueEraStatus {
   const opened = venue.properties.open_year;
   const closed = venue.properties.close_year;
   if (opened !== null && opened > decade + 9) return 'future';
   if (closed !== null && closed < decade) return 'closed';
   return 'active';
+}
+
+export function isVenueVisibleAtZoom(
+  venue: VenueFeature,
+  decade: number,
+  zoom: number,
+  highlighted = false,
+): boolean {
+  if (highlighted) return true;
+  const status = statusForDecade(venue, decade);
+  return status === 'active' || (status === 'closed' && zoom >= HISTORICAL_VENUE_MIN_ZOOM);
 }
 
 export function filterGalleryVenues(
