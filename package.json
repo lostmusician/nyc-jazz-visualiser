@@ -3,30 +3,42 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  },
+  "overrides": {
+    "js-yaml": "4.3.2"
+  },
   "scripts": {
     "build:data": "node scripts/process_census_data.js",
     "prebuild": "npm run build:data",
     "dev": "npm run build:data && vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
+    "test": "tsx --test tests/*.test.ts",
+    "test:browser": "playwright test",
     "preview": "vite preview"
   },
   "dependencies": {
-    "framer-motion": "^12.0.0",
+    "@gsap/react": "^2.1.2",
+    "@react-three/drei": "10.7.7",
+    "@react-three/fiber": "9.4.2",
+    "gsap": "^3.15.0",
     "mapbox-gl": "^3.9.0",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "roughjs": "^4.6.6",
-    "tailwindcss": "^4.0.0"
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "three": "0.182.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
-    "@tailwindcss/vite": "^4.0.0",
+    "@playwright/test": "^1.63.0",
     "@types/geojson": "^7946.0.15",
     "@types/mapbox-gl": "^3.4.1",
-    "@types/react": "^19.0.2",
-    "@types/react-dom": "^19.0.2",
-    "@vitejs/plugin-react": "^4.3.4",
+    "@types/react": "19.2.7",
+    "@types/react-dom": "19.2.3",
+    "@types/three": "0.182.0",
+    "@vitejs/plugin-react": "5.1.2",
     "csv-parser": "^3.2.1",
     "eslint": "^9.17.0",
     "eslint-plugin-react-hooks": "^5.0.0",
@@ -34,8 +46,9 @@
     "globals": "^15.14.0",
     "proj4": "^2.21.0",
     "shapefile": "^0.6.6",
-    "typescript": "~5.7.2",
+    "tsx": "^4.23.13",
+    "typescript": "5.9.3",
     "typescript-eslint": "^8.18.2",
-    "vite": "^6.0.5"
+    "vite": "7.2.7"
   }
 }

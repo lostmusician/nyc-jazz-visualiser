@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
-import type { MapCameraState, VenueFeature } from '../types';
+import { CPI_U_ANNUAL, RENT_2020_DOLLAR_STOPS, rentValues, type RentDataYear } from '../data/rent';
+import { HISTORICAL_VENUE_MIN_ZOOM, statusForDecade } from '../gallery/model';
+import type { MapCameraState, SceneMovement, VenueFeature } from '../types';
 
 interface UseMapboxProps {
   containerRef: React.RefObject<HTMLDivElement | null>;
@@ -9,9 +10,44 @@ interface UseMapboxProps {
   venues: VenueFeature[];
   activeVenueIds: string[];
   choroplethDataPath?: string;
-  selectedDecade?: string;
+  selectedYear?: number;
+  lifecycleDecade?: number;
+  selectedScene?: SceneMovement | 'all';
+  interactionEnabled?: boolean;
   onSelectVenue?: (venue: VenueFeature) => void;
+  onHoverVenue?: (venueId: string | null) => void;
 }
+
+const rentDataYear = (year: number): RentDataYear => year >= 2020 ? 2020 : Math.max(1980, Math.floor(year / 10) * 10) as RentDataYear;
+
+export const getChoroplethPaint = (year: number) => {
+  const dataYear = rentDataYear(year);
+  const valueExpression: unknown[] = ['coalesce', ['get', `rent_2020_dollars_${dataYear}`], ['*', ['coalesce', ['get', `rent_${dataYear}`], 0], CPI_U_ANNUAL[2020] / CPI_U_ANNUAL[dataYear]]];
+  const [a, b, c, d, e, f, g, h] = RENT_2020_DOLLAR_STOPS;
+  return ['interpolate', ['linear'], valueExpression,
+    0, 'rgba(11,8,7,0)', a, '#211814', b, '#35241d', c, '#513124', d, '#74452d',
+    e, '#9a6138', f, '#b87941', g, '#d59d59', h, '#edc273',
+  ] as mapboxgl.Expression;
+};
+
+const buildVenueCollection = (venues: VenueFeature[], decade: number, highlightedIds: string[], selectedScene: SceneMovement | 'all') => ({
+  type: 'FeatureCollection' as const,
+  features: venues.map((venue) => {
+    const { id, close_year: closed } = venue.properties;
+    const eraStatus = statusForDecade(venue, decade);
+    return {
+      ...venue,
+      properties: {
+        ...venue.properties,
+        venue_id: id,
+        era_status: eraStatus,
+        highlighted: highlightedIds.includes(id),
+        scene_match: selectedScene === 'all' || venue.properties.scene_movement === selectedScene,
+        display_label: eraStatus === 'closed' ? `${venue.properties.name} · closed ${closed}` : venue.properties.name,
+      },
+    };
+  }),
+});
 
 export function useMapbox({
   containerRef,
@@ -19,524 +55,230 @@ export function useMapbox({
   venues,
   activeVenueIds,
   choroplethDataPath,
-  selectedDecade = '1970',
-  onSelectVenue
+  selectedYear = 1970,
+  lifecycleDecade = selectedYear,
+  selectedScene = 'all',
+  interactionEnabled = true,
+  onSelectVenue,
+  onHoverVenue,
 }: UseMapboxProps) {
-  const mapInstanceRef = useRef<mapboxgl.Map | null>(null);
+  const mapRef = useRef<mapboxgl.Map | null>(null);
+  const venuesRef = useRef(venues);
+  const activeVenueIdsRef = useRef(activeVenueIds);
+  const lifecycleDecadeRef = useRef(lifecycleDecade);
+  const selectedSceneRef = useRef(selectedScene);
+  const selectRef = useRef(onSelectVenue);
+  const hoverRef = useRef(onHoverVenue);
+  const yearRef = useRef(selectedYear);
   const [isLoaded, setIsLoaded] = useState(false);
-  const markersRef = useRef<Map<string, { marker: mapboxgl.Marker; popup: mapboxgl.Popup; venue: VenueFeature }>>(new Map());
-  const currentDecadeRef = useRef<string>(selectedDecade);
-  const venuesRef = useRef<VenueFeature[]>(venues);
   venuesRef.current = venues;
-  const onSelectVenueRef = useRef(onSelectVenue);
-  onSelectVenueRef.current = onSelectVenue;
+  activeVenueIdsRef.current = activeVenueIds;
+  lifecycleDecadeRef.current = lifecycleDecade;
+  selectedSceneRef.current = selectedScene;
+  selectRef.current = onSelectVenue;
+  hoverRef.current = onHoverVenue;
+  yearRef.current = selectedYear;
 
-  // Helper to map any decade (including 1950-1970) to available census rent properties
-  const getCensusYearForDecade = (dec: string) => {
-    const d = parseInt(dec, 10);
-    if (d <= 1980) return '1980';
-    if (d <= 1990) return '1990';
-    if (d <= 2000) return '2000';
-    if (d <= 2010) return '2010';
-    return '2020';
-  };
-
-  // Helper to get paint color expression for a given decade
-  const getChoroplethPaint = useCallback((decade: string) => {
-    const censusYr = getCensusYearForDecade(decade);
-    const prop = `rent_${censusYr}`;
-    return [
-      'case',
-      ['==', ['get', prop], null],
-      'transparent',
-      [
-        'interpolate',
-        ['linear'],
-        ['get', prop],
-        100, '#f7f2e7',   // Light Archival Paper
-        350, '#ebd49d',   // Pale Gold
-        700, '#cda250',   // Warm Brass
-        1200, '#c25a38',  // Terracotta / Burnt Orange
-        2000, '#962d1d',  // Archival Crimson
-        3200, '#38140e'   // Deep Roast Espresso
-      ]
-    ] as any;
-  }, []);
-
-  // Helper to build GeoJSON FeatureCollection for venues in a given era
-  const buildVenuesGeoJSON = useCallback((venueList: VenueFeature[], decade: string) => {
-    const decNum = parseInt(decade, 10);
-    const endDecYear = decNum + 9;
-
-    return {
-      type: 'FeatureCollection' as const,
-      features: venueList.map(v => {
-        const { id, name, open_year, close_year, scene_movement } = v.properties;
-        let era_status = 'active';
-
-        if (open_year && open_year > endDecYear) {
-          era_status = 'future';
-        } else if (close_year && close_year < decNum) {
-          era_status = 'closed';
-        } else if (close_year && close_year >= decNum && close_year <= endDecYear) {
-          era_status = 'closed';
-        } else {
-          era_status = 'active';
-        }
-
-        const label = era_status === 'closed'
-          ? `${name} [†${close_year}]`
-          : name;
-
-        return {
-          type: 'Feature' as const,
-          geometry: v.geometry,
-          properties: {
-            ...v.properties,
-            venue_id: id,
-            name: name,
-            era_status,
-            display_label: label,
-            scene_movement: scene_movement || 'bebop_mainstream'
-          }
-        };
-      })
-    };
-  }, []);
-
-  // Helper to generate rich popup HTML for a venue in a given era
-  const getVenuePopupHTML = useCallback((venue: VenueFeature, decade: string) => {
-    const { name, open_year, close_year, scene_movement, address, neighborhood, closing_reason, quote, notes } = venue.properties;
-    const decNum = parseInt(decade, 10);
-    const endDecYear = decNum + 9;
-
-    let statusText = '';
-    let statusClass = 'open';
-
-    if (open_year && open_year > endDecYear) {
-      statusText = `NOT FOUNDED YET (OPENS IN ${open_year})`;
-      statusClass = 'future';
-    } else if (close_year && close_year < decNum) {
-      statusText = `DISPLACED & CLOSED (IN ${close_year})`;
-      statusClass = 'closed';
-    } else if (close_year && close_year >= decNum && close_year <= endDecYear) {
-      statusText = `LOST IN THIS ERA (${close_year})`;
-      statusClass = 'closed';
-    } else {
-      statusText = 'VIBRANT & ACTIVE';
-      statusClass = 'open';
-    }
-
-    const lifespan = open_year
-      ? `${open_year} – ${close_year ? close_year : 'Present'}`
-      : 'Mid-20th Century';
-
-    return `
-      <div class="archival-popup">
-        <span class="popup-tag">${(scene_movement || '').replace(/_/g, ' ').toUpperCase()}</span>
-        <h4>${name}</h4>
-        <div class="popup-lifespan">${neighborhood} • ${lifespan}</div>
-        <div class="popup-status-pill ${statusClass}">${decade}s Era: ${statusText}</div>
-        
-        <p class="font-mono text-[11px] text-[#73604d] mb-1">📍 ${address}</p>
-
-        ${close_year && close_year <= endDecYear && closing_reason ? `
-          <div class="mt-2.5 p-2 bg-[#faebd7] border border-[#a63d2b]/40 rounded text-xs text-[#2e1d14]">
-            <strong class="text-[#a63d2b] font-sketch">Displacement Record:</strong> ${closing_reason}
-          </div>
-        ` : ''}
-
-        ${quote ? `<p class="popup-quote">"${quote}"</p>` : ''}
-        ${notes ? `<p class="popup-note text-[11px] mt-2 text-[#5c4d3c] italic">${notes}</p>` : ''}
-      </div>
-    `;
-  }, []);
-
-  // Update Choropleth & WebGL venue layers when decade or venues change
-  const updateChoroplethDecade = useCallback((decade: string) => {
-    currentDecadeRef.current = decade;
-    const map = mapInstanceRef.current;
-    if (!map || !map.isStyleLoaded()) return;
-
-    if (map.getLayer('rent-choropleth')) {
-      map.setPaintProperty('rent-choropleth', 'fill-color', getChoroplethPaint(decade));
-    }
-
-    // Update WebGL venues source
-    const venuesSource = map.getSource('jazz-venues-webgl') as mapboxgl.GeoJSONSource | undefined;
-    if (venuesSource) {
-      venuesSource.setData(buildVenuesGeoJSON(venuesRef.current, decade));
-    }
-  }, [getChoroplethPaint, buildVenuesGeoJSON]);
-
-  // Initialize Mapbox Canvas
   useEffect(() => {
-    if (!containerRef.current || mapInstanceRef.current) return;
-
+    if (!containerRef.current || mapRef.current) return;
     const token = import.meta.env.VITE_MAPBOX_TOKEN || '';
-    if (!token) {
-      console.warn('Mapbox Token is not set. Please set VITE_MAPBOX_TOKEN in your .env file.');
-    }
+    if (!token) return;
     mapboxgl.accessToken = token;
-
     const map = new mapboxgl.Map({
       container: containerRef.current,
-      style: 'mapbox://styles/mapbox/light-v11',
+      style: 'mapbox://styles/mapbox/dark-v11',
       center: initialCamera.center,
       zoom: initialCamera.zoom,
-      pitch: initialCamera.pitch || 0,
-      bearing: initialCamera.bearing || 0,
+      pitch: initialCamera.pitch ?? 0,
+      bearing: initialCamera.bearing ?? 0,
       attributionControl: false,
       interactive: true,
     });
-
-    map.on('error', (e) => {
-      console.error('Mapbox error encountered:', e);
-    });
-
+    mapRef.current = map;
+    const rentPopup = new mapboxgl.Popup({ closeButton: false, closeOnClick: false, offset: 10, className: 'rent-popup' });
     map.on('load', () => {
-      mapInstanceRef.current = map;
-
-      // 1. ADD CHOROPLETH SOURCE & LAYER
+      const firstSymbol = map.getStyle().layers?.find((layer) => layer.type === 'symbol')?.id;
       if (choroplethDataPath) {
-        map.addSource('rent-data', {
-          type: 'geojson',
-          data: choroplethDataPath,
-          generateId: true
-        });
-
-        const firstSymbolId = map.getStyle().layers?.find(l => l.type === 'symbol')?.id;
-
+        map.addSource('rent-data', { type: 'geojson', data: choroplethDataPath, generateId: true });
         map.addLayer({
-          id: 'rent-choropleth',
-          type: 'fill',
-          source: 'rent-data',
-          paint: {
-            'fill-color': getChoroplethPaint(currentDecadeRef.current),
-            'fill-opacity': 0.7
-          }
-        }, firstSymbolId);
-        
+          id: 'rent-choropleth', type: 'fill', source: 'rent-data',
+          paint: { 'fill-color': getChoroplethPaint(yearRef.current), 'fill-opacity': yearRef.current < 1980 ? 0 : 0.64, 'fill-opacity-transition': { duration: 700 } },
+        }, firstSymbol);
         map.addLayer({
-          id: 'rent-choropleth-lines',
-          type: 'line',
-          source: 'rent-data',
-          paint: {
-            'line-color': '#2e241c',
-            'line-width': 0.5,
-            'line-opacity': 0.2
-          }
-        }, firstSymbolId);
-
-        // Hover tooltip for census tract rent info
-        const hoverPopup = new mapboxgl.Popup({
-          closeButton: false,
-          closeOnClick: false,
-          offset: 10,
-          className: 'tract-hover-popup'
-        });
-
-        map.on('mousemove', 'rent-choropleth', (e) => {
-          if (!e.features || e.features.length === 0) return;
-          map.getCanvas().style.cursor = 'pointer';
-
-          const f = e.features[0];
-          const boro = f.properties?.boro || 'NYC';
-          const tract = f.properties?.tract || '';
-          const decade = currentDecadeRef.current;
-          const censusYr = getCensusYearForDecade(decade);
-          const rentVal = f.properties?.[`rent_${censusYr}`];
-          const rentDisplay = rentVal ? `$${rentVal}/mo` : 'Data Unavailable';
-
-          hoverPopup
-            .setLngLat(e.lngLat)
-            .setHTML(`
-              <div class="px-2.5 py-1.5 font-sans text-xs bg-[#fbf8f0] border border-[#2e241c] rounded shadow-[2px_2px_0px_#2e241c]">
-                <div class="font-typewriter text-[10px] text-[#8c7456]">${boro} // Tract ${tract}</div>
-                <div class="font-bold text-[#1f1813]">${decade}s Median Rent: <span class="text-[#a63d2b] font-sketch text-sm">${rentDisplay}</span></div>
-              </div>
-            `)
-            .addTo(map);
-        });
-
-        map.on('mouseleave', 'rent-choropleth', () => {
-          map.getCanvas().style.cursor = '';
-          hoverPopup.remove();
-        });
+          id: 'rent-lines', type: 'line', source: 'rent-data',
+          paint: { 'line-color': '#d0a56d', 'line-width': 0.45, 'line-opacity': yearRef.current < 1980 ? 0 : 0.16 },
+        }, firstSymbol);
       }
-
-      // 2. ADD NATIVE WEBGL JAZZ VENUES SOURCE & LAYERS (Guarantees 100% visible pins)
-      map.addSource('jazz-venues-webgl', {
+      map.addSource('jazz-venues', {
         type: 'geojson',
-        data: buildVenuesGeoJSON(venuesRef.current, currentDecadeRef.current)
+        data: buildVenueCollection(venuesRef.current, lifecycleDecadeRef.current, activeVenueIdsRef.current, selectedSceneRef.current),
       });
-
-      // Outer Halo Glow Layer
+      const activeOrHighlightedFilter: mapboxgl.FilterSpecification = [
+        'any',
+        ['==', ['get', 'era_status'], 'active'],
+        ['boolean', ['get', 'highlighted'], false],
+      ];
+      const historicalFilter: mapboxgl.FilterSpecification = [
+        'all',
+        ['==', ['get', 'era_status'], 'closed'],
+        ['!', ['boolean', ['get', 'highlighted'], false]],
+      ];
       map.addLayer({
-        id: 'jazz-venues-halo',
-        type: 'circle',
-        source: 'jazz-venues-webgl',
-        filter: ['!=', ['get', 'era_status'], 'future'],
+        id: 'jazz-venue-halo', type: 'circle', source: 'jazz-venues',
+        filter: activeOrHighlightedFilter,
         paint: {
-          'circle-radius': [
-            'case',
-            ['==', ['get', 'era_status'], 'active'], 18,
-            ['==', ['get', 'era_status'], 'closed'], 10,
-            0
-          ],
-          'circle-color': [
-            'case',
-            ['==', ['get', 'era_status'], 'active'], '#c59b4c',
-            ['==', ['get', 'era_status'], 'closed'], '#a63d2b',
-            'transparent'
-          ],
-          'circle-opacity': 0.35,
-          'circle-stroke-width': 1.5,
-          'circle-stroke-color': '#1c140e',
-          'circle-stroke-opacity': 0.6
-        }
-      });
-
-      // Solid Center Pin Circle
-      map.addLayer({
-        id: 'jazz-venues-pin',
-        type: 'circle',
-        source: 'jazz-venues-webgl',
-        filter: ['!=', ['get', 'era_status'], 'future'],
-        paint: {
-          'circle-radius': [
-            'case',
-            ['==', ['get', 'era_status'], 'active'], 8.5,
-            ['==', ['get', 'era_status'], 'closed'], 6,
-            0
-          ],
-          'circle-color': [
-            'case',
-            ['==', ['get', 'era_status'], 'active'], '#c9402a',
-            ['==', ['get', 'era_status'], 'closed'], '#38221b',
-            'transparent'
-          ],
-          'circle-stroke-width': 2,
-          'circle-stroke-color': '#fffdf9'
-        }
-      });
-
-      // Center Dot
-      map.addLayer({
-        id: 'jazz-venues-inner-dot',
-        type: 'circle',
-        source: 'jazz-venues-webgl',
-        filter: ['==', ['get', 'era_status'], 'active'],
-        paint: {
-          'circle-radius': 3,
-          'circle-color': '#fffdf9'
-        }
-      });
-
-      // Venue Text Labels with Archival Paper Halo
-      map.addLayer({
-        id: 'jazz-venues-labels',
-        type: 'symbol',
-        source: 'jazz-venues-webgl',
-        filter: ['!=', ['get', 'era_status'], 'future'],
-        layout: {
-          'text-field': ['get', 'display_label'],
-          'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
-          'text-size': 12,
-          'text-offset': [0, 1.3],
-          'text-anchor': 'top',
-          'text-allow-overlap': true,
-          'text-ignore-placement': true
+          'circle-radius': ['case', ['boolean', ['get', 'highlighted'], false], 18, 10],
+          'circle-color': ['case', ['boolean', ['get', 'highlighted'], false], '#fff0b5', '#e39a46'],
+          'circle-opacity': ['case', ['!', ['boolean', ['get', 'scene_match'], true]], 0.07, 0.3],
+          'circle-blur': 0.35,
         },
+      });
+      map.addLayer({
+        id: 'jazz-venue-historical-halo', type: 'circle', source: 'jazz-venues',
+        minzoom: HISTORICAL_VENUE_MIN_ZOOM,
+        filter: historicalFilter,
         paint: {
-          'text-color': [
-            'case',
-            ['==', ['get', 'era_status'], 'active'], '#1c140e',
-            ['==', ['get', 'era_status'], 'closed'], '#73604d',
-            '#1c140e'
+          'circle-radius': 6,
+          'circle-color': '#55392f',
+          'circle-opacity': ['case',
+            ['!', ['boolean', ['get', 'scene_match'], true]], 0.04,
+            ['interpolate', ['linear'], ['zoom'], HISTORICAL_VENUE_MIN_ZOOM, 0, HISTORICAL_VENUE_MIN_ZOOM + 0.75, 0.3],
           ],
-          'text-halo-color': '#fbf8f0',
-          'text-halo-width': 2.5,
-          'text-halo-blur': 0.5
-        }
+          'circle-blur': 0.35,
+        },
       });
-
-      // Interactive Click & Hover on WebGL pins
-      const venueClickPopup = new mapboxgl.Popup({
-        offset: 16,
-        closeButton: true,
-        className: 'custom-popup'
+      map.addLayer({
+        id: 'jazz-venue-pin', type: 'circle', source: 'jazz-venues',
+        filter: activeOrHighlightedFilter,
+        paint: {
+          'circle-radius': ['case', ['boolean', ['get', 'highlighted'], false], 7, 4.5],
+          'circle-color': ['case', ['boolean', ['get', 'highlighted'], false], '#fff0b5', '#e7a04d'],
+          'circle-stroke-width': 1.4,
+          'circle-stroke-color': '#f2d3a0',
+          'circle-opacity': ['case', ['!', ['boolean', ['get', 'scene_match'], true]], 0.16, 1],
+        },
       });
-
-      map.on('click', 'jazz-venues-pin', (e) => {
-        if (!e.features || e.features.length === 0) return;
-        const feat = e.features[0];
-        const venueId = feat.properties?.venue_id || feat.properties?.id;
-        const matchedVenue = venuesRef.current.find(v => v.properties.id === venueId);
-
-        if (matchedVenue) {
-          venueClickPopup
-            .setLngLat(e.lngLat)
-            .setHTML(getVenuePopupHTML(matchedVenue, currentDecadeRef.current))
-            .addTo(map);
-
-          if (onSelectVenueRef.current) {
-            onSelectVenueRef.current(matchedVenue);
-          }
-        }
+      map.addLayer({
+        id: 'jazz-venue-historical-pin', type: 'circle', source: 'jazz-venues',
+        minzoom: HISTORICAL_VENUE_MIN_ZOOM,
+        filter: historicalFilter,
+        paint: {
+          'circle-radius': 3.5,
+          'circle-color': '#4b342c',
+          'circle-stroke-width': 1,
+          'circle-stroke-color': '#b79777',
+          'circle-opacity': ['case',
+            ['!', ['boolean', ['get', 'scene_match'], true]], 0.12,
+            ['interpolate', ['linear'], ['zoom'], HISTORICAL_VENUE_MIN_ZOOM, 0, HISTORICAL_VENUE_MIN_ZOOM + 0.75, 0.9],
+          ],
+        },
       });
-
-      map.on('mouseenter', 'jazz-venues-pin', () => {
+      map.addLayer({
+        id: 'jazz-venue-label', type: 'symbol', source: 'jazz-venues', minzoom: 12,
+        filter: activeOrHighlightedFilter,
+        layout: { 'text-field': ['get', 'display_label'], 'text-size': 10, 'text-offset': [0, 1.2], 'text-anchor': 'top', 'text-optional': true },
+        paint: { 'text-color': '#ead4b0', 'text-halo-color': '#0b0807', 'text-halo-width': 2 },
+      });
+      map.addLayer({
+        id: 'jazz-venue-historical-label', type: 'symbol', source: 'jazz-venues', minzoom: 14,
+        filter: historicalFilter,
+        layout: { 'text-field': ['get', 'display_label'], 'text-size': 9, 'text-offset': [0, 1.1], 'text-anchor': 'top', 'text-optional': true },
+        paint: { 'text-color': '#bba589', 'text-halo-color': '#0b0807', 'text-halo-width': 2 },
+      });
+      const selectVenue = (event: mapboxgl.MapLayerMouseEvent) => {
+        const venueId = String(event.features?.[0]?.properties?.venue_id ?? '');
+        const venue = venuesRef.current.find((candidate) => candidate.properties.id === venueId);
+        if (venue) selectRef.current?.(venue);
+      };
+      const hoverVenue = (event: mapboxgl.MapLayerMouseEvent) => {
         map.getCanvas().style.cursor = 'pointer';
-      });
-
-      map.on('mouseleave', 'jazz-venues-pin', () => {
+        const venueId = event.features?.[0]?.properties?.venue_id;
+        if (venueId) hoverRef.current?.(String(venueId));
+      };
+      const leaveVenue = () => {
         map.getCanvas().style.cursor = '';
-      });
-
-      // 3. ADD 3D BUILDINGS
-      try {
-        if (map.getSource('composite')) {
-          map.addLayer({
-            id: '3d-buildings',
-            source: 'composite',
-            'source-layer': 'building',
-            filter: ['==', 'extrude', 'true'],
-            type: 'fill-extrusion',
-            minzoom: 14,
-            paint: {
-              'fill-extrusion-color': '#e8dfcf',
-              'fill-extrusion-height': ['get', 'height'],
-              'fill-extrusion-base': ['get', 'min_height'],
-              'fill-extrusion-opacity': 0.3,
-            },
-          });
-        }
-      } catch (err) {
-        console.warn('Could not add 3D buildings layer:', err);
+        hoverRef.current?.(null);
+      };
+      for (const layerId of ['jazz-venue-pin', 'jazz-venue-historical-pin']) {
+        map.on('click', layerId, selectVenue);
+        map.on('mousemove', layerId, hoverVenue);
+        map.on('mouseleave', layerId, leaveVenue);
       }
-
+      if (choroplethDataPath) {
+        map.on('mousemove', 'rent-choropleth', (event) => {
+          if (yearRef.current < 1980 || !event.features?.[0]) return;
+          const year = rentDataYear(yearRef.current);
+          const nominal = Number(event.features[0].properties?.[`rent_${year}`]);
+          if (!Number.isFinite(nominal) || nominal <= 0) return;
+          const values = rentValues(nominal, year);
+          const node = document.createElement('div');
+          const place = document.createElement('strong');
+          place.textContent = String(event.features[0].properties?.boro ?? 'NYC tract');
+          const adjusted = document.createElement('span');
+          adjusted.textContent = `$${values.constant2020.toLocaleString()}/month in 2020 dollars`;
+          const original = document.createElement('small');
+          original.textContent = `$${values.nominal.toLocaleString()} reported in ${year}`;
+          node.append(place, adjusted, original);
+          rentPopup.setLngLat(event.lngLat).setDOMContent(node).addTo(map);
+        });
+        map.on('mouseleave', 'rent-choropleth', () => rentPopup.remove());
+      }
       setIsLoaded(true);
       map.resize();
     });
-
-    const resizeObserver = new ResizeObserver(() => {
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.resize();
-      }
-    });
+    const resizeObserver = new ResizeObserver(() => map.resize());
     resizeObserver.observe(containerRef.current);
-
     return () => {
       resizeObserver.disconnect();
+      rentPopup.remove();
       map.remove();
-      mapInstanceRef.current = null;
+      mapRef.current = null;
+      setIsLoaded(false);
     };
-  }, [containerRef, initialCamera, choroplethDataPath, getChoroplethPaint, buildVenuesGeoJSON, getVenuePopupHTML]);
+  }, [containerRef, initialCamera, choroplethDataPath]);
 
-  // Smooth cinematic camera transitions (flyTo)
-  const flyTo = useCallback((camera: MapCameraState) => {
-    const map = mapInstanceRef.current;
-    if (!map) return;
+  useEffect(() => {
+    if (!isLoaded) return;
+    const source = mapRef.current?.getSource('jazz-venues') as mapboxgl.GeoJSONSource | undefined;
+    source?.setData(buildVenueCollection(venues, lifecycleDecade, activeVenueIds, selectedScene));
+  }, [venues, lifecycleDecade, activeVenueIds, selectedScene, isLoaded]);
 
-    map.flyTo({
-      center: camera.center,
-      zoom: camera.zoom,
-      pitch: camera.pitch ?? 30,
-      bearing: camera.bearing ?? 0,
-      speed: 1.2,
-      curve: 1.3,
-      essential: true,
-      easing: (t) => t * (2 - t),
-    });
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !isLoaded) return;
+    const handlers = [
+      map.boxZoom,
+      map.doubleClickZoom,
+      map.dragPan,
+      map.dragRotate,
+      map.keyboard,
+      map.scrollZoom,
+      map.touchPitch,
+      map.touchZoomRotate,
+    ];
+    handlers.forEach((handler) => interactionEnabled ? handler.enable() : handler.disable());
+    map.getCanvas().style.cursor = interactionEnabled ? '' : 'default';
+  }, [interactionEnabled, isLoaded]);
+
+  const updateChoroplethYear = useCallback((year: number) => {
+    yearRef.current = year;
+    const map = mapRef.current;
+    if (map?.getLayer('rent-choropleth')) {
+      map.setPaintProperty('rent-choropleth', 'fill-color', getChoroplethPaint(year));
+      map.setPaintProperty('rent-choropleth', 'fill-opacity', year < 1980 ? 0 : 0.64);
+      map.setPaintProperty('rent-lines', 'line-opacity', year < 1980 ? 0 : 0.16);
+    }
   }, []);
 
-  // Update Custom HTML Markers and WebGL source when props change
-  useEffect(() => {
-    const map = mapInstanceRef.current;
-    if (!map || !isLoaded) return;
+  const flyTo = useCallback((camera: MapCameraState) => {
+    mapRef.current?.flyTo({ center: camera.center, zoom: camera.zoom, pitch: camera.pitch ?? 0, bearing: camera.bearing ?? 0, essential: true });
+  }, []);
 
-    const decade = selectedDecade;
-    currentDecadeRef.current = decade;
-    const decNum = parseInt(decade, 10);
-    const endDecYear = decNum + 9;
+  const jumpTo = useCallback((camera: MapCameraState) => {
+    mapRef.current?.jumpTo({ center: camera.center, zoom: camera.zoom, pitch: camera.pitch ?? 0, bearing: camera.bearing ?? 0 });
+  }, []);
 
-    // Update WebGL Source
-    const venuesSource = map.getSource('jazz-venues-webgl') as mapboxgl.GeoJSONSource | undefined;
-    if (venuesSource) {
-      venuesSource.setData(buildVenuesGeoJSON(venues, decade));
-    }
+  const resize = useCallback(() => mapRef.current?.resize(), []);
 
-    // Clean up markers no longer in venues list
-    markersRef.current.forEach(({ marker }, id) => {
-      if (!venues.some((v) => v.properties.id === id)) {
-        marker.remove();
-        markersRef.current.delete(id);
-      }
-    });
-
-    venues.forEach((venue) => {
-      const { id, name, open_year, close_year } = venue.properties;
-      const [lng, lat] = venue.geometry.coordinates;
-      const isHighlighted = activeVenueIds.includes(id);
-
-      let lifecycleState: 'is-open' | 'is-closed' | 'is-future' = 'is-open';
-      let labelSuffix = '';
-
-      if (open_year && open_year > endDecYear) {
-        lifecycleState = 'is-future';
-      } else if (close_year && close_year < decNum) {
-        lifecycleState = 'is-closed';
-        labelSuffix = `<span class="displaced-badge">† ${close_year}</span>`;
-      } else if (close_year && close_year >= decNum && close_year <= endDecYear) {
-        lifecycleState = 'is-closed';
-        labelSuffix = `<span class="displaced-badge">LOST ${close_year}</span>`;
-      } else {
-        lifecycleState = 'is-open';
-      }
-
-      let existing = markersRef.current.get(id);
-
-      if (!existing) {
-        const el = document.createElement('div');
-        el.className = 'custom-jazz-marker';
-        el.dataset.id = id;
-
-        el.innerHTML = `
-          <div class="marker-wrapper ${lifecycleState} ${isHighlighted ? 'is-highlighted' : ''}">
-            <div class="marker-pin"></div>
-            <div class="marker-pulse"></div>
-            <span class="marker-label">${name} ${labelSuffix}</span>
-          </div>
-        `;
-
-        const popup = new mapboxgl.Popup({ offset: 16, closeButton: true, className: 'custom-popup' })
-          .setHTML(getVenuePopupHTML(venue, decade));
-
-        el.addEventListener('click', () => {
-          if (onSelectVenueRef.current) onSelectVenueRef.current(venue);
-        });
-
-        const marker = new mapboxgl.Marker({ element: el, anchor: 'center' })
-          .setLngLat([lng, lat])
-          .setPopup(popup)
-          .addTo(map);
-
-        markersRef.current.set(id, { marker, popup, venue });
-      } else {
-        const el = existing.marker.getElement();
-        const wrapper = el.querySelector('.marker-wrapper');
-        if (wrapper) {
-          wrapper.className = `marker-wrapper ${lifecycleState} ${isHighlighted ? 'is-highlighted' : ''}`;
-          const label = wrapper.querySelector('.marker-label');
-          if (label) {
-            label.innerHTML = `${name} ${labelSuffix}`;
-          }
-        }
-        existing.popup.setHTML(getVenuePopupHTML(venue, decade));
-      }
-    });
-  }, [venues, activeVenueIds, selectedDecade, isLoaded, buildVenuesGeoJSON, getVenuePopupHTML]);
-
-  return { map: mapInstanceRef.current, isLoaded, flyTo, updateChoroplethDecade };
+  return { map: mapRef.current, isLoaded, updateChoroplethYear, flyTo, jumpTo, resize };
 }
