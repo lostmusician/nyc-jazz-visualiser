@@ -10,7 +10,12 @@ const enterGallery = async (page: import('@playwright/test').Page, keepTour = fa
   if (!keepTour) {
     const tour = page.getByRole('dialog', { name: 'Move around' });
     await expect(tour).toBeVisible({ timeout: 3000 });
-    await tour.getByRole('button', { name: 'Skip' }).click();
+    await tour.getByRole('button', { name: 'Next' }).click();
+    await page.getByRole('button', { name: 'Next' }).click();
+    await page.getByRole('button', { name: 'Next' }).click();
+    await page.getByRole('button', { name: 'Done' }).click();
+    await expect(page.locator('[data-story-decade="1920"]')).toBeVisible();
+    await page.getByRole('button', { name: 'Skip story and explore' }).click();
   }
 };
 
@@ -101,20 +106,30 @@ test('hold-to-enter remains available when audio is unavailable', async ({ page 
   await expect(page.locator('.gallery-app')).toBeVisible();
 });
 
-test('guided tutorial advances, persists, and can be replayed', async ({ page }) => {
+test('guided tutorial is compulsory, advances, persists, and can be replayed', async ({ page }) => {
   const tour = page.getByRole('dialog', { name: 'Move around' });
   await expect(tour).toBeVisible({ timeout: 3000 });
+  await expect(tour.getByRole('button', { name: /Skip|Close/ })).toHaveCount(0);
+  await page.keyboard.press('Escape');
+  await expect(tour).toBeVisible();
+  await expect(page.locator('.gallery-surface')).toHaveAttribute('inert', '');
   await tour.getByRole('button', { name: 'Next' }).click();
-  await expect(page.getByRole('dialog', { name: 'Move through time' })).toBeVisible();
+  await expect(page.getByRole('dialog', { name: 'Follow the city through time' })).toBeVisible();
   await page.getByRole('button', { name: 'Next' }).click();
   await expect(page.getByRole('dialog', { name: 'Find a room' })).toBeVisible();
   await page.getByRole('button', { name: 'Next' }).click();
   await expect(page.getByRole('dialog', { name: 'Watch the map' })).toBeVisible();
   await page.getByRole('button', { name: 'Done' }).click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
-  await expect.poll(() => page.evaluate(() => localStorage.getItem('nyc-jazz-gallery-tour-v1'))).toBe('complete');
+  await expect.poll(() => page.evaluate(() => localStorage.getItem('nyc-jazz-gallery-tour-v2'))).toBe('complete');
+  await expect(page.locator('[data-story-decade="1920"]')).toBeVisible();
+  await expect(page.locator('[data-story-beat="1920-overview"]')).toHaveAttribute('data-active', 'true');
+  await page.getByRole('button', { name: 'Skip story and explore' }).click();
   await page.getByRole('button', { name: 'Show gallery tour' }).click();
   await expect(page.getByRole('dialog', { name: 'Move around' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Close' })).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
 });
 
 test('decade and scene controls filter the accessible club index', async ({ page }) => {
@@ -122,6 +137,8 @@ test('decade and scene controls filter the accessible club index', async ({ page
   await expect(page.getByText('Rooms That Held the Night')).toHaveCount(0);
   await expect(page.getByText('The Night Map')).toHaveCount(0);
   await expect(page.getByText('Move through the city’s club ecology')).toHaveCount(0);
+  await page.getByRole('button', { name: '1970' }).click();
+  await page.getByRole('button', { name: 'Skip story and explore' }).click();
   await page.getByRole('button', { name: 'Browse and filter clubs' }).click();
   const index = page.locator('.club-index');
   await expect(index.locator('.club-index-list button')).not.toHaveCount(0);
@@ -132,8 +149,30 @@ test('decade and scene controls filter the accessible club index', async ({ page
 
   const decade2020 = page.getByRole('button', { name: '2020' });
   await decade2020.click();
-  await expect(decade2020).toHaveClass(/active/);
+  const story = page.locator('[data-story-decade="2020"]');
+  await expect(story).toBeVisible();
+  await expect(story).toContainText('A rupture reveals the value of the room');
+  await expect(page.locator('[data-map-mode="story"]')).toBeVisible();
+  await story.getByRole('button', { name: 'Skip story and explore' }).click();
+  await expect(page.getByRole('button', { name: '2020' })).toHaveClass(/active/);
   await expect(page.getByRole('region', { name: /New York jazz-club map in the 2020s/ })).toBeVisible();
+});
+
+test('decade story activates beats in both scroll directions and exits to the filtered gallery', async ({ page }) => {
+  await page.getByRole('button', { name: '1980' }).click();
+  const story = page.locator('[data-story-decade="1980"]');
+  const scroller = story.locator('[data-story-scroller]');
+  const finalBeat = story.locator('[data-story-beat="1980-impact"]');
+  await finalBeat.scrollIntoViewIfNeeded();
+  await expect(finalBeat).toHaveAttribute('data-active', 'true');
+  const firstBeat = story.locator('[data-story-beat="1980-overview"]');
+  await firstBeat.scrollIntoViewIfNeeded();
+  await expect(firstBeat).toHaveAttribute('data-active', 'true');
+  await finalBeat.scrollIntoViewIfNeeded();
+  await finalBeat.getByRole('button', { name: 'Explore the 1980s' }).click();
+  await expect(story).toHaveCount(0);
+  await expect(page.getByRole('button', { name: '1980' })).toHaveClass(/active/);
+  await expect(scroller).toHaveCount(0);
 });
 
 test('club details manage focus, listening state, and Escape dismissal', async ({ page }) => {

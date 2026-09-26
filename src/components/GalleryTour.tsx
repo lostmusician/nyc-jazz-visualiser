@@ -9,8 +9,8 @@ const STEPS = [
   },
   {
     target: '[data-tour="timeline"]',
-    title: 'Move through time',
-    copy: 'Pick a decade and the cards, map markers, and rent layer all change with it.',
+    title: 'Follow the city through time',
+    copy: 'The top timeline stays with you in stories and the gallery. Its phase bands connect migration, depression, war, redevelopment, and the contemporary city.',
     preferred: 'top',
   },
   {
@@ -22,15 +22,16 @@ const STEPS = [
   {
     target: '[data-tour="map"]',
     title: 'Watch the map',
-    copy: 'Hover a card and its club lights up here. Markers also show what was open, closed, or still to come.',
+    copy: 'Story beats guide the map between relevant rooms. From 1980, rent shading shows residential neighborhood pressure in constant 2020 dollars—not a club’s commercial lease.',
     preferred: 'right',
   },
 ] as const;
 
 type Placement = { top: number; left: number; target: DOMRect | null };
 
-export function GalleryTour({ step, onStep, onFinish }: {
+export function GalleryTour({ step, required, onStep, onFinish }: {
   step: number;
+  required: boolean;
   onStep: (step: number) => void;
   onFinish: () => void;
 }) {
@@ -82,15 +83,28 @@ export function GalleryTour({ step, onStep, onFinish }: {
 
   React.useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onFinish();
+      if (event.key === 'Escape' && !required) onFinish();
+      if (event.key !== 'Tab' || !calloutRef.current) return;
+      const focusable = [...calloutRef.current.querySelectorAll<HTMLElement>('button, a[href], [tabindex]:not([tabindex="-1"])')]
+        .filter((element) => !element.hasAttribute('disabled'));
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [onFinish]);
+  }, [onFinish, required]);
 
   const last = step === STEPS.length - 1;
   return (
-    <div className="gallery-tour" data-ui-layer>
+    <div className="gallery-tour" data-ui-layer data-required={required ? 'true' : 'false'}>
       {placement.target && (
         <div
           className="tour-spotlight"
@@ -103,12 +117,12 @@ export function GalleryTour({ step, onStep, onFinish }: {
           }}
         />
       )}
-      <aside ref={calloutRef} className="tour-callout" role="dialog" aria-modal="false" aria-labelledby="tour-title" style={{ top: placement.top, left: placement.left }}>
+      <aside ref={calloutRef} className="tour-callout" role="dialog" aria-modal={required} aria-labelledby="tour-title" style={{ top: placement.top, left: placement.left }}>
         <div className="tour-count">{String(step + 1).padStart(2, '0')} / {String(STEPS.length).padStart(2, '0')}</div>
         <h2 id="tour-title">{current.title}</h2>
         <p>{current.copy}</p>
         <div className="tour-actions">
-          <button type="button" className="tour-skip" onClick={onFinish}>Skip</button>
+          {!required && <button type="button" className="tour-skip" onClick={onFinish}>Close</button>}
           <span />
           {step > 0 && <button type="button" onClick={() => onStep(step - 1)}>Back</button>}
           <button ref={actionRef} type="button" onClick={() => last ? onFinish() : onStep(step + 1)}>{last ? 'Done' : 'Next'}</button>
