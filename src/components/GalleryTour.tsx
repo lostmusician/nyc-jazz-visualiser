@@ -10,19 +10,19 @@ const STEPS = [
   {
     target: '[data-tour="timeline"]',
     title: 'Follow the city through time',
-    copy: 'The top timeline stays with you in stories and the gallery. Its phase bands connect migration, depression, war, redevelopment, and the contemporary city.',
+    copy: 'Traverse the timeline to see how jazz in New York City changed over the decades.',
     preferred: 'top',
   },
   {
     target: '[data-tour="filter"]',
     title: 'Find a room',
-    copy: 'Filter by scene, or open the club index when you already know where you want to go.',
+    copy: 'Filter by location, or open the club index to view a list of all active clubs.',
     preferred: 'bottom-left',
   },
   {
     target: '[data-tour="map"]',
     title: 'Watch the map',
-    copy: 'Story beats guide the map between relevant rooms. From 1980, rent shading shows residential neighborhood pressure in constant 2020 dollars—not a club’s commercial lease.',
+    copy: 'This is an interactive map to visualise all the jazz clubs in the city. The shading shows rising rent over the years.',
     preferred: 'right',
   },
 ] as const;
