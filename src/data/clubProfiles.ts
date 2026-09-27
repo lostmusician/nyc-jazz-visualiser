@@ -27,7 +27,7 @@ export const CLUB_PROFILES: ClubProfile[] = [
     tracks: [{ id: 'birdland-lullaby', title: 'Lullaby of Birdland', artist: 'George Shearing', year: 1952, relationship: 'documented-performance', listenUrl: youtubeSearch('George Shearing Lullaby of Birdland 1952'), evidenceUrl: 'https://www.birdlandjazz.com/history', note: 'Written for the club and its radio broadcast; this is the venue’s signature composition.' }],
   },
   {
-    venueId: '0021', description: 'A musician-backed 52nd Street room whose door carried the signatures of the players who made Swing Street legendary.',
+    venueId: '0021', description: 'A musician-backed 52nd Street room whose signed door documented many of the players associated with Swing Street.',
     image: '/images/Celebrated%20Female%20Jazz%20Artists%20Taken%20by%20William%20P.%20Gottlieb%20(16).jpg', imageAlt: 'A singer performing with a jazz ensemble.', imageCredit: 'William P. Gottlieb collection study image', imageSourceUrl: 'https://www.loc.gov/collections/william-p-gottlieb-jazz-photos/',
     tracks: [{ id: 'famous-door-basie', title: "One O’Clock Jump", artist: 'Count Basie Orchestra', year: 1937, relationship: 'documented-performance', listenUrl: youtubeSearch('Count Basie One O Clock Jump 1937'), evidenceUrl: 'https://www.jazzwax.com/2014/04/the-famous-door-1935-60.html', note: 'Count Basie’s orchestra held a celebrated Famous Door engagement; this was its theme.' }],
   },
@@ -119,7 +119,8 @@ const fallbackProfile = (venue: (typeof NYC_JAZZ_VENUES)[number]): ClubProfile =
   const years = `${properties.open_year ?? 'an unknown date'} to ${properties.close_year ?? 'the present'}`;
   return {
     venueId: properties.id,
-    description: properties.quote
+    description: properties.description
+      ?? properties.quote
       ?? `${properties.name} was a ${kind} at ${properties.address} in ${properties.neighborhood}, documented as operating from ${years}.`,
     image: STUDY_IMAGES[imageIndexForVenue(properties.id)],
     imageAlt: `Archival jazz performance study image representing the era of ${properties.name}.`,
@@ -130,7 +131,14 @@ const fallbackProfile = (venue: (typeof NYC_JAZZ_VENUES)[number]): ClubProfile =
 };
 
 /** All sourced venues receive a card; the 16 records above retain richer research. */
-export const GALLERY_PROFILES: ClubProfile[] = NYC_JAZZ_VENUES.map((venue) =>
-  CLUB_PROFILE_BY_ID.get(venue.properties.id) ?? fallbackProfile(venue));
+export const GALLERY_PROFILES: ClubProfile[] = NYC_JAZZ_VENUES.map((venue) => {
+  const custom = CLUB_PROFILE_BY_ID.get(venue.properties.id);
+  const fallback = fallbackProfile(venue);
+  if (!custom) return fallback;
+  return {
+    ...custom,
+    description: venue.properties.description ?? custom.description,
+  };
+});
 export const GALLERY_PROFILE_BY_ID = new Map(GALLERY_PROFILES.map((profile) => [profile.venueId, profile]));
 export const GALLERY_VENUE_IDS = new Set(GALLERY_PROFILES.map((profile) => profile.venueId));

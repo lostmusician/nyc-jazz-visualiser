@@ -1,6 +1,6 @@
 # Rooms That Held the Night
 
-An infinite, interactive gallery of New York jazz clubs. Archival club cards drift through a three-dimensional canvas around a translucent city map; the map, card highlights, scene filters, listening selections, and decade timeline share one application state. Each decade also has a four-beat, GSAP-powered scrollytelling chapter that guides the Mapbox camera between representative rooms before opening the filtered gallery.
+An infinite, interactive gallery of New York jazz clubs. Archival club cards drift through a three-dimensional canvas around a translucent city map; the map, card highlights, scene filters, listening selections, soundtrack, and timeline share one application state. Each decade also has a four-beat, GSAP-powered scrollytelling chapter that guides the Mapbox camera between representative rooms before opening the filtered gallery.
 
 The shared top timeline runs from the 1920s through the 2020s and groups decades into larger periods of New York history. Selecting a decade opens its story; finishing or skipping restores the gallery filtered to that decade. Scene filters trace Harlem, Swing Street and the Village, loft jazz, downtown avant-garde music, outer-borough networks, and contemporary rooms.
 
@@ -34,6 +34,7 @@ The production build regenerates `public/data/nyc_rent_history.geojson` from the
 - `src/components/DecadeStory.tsx` and `src/data/decadeStories.ts` pair ScrollTrigger-driven narration with curated venue clusters and explicit map cameras.
 - `src/data/venues.ts` and its era-specific imports retain 78 sourced geographic records across Manhattan, Brooklyn, Queens, and the Bronx.
 - `src/data/clubProfiles.ts` gives every sourced location a gallery card while keeping 16 launch profiles as the richer listening-research tier.
+- `src/data/decadeSoundtracks.ts` keeps “Skating in Central Park” as the gallery soundtrack and maps each timeline decade to the soundtrack used only in its story. Playback is currently exposed through the global soundtrack control.
 - `src/gallery/model.ts` owns decade overlap, lifecycle classification, and scene filtering.
 - `src/data/nhgis0001_csv/`, `src/data/nyct2010_26c/`, and `src/data/nyct2020_26c/` preserve the rent-generation inputs.
 
@@ -45,13 +46,17 @@ The WebGL experience has a DOM club index for keyboard and screen-reader access 
 - The rent layer is absent before 1980 because the preserved comparable census series begins in 1980; earlier housing pressure is conveyed through cited historical narration.
 - Venue closure descriptions remain distinct from the rent layer and retain their source links where available.
 - Listening items distinguish recordings made at a venue, documented performance relationships, and representative scene selections.
-- Listening links open the cited external source; the interface maintains only one selected record at a time and clears it when the detail closes or the venue is filtered out.
+- The gallery plays “Skating in Central Park,” while a decade’s representative soundtrack plays only while that decade’s story is open. The club-detail turntable is currently hidden until unique club tracks are sourced. Club-specific research selections remain labeled external listening links and do not claim that an era soundtrack was recorded in each room.
 
 ## Infinite Canvas attribution
 
 The canvas engine, deterministic chunk generation, movement model, distance/depth fading, texture approach, controls, touch detection, DPR limits, and render-distance behavior are adapted from [edoardolunardi/infinite-canvas](https://github.com/edoardolunardi/infinite-canvas), pinned to commit `4e710decd0a99b2e312c594668dd2ccc834764ee`.
 
 That source is MIT licensed. The original notice is retained in `THIRD_PARTY_NOTICES/Codrops-Infinite-Canvas-LICENSE.txt`, and adapted source files carry commit-level headers.
+
+## Record player attribution
+
+The dormant club-detail turntable adapts the circle-intersection tonearm geometry and lift/drag/drop behavior from [Codrops RecordPlayer](https://github.com/codrops/RecordPlayer) to React, TypeScript, and Pointer Events. It remains hidden until unique club tracks are sourced. No visual assets, fonts, effects, or recordings from that experiment are redistributed. The MIT attribution is retained in `THIRD_PARTY_NOTICES/Codrops-RecordPlayer-NOTICE.txt`.
 
 ## Stack
 

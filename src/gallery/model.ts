@@ -3,6 +3,20 @@ import type { SceneMovement, VenueFeature } from '../types';
 export const DECADES = [1920, 1930, 1940, 1950, 1960, 1970, 1980, 1990, 2000, 2010, 2020] as const;
 export type Decade = (typeof DECADES)[number];
 
+export interface Soundtrack {
+  decade?: Decade;
+  title: string;
+  artist?: string;
+  year?: number;
+  src: string;
+  credit: string;
+  sourceFilename: string;
+}
+
+export interface DecadeSoundtrack extends Soundtrack {
+  decade: Decade;
+}
+
 export type VenueEraStatus = 'active' | 'closed' | 'future';
 
 export const HISTORICAL_VENUE_MIN_ZOOM = 12.5;

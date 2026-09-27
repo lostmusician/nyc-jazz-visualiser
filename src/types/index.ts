@@ -28,6 +28,7 @@ export interface VenueProperties {
   audience_access_note?: string;
   price_evidence?: string;
   closure_evidence_url?: string;
+  description?: string;
 }
 
 export type VenueFeature = GeoJSON.Feature<GeoJSON.Point, VenueProperties>;

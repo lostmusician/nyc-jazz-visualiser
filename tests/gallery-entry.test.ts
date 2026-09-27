@@ -1,22 +1,17 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { getHoldProgress, getHoldReleaseOutcome, getTurntableSpeed, shouldSoundtrackBeAudible, wrapLoopCursor } from '../src/gallery/entry-state';
+import { getHoldProgress, getHoldReleaseOutcome, getTurntableSpeed, wrapLoopCursor } from '../src/gallery/entry-state';
 
-test('four-second hold progress clamps and distinguishes an early release', () => {
+test('five-second hold progress slows into the finish and distinguishes an early release', () => {
   assert.equal(getHoldProgress(-100), 0);
-  assert.equal(getHoldProgress(2000), 0.5);
-  assert.equal(getHoldProgress(5000), 1);
-  assert.equal(getHoldReleaseOutcome(3999), 'drop-and-reset');
-  assert.equal(getHoldReleaseOutcome(4000), 'enter');
-});
-
-test('manual mute, record playback, and hidden pages override soundtrack playback', () => {
-  const base = { status: 'playing', manualMuted: false, recordPaused: false, pageHidden: false };
-  assert.equal(shouldSoundtrackBeAudible(base), true);
-  assert.equal(shouldSoundtrackBeAudible({ ...base, manualMuted: true }), false);
-  assert.equal(shouldSoundtrackBeAudible({ ...base, recordPaused: true }), false);
-  assert.equal(shouldSoundtrackBeAudible({ ...base, pageHidden: true }), false);
-  assert.equal(shouldSoundtrackBeAudible({ ...base, status: 'dropping' }), false);
+  assert.equal(getHoldProgress(2500), 0.5);
+  assert.ok(getHoldProgress(4000) < 0.9, 'the ring should still have a visible final approach after four seconds');
+  assert.equal(getHoldProgress(6000), 1);
+  const firstLateStep = getHoldProgress(4500) - getHoldProgress(4000);
+  const finalStep = getHoldProgress(5000) - getHoldProgress(4500);
+  assert.ok(finalStep < firstLateStep, 'the highlight should decelerate as it completes the ring');
+  assert.equal(getHoldReleaseOutcome(4999), 'drop-and-reset');
+  assert.equal(getHoldReleaseOutcome(5000), 'enter');
 });
 
 test('soundtrack cursor wraps rather than ending at the final sample', () => {

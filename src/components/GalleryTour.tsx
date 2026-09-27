@@ -20,6 +20,12 @@ const STEPS = [
     preferred: 'bottom-left',
   },
   {
+    target: '[data-tour="soundtrack"]',
+    title: 'Control the soundtrack',
+    copy: 'Use the record button to spin the music down to mute, or spin it back up to continue listening.',
+    preferred: 'bottom-left',
+  },
+  {
     target: '[data-tour="map"]',
     title: 'Watch the map',
     copy: 'This is an interactive map to visualise all the jazz clubs in the city. The shading shows rising rent over the years.',

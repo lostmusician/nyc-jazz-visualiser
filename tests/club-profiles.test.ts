@@ -24,6 +24,8 @@ test('all 78 sourced locations have distinct gallery records', () => {
   assert.equal(new Set(GALLERY_PROFILES.map((profile) => profile.venueId)).size, 78);
   assert.ok(GALLERY_PROFILES.every((profile) => profile.description.length > 40));
   assert.ok(GALLERY_PROFILES.every((profile) => existsSync(`public${decodeURIComponent(profile.image)}`)));
+  assert.ok(NYC_JAZZ_VENUES.every((venue) => venue.properties.description?.includes('Notable Musicians:')));
+  assert.ok(NYC_JAZZ_VENUES.every((venue) => venue.properties.description?.includes('Music:')));
 });
 
 test('outer-borough additions cover Brooklyn, Queens, and the Bronx with source provenance', () => {

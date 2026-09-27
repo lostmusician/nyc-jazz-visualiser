@@ -1,0 +1,12 @@
+Interactive Record Player reference
+===================================
+
+The tonearm circle-intersection geometry, angle-to-playback mapping, and
+lift/drag/drop interaction in this project are adapted to React, TypeScript, and
+Pointer Events from Codrops' RecordPlayer experiment:
+
+https://github.com/codrops/RecordPlayer
+
+Original main.js copyright 2016 Codrops and distributed under the MIT License.
+No visual assets, audio effects, impulse responses, fonts, or bundled recordings
+from that project are redistributed here.

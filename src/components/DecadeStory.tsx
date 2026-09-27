@@ -87,7 +87,7 @@ export function DecadeStory({
     <div ref={rootRef} className="decade-story" data-story-decade={story.decade}>
       <div className="story-ambient" aria-hidden="true" />
       <div className="story-decade-ghost" aria-hidden="true">{story.decade}</div>
-      <button type="button" className="story-skip" onClick={onExplore}>Skip story and explore</button>
+      <button type="button" className="story-skip" onClick={onExplore}>Skip and continue to map</button>
       <div ref={scrollerRef} className="story-scroller" data-story-scroller>
         <header className="story-heading">
           <span>{story.historicalPhase} · {story.decade}s in New York</span>

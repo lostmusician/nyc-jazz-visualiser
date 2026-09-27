@@ -18,6 +18,10 @@ class PitchDropperProcessor extends AudioWorkletProcessor {
       if (data.leftBuffer) this.leftBuffer = new Float32Array(data.leftBuffer);
       if (data.rightBuffer) this.rightBuffer = new Float32Array(data.rightBuffer);
       if (data.reset) this.cursor = 0;
+      if (Number.isFinite(data.seekCursor)) this.cursor = Math.max(0, data.seekCursor);
+      if (Number.isInteger(data.requestCursor)) {
+        this.port.postMessage({ requestCursor: data.requestCursor, cursor: this.cursor });
+      }
     };
   }
 

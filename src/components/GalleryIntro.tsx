@@ -138,7 +138,7 @@ export function GalleryIntro({
           <button
             type="button"
             className={`hold-enter${isHolding ? ' is-holding' : ''}${progress >= 1 ? ' is-ready' : ''}`}
-            aria-label="Press and hold for four seconds to enter the gallery with audio"
+            aria-label="Press and hold for five seconds to enter the gallery with audio"
             aria-pressed={isHolding}
             data-hold-progress={progress.toFixed(4)}
             onPointerDown={(event) => {
@@ -178,7 +178,7 @@ export function GalleryIntro({
                 d="M1 44A43 43 0 0 1 44 1H256A43 43 0 0 1 299 44A43 43 0 0 1 256 87H44A43 43 0 0 1 1 44"
               />
             </svg>
-            <span>Spacebar</span>
+            <span>{progress >= 1 ? 'Release' : 'Spacebar'}</span>
           </button>
           <span>to launch gallery</span>
         </div>

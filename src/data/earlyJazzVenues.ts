@@ -31,6 +31,7 @@ export const EARLY_JAZZ_VENUES: VenueFeature[] = [
       quote: 'A nationally broadcast showcase for Duke Ellington and Cab Calloway, performed by Black artists for a segregated white audience.',
       notes: 'The original Harlem room operated from 1923 to 1936 before the Cotton Club name moved downtown. Closure economics are not inferred.',
       ...LPC_SOURCE,
+      description: "Operating from 1923 to 1936 at 644 Lenox Avenue (at 142nd St), the original Harlem Cotton Club was a nationally known Prohibition-era nightspot that presented Black performers to segregated, predominantly white audiences in a jungle-themed showroom.\n\nNotable Musicians: Duke Ellington, Cab Calloway, Ethel Waters, Ivie Anderson, and Louis Armstrong.\n\nMusic: Duke Ellington’s residency from 1927 to 1931 developed his \"jungle style\" compositions and reached nationwide audiences through NBC radio broadcasts."
     },
   },
   {
@@ -46,6 +47,7 @@ export const EARLY_JAZZ_VENUES: VenueFeature[] = [
       notes: 'The LPC report dates the Harlem venue to 1923–1934; James Haskins documents the economic pressures and the move downtown.',
       source_url: 'https://ufl.pb.unizin.org/cottonclub/chapter/chapter-5-prohibition-is-repealed-and-the-depression-deepens/',
       source_publisher: 'University of Florida Pressbooks',
+      description: "Founded in 1923 by Connie and George Immerman at 2221 7th Avenue (at 131st St), Connie’s Inn was a major Prohibition-era cabaret known for elaborate musical revues and prominent jazz headliners.\n\nNotable Musicians: Louis Armstrong, Fats Waller, Fletcher Henderson, Earl Hines, and Don Redman.\n\nMusic: The venue premiered Fats Waller's musical revue Hot Chocolates in 1929, featuring Louis Armstrong’s solo performance of \"Ain't Misbehavin'\"."
     },
   },
   {
@@ -60,6 +62,7 @@ export const EARLY_JAZZ_VENUES: VenueFeature[] = [
       notes: 'The LPC report identifies a 1925 opening; Leonard Feather reported the 1986 bankruptcy after speaking with John Hammond.',
       source_url: 'https://www.latimes.com/archives/la-xpm-1986-05-11-ca-5382-story.html',
       source_publisher: 'Los Angeles Times',
+      description: "Established in 1925 by Ed Smalls at 2294 7th Avenue (at 135th St), Small's Paradise was a Black-owned Harlem nightclub that operated for six decades. Unlike the Cotton Club, it welcomed integrated audiences and became known for its dancing waiters and after-hours jam sessions.\n\nNotable Musicians: Willie \"The Lion\" Smith, James P. Johnson, Roy Eldridge, Ray Charles, and King Curtis.\n\nMusic: Hosted Harlem stride piano battles in the 1920s and 1930s, then became a setting for organ-trio soul jazz in the 1950s and 1960s."
     },
   },
   {
@@ -75,6 +78,7 @@ export const EARLY_JAZZ_VENUES: VenueFeature[] = [
       notes: 'The LPC report dates the Savoy to 1926–1958; the Encyclopedia of African-American Culture and History documents its commercial decline and redevelopment.',
       source_url: 'https://www.encyclopedia.com/history/encyclopedias-almanacs-transcripts-and-maps/savoy-ballroom',
       source_publisher: 'Encyclopedia of African-American Culture and History',
+      description: "Opened in 1926 at 596 Lenox Avenue in Harlem, the Savoy Ballroom was a major swing dance palace. Spanning an entire city block, the integrated \"Home of Happy Feet\" hosted up to 4,000 dancers a night with two side-by-side bandstands.\n\nNotable Musicians: Chick Webb, Ella Fitzgerald, Count Basie, Benny Goodman, and Erskine Hawkins.\n\nMusic: Its double-bandstand \"battle of the bands\" featured Chick Webb's orchestra and helped establish swing rhythm and the Lindy Hop as central forms of Harlem dance culture."
     },
   },
   {
@@ -89,6 +93,7 @@ export const EARLY_JAZZ_VENUES: VenueFeature[] = [
       notes: 'A 1963 New Yorker profile records that the owners rented and rebuilt the room in 1933, then marked its thirtieth anniversary.',
       source_url: 'https://www.newyorker.com/magazine/1963/02/23/talent-scout-2',
       source_publisher: 'The New Yorker',
+      description: "Operating from 1933 to 1968 at 144 W 52nd St, Hickory House was a popular Swing Street steakhouse where patrons sat around a large circular bar with an elevated bandstand built right in the center.\n\nNotable Musicians: Joe Marsala, Marian McPartland, Adele Girard, Mary Lou Williams, and J.C. Higginbotham.\n\nMusic: Clarinetist Joe Marsala led one of 52nd Street’s early integrated swing groups here in the 1930s, and pianist Marian McPartland maintained a celebrated long-term trio residency through the 1950s and 1960s."
     },
   },
   {
@@ -103,6 +108,7 @@ export const EARLY_JAZZ_VENUES: VenueFeature[] = [
       notes: 'The record describes the original 52nd Street room only; it relocated to West 54th Street in 1962. LOC photographs document its 1940s jazz program.',
       source_url: 'https://www.loc.gov/item/2023868400/',
       source_publisher: 'Library of Congress',
+      description: "Located at 53 W 52nd St from 1934 to 1962, Jimmy Ryan’s was the steadfast home for Dixieland, traditional New Orleans, and Chicago-style swing on a street that increasingly favored modern bebop.\n\nNotable Musicians: Sidney Bechet, Roy Eldridge, Coleman Hawkins, Zutty Singleton, and Wilbur De Paris.\n\nMusic: Dedicated to unamplified traditional jazz, the club was famous for its energetic Sunday jam sessions and Sidney Bechet’s soaring soprano saxophone performances."
     },
   },
   {
@@ -117,6 +123,7 @@ export const EARLY_JAZZ_VENUES: VenueFeature[] = [
       notes: 'The operating span is normalized to the established 1937–1950 chronology; LOC records directly document Miles Davis, Coleman Hawkins, Charlie Parker, and others at the club in 1947.',
       source_url: 'https://www.loc.gov/item/2023867832/',
       source_publisher: 'Library of Congress',
+      description: "Situated at 72 W 52nd St from 1937 to 1950, the Three Deuces was a compact basement club that played a pivotal role in transitioning Swing Street into the incubator for modern bebop.\n\nNotable Musicians: Charlie Parker, Miles Davis, Coleman Hawkins, Art Tatum, Erroll Garner, and George Shearing.\n\nMusic: Coleman Hawkins recorded his historic 1939 masterpiece \"Body and Soul\" shortly after appearing here, and Charlie Parker and Miles Davis co-led groundbreaking 1947 bebop quintet sets on its stage."
     },
   },
   {
@@ -131,6 +138,7 @@ export const EARLY_JAZZ_VENUES: VenueFeature[] = [
       notes: 'The Library of Congress identifies the Downbeat Club at this address from 1944 to 1948.',
       source_url: 'https://www.loc.gov/static/collections/gerry-mulligan/articles-and-essays/jeru-in-the-words-of-gerry-mulligan/charlie-parker.html',
       source_publisher: 'Library of Congress',
+      description: "Operating from 1944 to 1948 at 66 W 52nd St, the Downbeat Club was a mid-1940s Swing Street venue where established swing musicians and younger bebop players shared the same bill.\n\nNotable Musicians: Billie Holiday, Dizzy Gillespie, Sarah Vaughan, Coleman Hawkins, and Art Tatum.\n\nMusic: The club hosted vocal sets by Billie Holiday and Sarah Vaughan, as well as early small-group bebop showcases photographed extensively by William P. Gottlieb."
     },
   },
   {
@@ -146,6 +154,7 @@ export const EARLY_JAZZ_VENUES: VenueFeature[] = [
       notes: 'JazzTimes traces the club’s 1948 bebop breakthrough and the ownership split that preceded its closure.',
       source_url: 'https://www.jazztimes.com/features/profiles/after-hours-new-yorks-jazz-joints-through-the-ages/',
       source_publisher: 'JazzTimes',
+      description: "Located at 1580 Broadway (at 47th St) from 1948 to 1950, the Royal Roost was dubbed the \"Metropolitan Bopera House.\" It was the first Broadway-area venue to explicitly feature bebop as its primary attraction.\n\nNotable Musicians: Miles Davis, Charlie Parker, Tadd Dameron, Dexter Gordon, and Fats Navarro.\n\nMusic: Broadcaster Symphony Sid Torin broadcast live nightly sets over WMCA radio from the club, and Miles Davis debuted his nine-piece Birth of the Cool nonet on this stage in September 1948."
     },
   },
 ];

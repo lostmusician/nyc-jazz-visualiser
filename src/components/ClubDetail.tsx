@@ -8,11 +8,9 @@ const relationshipLabel = {
   'representative-of-scene': 'Representative listening',
 } as const;
 
-export function ClubDetail({ venue, profile, playingTrackId, onPlayTrack, onClose }: {
+export function ClubDetail({ venue, profile, onClose }: {
   venue: VenueFeature;
   profile?: ClubProfile;
-  playingTrackId: string | null;
-  onPlayTrack: (trackId: string | null) => void;
   onClose: () => void;
 }) {
   const closeRef = React.useRef<HTMLButtonElement>(null);
@@ -52,16 +50,15 @@ export function ClubDetail({ venue, profile, playingTrackId, onPlayTrack, onClos
           {properties.quote && <blockquote>“{properties.quote}”</blockquote>}
           {profile?.tracks.length ? (
             <section className="listening-shelf" aria-label="Listening selections">
-              <h3>Records from this orbit</h3>
+              <h3>Further listening</h3>
               <div className="record-list">
                 {profile.tracks.map((track) => (
                   <a
                     key={track.id}
-                    className={playingTrackId === track.id ? 'record is-playing' : 'record'}
+                    className="record"
                     href={track.listenUrl}
                     target="_blank"
                     rel="noreferrer"
-                    onClick={() => onPlayTrack(track.id)}
                     aria-label={`Listen to ${track.title} by ${track.artist}`}
                   >
                     <i aria-hidden="true"><b /></i>
@@ -69,9 +66,9 @@ export function ClubDetail({ venue, profile, playingTrackId, onPlayTrack, onClos
                   </a>
                 ))}
               </div>
-              <p className="listening-note">Selections open at their listening source. “Representative” tracks evoke a documented performer or scene and are not claimed as recordings made in this room.</p>
+              <p className="listening-note">These research selections open at their external listening source. “Representative” tracks evoke a documented performer or scene and are not claimed as recordings made in this room.</p>
             </section>
-          ) : <p className="no-audio">Listening research for this venue is still in progress.</p>}
+          ) : <p className="no-audio">Further listening research for this venue is still in progress.</p>}
           <footer>
             <span>{properties.address}</span>
             {properties.source_url && <a href={properties.source_url} target="_blank" rel="noreferrer">{properties.source_publisher ? `Source: ${properties.source_publisher}` : 'Venue source'} ↗</a>}

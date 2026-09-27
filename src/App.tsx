@@ -5,6 +5,7 @@ import { DecadeStory } from './components/DecadeStory';
 import { DecadeTimeline } from './components/DecadeTimeline';
 import { GalleryIntro } from './components/GalleryIntro';
 import { GalleryTour } from './components/GalleryTour';
+import { SoundtrackToggle } from './components/SoundtrackToggle';
 import { GALLERY_PROFILE_BY_ID, GALLERY_VENUE_IDS } from './data/clubProfiles';
 import { DECADE_STORIES } from './data/decadeStories';
 import { NYC_JAZZ_VENUES } from './data/venues';
@@ -25,7 +26,6 @@ export const App = () => {
   const [scene, setScene] = React.useState<SceneMovement | 'all'>('all');
   const [hoveredVenueId, setHoveredVenueId] = React.useState<string | null>(null);
   const [selectedVenueId, setSelectedVenueId] = React.useState<string | null>(null);
-  const [playingTrackId, setPlayingTrackId] = React.useState<string | null>(null);
   const [browserOpen, setBrowserOpen] = React.useState(false);
   const [tourStep, setTourStep] = React.useState<number | null>(null);
   const [tourRequired, setTourRequired] = React.useState(false);
@@ -33,17 +33,8 @@ export const App = () => {
   const transitionTimerRef = React.useRef<number | null>(null);
   const tourTimerRef = React.useRef<number | null>(null);
   const reducedMotion = React.useMemo(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches, []);
-  const {
-    status: soundtrackStatus,
-    isAudible: soundtrackAudible,
-    startIntro,
-    beginHold,
-    abortHold,
-    continueIntoGallery,
-    toggleMuted,
-    pauseForRecord,
-    resumeAfterRecord,
-  } = useGallerySoundtrack();
+  const audio = useGallerySoundtrack(storyDecade);
+  const { status: soundtrackStatus, startIntro, beginHold, abortHold, continueIntoGallery } = audio;
 
   React.useEffect(() => startIntro(), [startIntro]);
 
@@ -64,7 +55,6 @@ export const App = () => {
   const selectScene = (nextScene: SceneMovement | 'all') => {
     setScene(nextScene);
     setHoveredVenueId(null);
-    setPlayingTrackId(null);
     if (selectedVenueId) {
       const venue = NYC_JAZZ_VENUES.find((candidate) => candidate.properties.id === selectedVenueId);
       if (venue && nextScene !== 'all' && venue.properties.scene_movement !== nextScene) setSelectedVenueId(null);
@@ -78,7 +68,6 @@ export const App = () => {
     setActiveStoryBeat(0);
     setBrowserOpen(false);
     setHoveredVenueId(null);
-    setPlayingTrackId(null);
     if (selectedVenue && !overlapsDecade(selectedVenue, nextDecade)) {
       setSelectedVenueId(null);
       window.requestAnimationFrame(() => returnFocusRef.current?.focus());
@@ -92,15 +81,8 @@ export const App = () => {
 
   const closeVenue = React.useCallback(() => {
     setSelectedVenueId(null);
-    if (playingTrackId) resumeAfterRecord();
-    setPlayingTrackId(null);
     window.requestAnimationFrame(() => returnFocusRef.current?.focus());
-  }, [playingTrackId, resumeAfterRecord]);
-
-  const selectTrack = React.useCallback((trackId: string | null) => {
-    setPlayingTrackId(trackId);
-    if (trackId) pauseForRecord();
-  }, [pauseForRecord]);
+  }, []);
 
   React.useEffect(() => {
     if (!browserOpen) return;
@@ -175,25 +157,11 @@ export const App = () => {
         />
       </React.Suspense>
       <DecadeTimeline value={decade} activeBeat={story ? activeStoryBeat : undefined} beatCount={story?.beats.length} onChange={selectDecade} />
+      <SoundtrackToggle audio={audio} />
       {!story && <>
       <button className="browser-toggle" type="button" data-ui-layer data-tour="filter" aria-label="Browse and filter clubs" aria-expanded={browserOpen} aria-controls="club-browser" onClick={() => setBrowserOpen((open) => !open)}>
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10M14 4v6M6 14v6" /></svg>
         <span>{galleryVenues.length}</span>
-      </button>
-      <button className={`soundtrack-toggle${soundtrackAudible ? ' is-playing' : ''}`} type="button" data-ui-layer aria-label={soundtrackAudible ? 'Mute gallery soundtrack' : 'Play gallery soundtrack'} onClick={toggleMuted}>
-        <svg className="turntable-icon" viewBox="0 0 64 64" aria-hidden="true">
-          <g className="vinyl-disc">
-            <circle className="vinyl-edge" cx="29" cy="32" r="24" />
-            <path className="vinyl-grooves" d="M31 11a21 21 0 0 1 18 17M31 15a17 17 0 0 1 14 13M31 19a13 13 0 0 1 10 9M27 53A21 21 0 0 1 9 36M27 49a17 17 0 0 1-14-13M27 45a13 13 0 0 1-10-9" />
-            <circle className="vinyl-label" cx="29" cy="32" r="8.5" />
-            <circle className="vinyl-spindle" cx="29" cy="32" r="1.7" />
-          </g>
-          <g className="tonearm">
-            <circle className="tonearm-pivot" cx="53" cy="12" r="3.2" />
-            <path d="M53 13c1.2 14.5-2.8 27.2-12.6 34.2" />
-            <path className="tonearm-head" d="m40.3 44.8 5.2 6.6-8.2 6.4-5.2-6.6z" />
-          </g>
-        </svg>
       </button>
       <button className="tour-toggle" type="button" data-ui-layer aria-label="Show gallery tour" onClick={() => { setBrowserOpen(false); setTourRequired(false); setTourStep(0); }}>?</button>
       <aside id="club-browser" className={`club-browser${browserOpen ? ' is-open' : ''}`} data-ui-layer aria-hidden={!browserOpen}>
@@ -203,7 +171,7 @@ export const App = () => {
         </nav>
         <div id="club-index"><ClubIndex venues={galleryVenues} onHover={setHoveredVenueId} onSelect={openVenue} /></div>
       </aside>
-      {selectedVenue && <ClubDetail venue={selectedVenue} profile={GALLERY_PROFILE_BY_ID.get(selectedVenue.properties.id)} playingTrackId={playingTrackId} onPlayTrack={selectTrack} onClose={closeVenue} />}
+      {selectedVenue && <ClubDetail venue={selectedVenue} profile={GALLERY_PROFILE_BY_ID.get(selectedVenue.properties.id)} onClose={closeVenue} />}
       </>}
       {story && (
         <DecadeStory
