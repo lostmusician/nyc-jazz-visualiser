@@ -113,7 +113,6 @@ export function DecadeStory({
               <h2 id={`${beat.id}-title`}>{beat.title}</h2>
               <p>{beat.body}</p>
               {beat.pullQuote && <blockquote>“{beat.pullQuote.text}”<cite>— {beat.pullQuote.speaker}, <a href={beat.pullQuote.url} target="_blank" rel="noreferrer">{beat.pullQuote.source}</a></cite></blockquote>}
-              {beat.rentContext && <p className="story-rent-context">{beat.rentContext.note}</p>}
               {beat.sources && (
                 <footer>
                   {beat.sources.map((source) => <a key={source.url} href={source.url} target="_blank" rel="noreferrer">{source.label} ↗</a>)}
