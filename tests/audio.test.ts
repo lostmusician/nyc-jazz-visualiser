@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
 import test from 'node:test';
 import { DECADE_SOUNDTRACKS, GALLERY_SOUNDTRACK, soundtrackForDecade } from '../src/data/decadeSoundtracks';
+import { resolveSoundtrack } from '../src/hooks/useGallerySoundtrack';
 import { clamp, crossfadeLevels, formatPlaybackTime, progressForTime, seekTimeForProgress } from '../src/gallery/audio';
 import { DECADES } from '../src/gallery/model';
 import {
@@ -30,6 +31,17 @@ test('the gallery keeps Skating in Central Park separate from era soundtracks', 
   assert.equal(GALLERY_SOUNDTRACK.src, '/audio/skating-in-central-park.mp3');
   assert.ok(existsSync(`public${GALLERY_SOUNDTRACK.src}`));
   assert.ok(Object.values(DECADE_SOUNDTRACKS).every((track) => track.src !== GALLERY_SOUNDTRACK.src));
+});
+
+test('soundtrack resolution supports both gallery theme and each individual decade', () => {
+  assert.equal(resolveSoundtrack('gallery').title, 'Skating in Central Park');
+  assert.equal(resolveSoundtrack(null).title, 'Skating in Central Park');
+  assert.equal(resolveSoundtrack(undefined).title, 'Skating in Central Park');
+  for (const decade of DECADES) {
+    const track = resolveSoundtrack(decade);
+    assert.equal(track.decade, decade);
+    assert.equal(track.title, DECADE_SOUNDTRACKS[decade].title);
+  }
 });
 
 test('playback helpers clamp seeking and format long tracks', () => {

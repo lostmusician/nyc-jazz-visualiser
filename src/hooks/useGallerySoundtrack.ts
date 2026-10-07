@@ -8,10 +8,38 @@ const WORKLET_URL = '/audio/pitch-dropper-processor.js';
 const DEFAULT_VOLUME = 0.72;
 const CROSSFADE_SECONDS = 0.85;
 const SPIN_SECONDS = 1.6;
-const HOLD_RECOVERY_SECONDS = 0.9;
 const SILENCE = 0.0001;
 
 export type SoundtrackStatus = 'idle' | 'loading' | 'playing' | 'dropping' | 'paused' | 'error';
+export type TrackSelection = Decade | 'gallery';
+
+export const resolveSoundtrack = (selection: TrackSelection | null | undefined): Soundtrack => {
+  if (!selection || selection === 'gallery') return GALLERY_SOUNDTRACK;
+  return DECADE_SOUNDTRACKS[selection] ?? GALLERY_SOUNDTRACK;
+};
+
+const arrayBufferCache = new Map<string, ArrayBuffer>();
+const arrayBufferLoads = new Map<string, Promise<ArrayBuffer>>();
+
+export const preloadAudio = async (src: string): Promise<ArrayBuffer> => {
+  const cached = arrayBufferCache.get(src);
+  if (cached) return cached;
+  const pending = arrayBufferLoads.get(src);
+  if (pending) return pending;
+  const load = (async () => {
+    const response = await fetch(src);
+    if (!response.ok) throw new Error(`Audio preload failed: ${response.status}`);
+    const buffer = await response.arrayBuffer();
+    arrayBufferCache.set(src, buffer);
+    return buffer;
+  })();
+  arrayBufferLoads.set(src, load);
+  try {
+    return await load;
+  } finally {
+    if (arrayBufferLoads.get(src) === load) arrayBufferLoads.delete(src);
+  }
+};
 
 type Engine = {
   node: AudioWorkletNode;
@@ -30,9 +58,13 @@ const disconnectEngine = (engine: Engine | null) => {
   engine?.gain.disconnect();
 };
 
-export function useGallerySoundtrack(storyDecade: Decade | null) {
+export function useGallerySoundtrack(
+  soundtrackSelection: TrackSelection | null = 'gallery',
+  onTrackChange?: (track: TrackSelection) => void,
+) {
   const contextRef = React.useRef<AudioContext | null>(null);
   const bufferCacheRef = React.useRef(new Map<string, AudioBuffer>());
+  const bufferLoadsRef = React.useRef(new Map<string, Promise<AudioBuffer>>());
   const engineRef = React.useRef<Engine | null>(null);
   const outgoingEngineRef = React.useRef<Engine | null>(null);
   const engineGenerationRef = React.useRef(0);
@@ -44,10 +76,9 @@ export function useGallerySoundtrack(storyDecade: Decade | null) {
   const galleryActiveRef = React.useRef(false);
   const playbackSpeedRef = React.useRef(1);
   const mutedRef = React.useRef(false);
-  const intendedPlayingRef = React.useRef(true);
-  const hiddenPausedRef = React.useRef(false);
+  const intendedPlayingRef = React.useRef(soundtrackSelection !== null && soundtrackSelection !== 'gallery');
   const volumeRef = React.useRef(DEFAULT_VOLUME);
-  const activeTrackRef = React.useRef<Soundtrack>(storyDecade === null ? GALLERY_SOUNDTRACK : DECADE_SOUNDTRACKS[storyDecade]);
+  const activeTrackRef = React.useRef<Soundtrack>(resolveSoundtrack(soundtrackSelection));
 
   const [status, setStatus] = React.useState<SoundtrackStatus>('idle');
   const [muted, setMuted] = React.useState(false);
@@ -85,22 +116,41 @@ export function useGallerySoundtrack(storyDecade: Decade | null) {
   const ensureContext = React.useCallback(async () => {
     let context = contextRef.current;
     if (!context || context.state === 'closed') {
-      context = new AudioContext();
+      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      context = new AudioCtx();
       contextRef.current = context;
       await context.audioWorklet.addModule(WORKLET_URL);
     }
-    if (context.state === 'suspended') await context.resume();
+    if (!document.hidden && context.state === 'suspended') {
+      void context.resume().catch(() => undefined);
+    }
     return context;
   }, []);
 
   const loadBuffer = React.useCallback(async (context: AudioContext, track: Soundtrack) => {
     const cached = bufferCacheRef.current.get(track.src);
     if (cached) return cached;
-    const response = await fetch(track.src);
-    if (!response.ok) throw new Error(`Soundtrack request failed: ${response.status}`);
-    const buffer = await context.decodeAudioData(await response.arrayBuffer());
-    bufferCacheRef.current.set(track.src, buffer);
-    return buffer;
+    const pending = bufferLoadsRef.current.get(track.src);
+    if (pending) return pending;
+    const load = (async () => {
+      let arrayBuffer = arrayBufferCache.get(track.src);
+      if (!arrayBuffer) {
+        arrayBuffer = await preloadAudio(track.src);
+      }
+      const buffer = await context.decodeAudioData(arrayBuffer.slice(0));
+      bufferCacheRef.current.set(track.src, buffer);
+      return buffer;
+    })();
+    bufferLoadsRef.current.set(track.src, load);
+    try {
+      return await load;
+    } finally {
+      if (bufferLoadsRef.current.get(track.src) === load) bufferLoadsRef.current.delete(track.src);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    void preloadAudio(GALLERY_SOUNDTRACK.src).catch(() => undefined);
   }, []);
 
   const startCursorUpdates = React.useCallback((engine: Engine) => {
@@ -121,14 +171,29 @@ export function useGallerySoundtrack(storyDecade: Decade | null) {
     setStatus('loading');
     try {
       const context = await ensureContext();
+      if (generation !== engineGenerationRef.current) return;
+      if (!document.hidden && context.state === 'suspended') {
+        void context.resume().catch(() => undefined);
+      }
+      if (generation !== engineGenerationRef.current) return;
       const buffer = await loadBuffer(context, track);
       if (generation !== engineGenerationRef.current) return;
+      if (!intendedPlayingRef.current && !galleryActiveRef.current) {
+        setStatus('idle');
+        return;
+      }
+      bufferCacheRef.current.delete(track.src);
+      bufferCacheRef.current.set(track.src, buffer);
+      while (bufferCacheRef.current.size > 2) {
+        const oldest = bufferCacheRef.current.keys().next().value;
+        if (oldest) bufferCacheRef.current.delete(oldest);
+      }
 
       clearCrossfade();
       const outgoing = engineRef.current;
       const node = new AudioWorkletNode(context, 'pitch-dropper-processor', { parameterData: { speed: 1 } });
       const gain = context.createGain();
-      const shouldPlay = intendedPlayingRef.current && !mutedRef.current && !document.hidden;
+      const shouldPlay = intendedPlayingRef.current && !document.hidden;
       const speed = node.parameters.get('speed');
       const safeOffset = ((offsetSeconds % buffer.duration) + buffer.duration) % buffer.duration;
       const left = new Float32Array(buffer.getChannelData(0));
@@ -178,49 +243,51 @@ export function useGallerySoundtrack(storyDecade: Decade | null) {
   }, [clearAutomation, clearCrossfade, ensureContext, loadBuffer, startCursorUpdates, stopCurrentEngine]);
 
   React.useEffect(() => {
-    const track = storyDecade === null ? GALLERY_SOUNDTRACK : DECADE_SOUNDTRACKS[storyDecade];
+    const track = resolveSoundtrack(soundtrackSelection);
     activeTrackRef.current = track;
     setActiveTrack(track);
     if (galleryActiveRef.current && engineRef.current?.track.src !== track.src) void startTrack(track);
-  }, [startTrack, storyDecade]);
+  }, [soundtrackSelection, startTrack]);
+
+  const selectTrack = React.useCallback((nextSelection: TrackSelection) => {
+    onTrackChange?.(nextSelection);
+    const track = resolveSoundtrack(nextSelection);
+    activeTrackRef.current = track;
+    setActiveTrack(track);
+    if (galleryActiveRef.current && engineRef.current?.track.src !== track.src) {
+      void startTrack(track);
+    }
+  }, [onTrackChange, startTrack]);
 
   const startIntro = React.useCallback(() => {
     if (introStartedRef.current) return;
     introStartedRef.current = true;
-    void startTrack(GALLERY_SOUNDTRACK);
-  }, [startTrack]);
+    void preloadAudio(GALLERY_SOUNDTRACK.src).catch(() => undefined);
+  }, []);
 
   const beginHold = React.useCallback(() => {
     mutedRef.current = false;
     intendedPlayingRef.current = true;
     setMuted(false);
     const context = contextRef.current;
+    if (context && context.state === 'suspended') {
+      void context.resume().catch(() => undefined);
+    }
     const engine = engineRef.current;
     const speed = engine?.node.parameters.get('speed');
     if (!context || !engine || !speed) {
-      void startTrack(GALLERY_SOUNDTRACK);
+      void startTrack(activeTrackRef.current);
       return;
     }
     clearAutomation();
+    playbackSpeedRef.current = 1;
+    setParam(speed, context, 1);
     setParam(engine.gain.gain, context, volumeRef.current);
     setStatus('playing');
-    if (context.state === 'suspended') void context.resume().catch(() => undefined);
-    const generation = automationGenerationRef.current;
-    const startedAt = performance.now();
-    const fromSpeed = playbackSpeedRef.current;
-    const durationSeconds = Math.max(0.12, HOLD_RECOVERY_SECONDS * (1 - fromSpeed));
-    const tick = (now: number) => {
-      if (generation !== automationGenerationRef.current) return;
-      const progress = Math.min((now - startedAt) / (durationSeconds * 1000), 1);
-      const nextSpeed = getTurntableSpeed(fromSpeed, 1, progress);
-      playbackSpeedRef.current = nextSpeed;
-      setParam(speed, context, nextSpeed);
-      if (progress < 1) automationFrameRef.current = requestAnimationFrame(tick);
-    };
-    automationFrameRef.current = requestAnimationFrame(tick);
   }, [clearAutomation, startTrack]);
 
   const abortHold = React.useCallback(() => {
+    intendedPlayingRef.current = false;
     const context = contextRef.current;
     const engine = engineRef.current;
     const speed = engine?.node.parameters.get('speed');
@@ -235,16 +302,20 @@ export function useGallerySoundtrack(storyDecade: Decade | null) {
     setStatus('dropping');
     const startedAt = performance.now();
     const fromSpeed = playbackSpeedRef.current;
-    const durationSeconds = Math.max(0.18, 3 * fromSpeed);
+    const durationSeconds = Math.max(0.18, 1.4 * fromSpeed);
     const tick = (now: number) => {
       if (generation !== automationGenerationRef.current) return;
       const progress = Math.min((now - startedAt) / (durationSeconds * 1000), 1);
       const nextSpeed = getTurntableSpeed(fromSpeed, 0, progress);
       playbackSpeedRef.current = nextSpeed;
       setParam(speed, context, nextSpeed);
-      if (progress < 1) automationFrameRef.current = requestAnimationFrame(tick);
-      else {
-        stopCurrentEngine();
+      if (progress < 1) {
+        automationFrameRef.current = requestAnimationFrame(tick);
+      } else {
+        playbackSpeedRef.current = 0;
+        setParam(speed, context, 0);
+        setParam(engine.gain.gain, context, SILENCE);
+        engine.node.port.postMessage({ seekCursor: 0 });
         setStatus('idle');
       }
     };
@@ -268,10 +339,11 @@ export function useGallerySoundtrack(storyDecade: Decade | null) {
     }
     clearAutomation();
     clearCrossfade();
-    if (context.state === 'suspended') void context.resume().catch(() => undefined);
+    if (!nextMuted && context.state === 'suspended' && !document.hidden) void context.resume().catch(() => setStatus('error'));
     const generation = automationGenerationRef.current;
     const startedAt = performance.now();
     const fromSpeed = playbackSpeedRef.current;
+    const fromGain = engine.gain.gain.value;
     const targetSpeed = nextMuted ? 0 : 1;
     setStatus(nextMuted ? 'dropping' : 'playing');
     const tick = (now: number) => {
@@ -280,7 +352,7 @@ export function useGallerySoundtrack(storyDecade: Decade | null) {
       const nextSpeed = getTurntableSpeed(fromSpeed, targetSpeed, progress);
       playbackSpeedRef.current = nextSpeed;
       setParam(speed, context, nextSpeed);
-      setParam(engine.gain.gain, context, Math.max(SILENCE, volumeRef.current * nextSpeed));
+      setParam(engine.gain.gain, context, Math.max(SILENCE, fromGain + (nextMuted ? SILENCE - fromGain : volumeRef.current - fromGain) * progress));
       if (progress < 1) automationFrameRef.current = requestAnimationFrame(tick);
       else setStatus(nextMuted ? 'paused' : 'playing');
     };
@@ -290,7 +362,7 @@ export function useGallerySoundtrack(storyDecade: Decade | null) {
   const toggleMuted = React.useCallback(() => {
     const nextMuted = !mutedRef.current;
     mutedRef.current = nextMuted;
-    intendedPlayingRef.current = true;
+    intendedPlayingRef.current = !nextMuted;
     setMuted(nextMuted);
     applyManualMuteState(nextMuted);
   }, [applyManualMuteState]);
@@ -345,21 +417,46 @@ export function useGallerySoundtrack(storyDecade: Decade | null) {
       const context = contextRef.current;
       if (!context) return;
       if (document.hidden) {
-        hiddenPausedRef.current = context.state === 'running';
+        clearAutomation();
+        clearCrossfade();
+        if (!galleryActiveRef.current && !intendedPlayingRef.current) {
+          stopCurrentEngine();
+          setStatus('idle');
+          void context.suspend();
+          return;
+        }
+        const engine = engineRef.current;
+        if (engine) {
+          const speed = engine.node.parameters.get('speed');
+          if (speed) setParam(speed, context, 0);
+          setParam(engine.gain.gain, context, SILENCE);
+          playbackSpeedRef.current = 0;
+          setStatus((current) => current === 'loading' ? current : 'paused');
+        }
         void context.suspend();
-      } else if (hiddenPausedRef.current && intendedPlayingRef.current && !mutedRef.current) {
-        hiddenPausedRef.current = false;
-        void context.resume().catch(() => setStatus('error'));
+      } else if (intendedPlayingRef.current) {
+        void context.resume().then(() => {
+          if (document.hidden || !intendedPlayingRef.current) return;
+          const engine = engineRef.current;
+          if (!engine) return;
+          const speed = engine.node.parameters.get('speed');
+          if (speed) setParam(speed, context, 1);
+          setParam(engine.gain.gain, context, volumeRef.current);
+          playbackSpeedRef.current = 1;
+          setStatus('playing');
+        }).catch(() => setStatus('error'));
       }
     };
     document.addEventListener('visibilitychange', onVisibilityChange);
     return () => document.removeEventListener('visibilitychange', onVisibilityChange);
-  }, []);
+  }, [clearAutomation, clearCrossfade, stopCurrentEngine]);
 
   React.useEffect(() => () => {
     engineGenerationRef.current += 1;
     stopCurrentEngine();
     void contextRef.current?.close();
+    bufferCacheRef.current.clear();
+    bufferLoadsRef.current.clear();
   }, [stopCurrentEngine]);
 
   return {
@@ -382,6 +479,7 @@ export function useGallerySoundtrack(storyDecade: Decade | null) {
     setVolume,
     seek,
     retry,
+    selectTrack,
   };
 }
 

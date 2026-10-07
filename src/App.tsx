@@ -22,6 +22,7 @@ export const App = () => {
   const [entryPhase, setEntryPhase] = React.useState<'intro' | 'transitioning' | 'gallery'>('intro');
   const [decade, setDecade] = React.useState<Decade>(1970);
   const [storyDecade, setStoryDecade] = React.useState<Decade | null>(null);
+  const [soundtrackSelection, setSoundtrackSelection] = React.useState<Decade | 'gallery'>('gallery');
   const [activeStoryBeat, setActiveStoryBeat] = React.useState(0);
   const [scene, setScene] = React.useState<SceneMovement | 'all'>('all');
   const [hoveredVenueId, setHoveredVenueId] = React.useState<string | null>(null);
@@ -33,7 +34,7 @@ export const App = () => {
   const transitionTimerRef = React.useRef<number | null>(null);
   const tourTimerRef = React.useRef<number | null>(null);
   const reducedMotion = React.useMemo(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches, []);
-  const audio = useGallerySoundtrack(storyDecade);
+  const audio = useGallerySoundtrack(soundtrackSelection, setSoundtrackSelection);
   const { status: soundtrackStatus, startIntro, beginHold, abortHold, continueIntoGallery } = audio;
 
   React.useEffect(() => startIntro(), [startIntro]);
@@ -65,6 +66,7 @@ export const App = () => {
     if (document.activeElement instanceof HTMLElement) returnFocusRef.current = document.activeElement;
     setDecade(nextDecade);
     setStoryDecade(nextDecade);
+    setSoundtrackSelection(nextDecade);
     setActiveStoryBeat(0);
     setBrowserOpen(false);
     setHoveredVenueId(null);
@@ -122,6 +124,7 @@ export const App = () => {
     setTourRequired(false);
     setDecade(1920);
     setStoryDecade(1920);
+    setSoundtrackSelection(1920);
     setActiveStoryBeat(0);
   }, [tourRequired]);
 
@@ -157,7 +160,7 @@ export const App = () => {
         />
       </React.Suspense>
       <DecadeTimeline value={decade} activeBeat={story ? activeStoryBeat : undefined} beatCount={story?.beats.length} onChange={selectDecade} />
-      <SoundtrackToggle audio={audio} />
+      <SoundtrackToggle audio={audio} decade={decade} />
       {!story && <>
       <button className="browser-toggle" type="button" data-ui-layer data-tour="filter" aria-label="Browse and filter clubs" aria-expanded={browserOpen} aria-controls="club-browser" onClick={() => setBrowserOpen((open) => !open)}>
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10M14 4v6M6 14v6" /></svg>

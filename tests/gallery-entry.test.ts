@@ -1,17 +1,28 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { getHoldProgress, getHoldReleaseOutcome, getTurntableSpeed, wrapLoopCursor } from '../src/gallery/entry-state';
+import {
+  HOLD_READY_PROGRESS,
+  getHoldProgress,
+  getHoldReleaseOutcome,
+  getTurntableSpeed,
+  getVisualHoldProgress,
+  wrapLoopCursor,
+} from '../src/gallery/entry-state';
 
-test('five-second hold progress slows into the finish and distinguishes an early release', () => {
+test('three-and-a-half-second hold progress slows into the finish and includes a forgiving completion threshold', () => {
   assert.equal(getHoldProgress(-100), 0);
-  assert.equal(getHoldProgress(2500), 0.5);
-  assert.ok(getHoldProgress(4000) < 0.9, 'the ring should still have a visible final approach after four seconds');
-  assert.equal(getHoldProgress(6000), 1);
-  const firstLateStep = getHoldProgress(4500) - getHoldProgress(4000);
-  const finalStep = getHoldProgress(5000) - getHoldProgress(4500);
+  assert.ok(Math.abs(getHoldProgress(1500) - 0.5) < 0.02, 'the halfway mark is reached near 1.5s');
+  assert.ok(getHoldProgress(2700) < 0.92, 'the ring should still have a visible final approach');
+  assert.equal(getHoldProgress(3500), 1);
+  const firstLateStep = getHoldProgress(3000) - getHoldProgress(2500);
+  const finalStep = getHoldProgress(3500) - getHoldProgress(3000);
   assert.ok(finalStep < firstLateStep, 'the highlight should decelerate as it completes the ring');
-  assert.equal(getHoldReleaseOutcome(4999), 'drop-and-reset');
-  assert.equal(getHoldReleaseOutcome(5000), 'enter');
+  assert.ok(getVisualHoldProgress(getHoldProgress(2700)) < 1, 'visual stroke is still open before threshold');
+  assert.equal(getVisualHoldProgress(HOLD_READY_PROGRESS), 1, 'visual stroke closes precisely at ready threshold');
+  assert.equal(getVisualHoldProgress(getHoldProgress(3000)), 1, 'visual stroke is closed at 3000ms');
+  assert.equal(getHoldReleaseOutcome(2999), 'drop-and-reset');
+  assert.equal(getHoldReleaseOutcome(3000), 'enter');
+  assert.equal(getHoldReleaseOutcome(3500), 'enter');
 });
 
 test('soundtrack cursor wraps rather than ending at the final sample', () => {
