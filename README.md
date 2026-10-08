@@ -1,27 +1,37 @@
-# Rooms That Held the Night: NYC Jazz Visualiser
+# NYC Jazz Visualiser
 
 > An interactive, infinite 3D visual archive and spatial cartography of over a century of New York City's jazz ecosystem—from 1920s Harlem speakeasies to modern outer-borough lofts.
 
-Archival club photography drifts through a three-dimensional WebGL space surrounding an interactive city map. The 3D canvas, map clusters, neighborhood rent heatmaps, synchronized decade soundtracks, and chronological timeline share a unified reactive state.
+<p align="center">
+  <a href="https://nycjazz.ivanchiew.com" target="_blank" rel="noopener noreferrer">
+    <img src="https://img.shields.io/badge/Live_Demo-nycjazz.ivanchiew.com-d4a354?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Live Demo: nycjazz.ivanchiew.com" />
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://nycjazz.ivanchiew.com" target="_blank" rel="noopener noreferrer">
+    <img src="docs/assets/nyc-jazz-visualiser-preview.png" alt="NYC Jazz Visualiser Interactive 3D Canvas and Map Preview" width="100%" style="border-radius: 10px; box-shadow: 0 16px 48px rgba(0,0,0,0.6);" />
+  </a>
+</p>
 
 ---
 
 ## Motivation & Story Behind the Project
 
-This project was born out of a personal love for music—especially jazz—and a memorable school trip to New York City.
+This project was born out of my personal love for music—especially jazz—and a memorable school trip to New York City.
 
-During the trip, wandering through historical venues and experiencing live jazz events across Manhattan and Brooklyn revealed how deeply intertwined the music is with the geography and socioeconomic history of the city. Visiting the interactive music exhibit at the **Museum of the City of New York (MCNY)** left a lasting impression: seeing how multimedia, archival storytelling, and spatial geography could come together to make cultural history feel alive and tactile.
+During my trip, wandering through historical venues and experiencing live jazz events across Manhattan and Brooklyn revealed to me just how deeply intertwined the music is with the geography and socioeconomic history of the city. Visiting the interactive music exhibit at the **Museum of the City of New York (MCNY)** left a lasting impression on me: seeing how multimedia, archival storytelling, and spatial geography could come together to make cultural history feel alive and tactile.
 
-*Rooms That Held the Night* was built to capture that experience:
-- How jazz in NYC was never static in one neighborhood—it moved from Harlem during Prohibition and the Renaissance, to the fever pitch of 52nd Street swing, into Greenwich Village basements and Lower East Side lofts, and out to modern community hubs in Brooklyn, Queens, and the Bronx.
-- How changing urban realities—from historical cabarets and blue laws to rising residential rents and gentrification—continually displaced and reshaped where artists could play.
+I built this visualiser to capture that experience:
+- **Spatial Migration**: How jazz in NYC was never static in one neighborhood—it evolved from Harlem during Prohibition and the Renaissance, to the fever pitch of 52nd Street swing, into Greenwich Village basements and Lower East Side lofts, and out to modern community hubs in Brooklyn, Queens, and the Bronx.
+- **Urban & Economic Pressures**: How changing urban realities—from historical cabarets and blue laws to rising residential rents and gentrification—continually displaced and reshaped where artists could play.
 
 ---
 
 ## Key Features
 
 ### 1. Infinite 3D Archival Canvas
-- **Immersive 3D Space**: Built on WebGL / Three.js, club cards and historical imagery drift through coordinate space.
+- **Immersive 3D Space**: Built on WebGL / Three.js, archival club cards and photography drift through coordinate space.
 - **Fluid Multi-Modal Navigation**: Navigate using keyboard controls (**WASD** to pan up/down/left/right, **E/Q** to move through depth) or natural mouse gestures (click & drag to pan, wheel/pinch to travel through depth).
 
 ### 2. Synchronized Cartography & Rent Economics
