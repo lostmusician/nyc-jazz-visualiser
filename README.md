@@ -37,10 +37,6 @@ During the trip, wandering through historical venues and experiencing live jazz 
 - **11 Curated Eras**: Traverse from the 1920s Harlem Renaissance to the 2020s modern scene.
 - **Camera-Driven Chapters**: Each decade features four-beat narrative chapters that guide the map camera through representative clubs before returning to the filtered canvas.
 
-### 5. Interactive First-Time Onboarding
-- **Interactive Non-Blocking Tour**: A lightweight, centered translucent guide introduces the controls, venue directory, soundtrack, and city map. Users can freely click and interact with live controls and the map during the tutorial.
-- **Onboarding Launchpad**: New visitors can jump straight into the chronological 1920s narrative or jump immediately into freeform exploration.
-
 ---
 
 ## Quick Start (Run Locally)
