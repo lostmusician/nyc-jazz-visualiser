@@ -270,15 +270,14 @@ button:focus-visible, a:focus-visible, summary:focus-visible, input:focus-visibl
 .gesture-icon { width: 1.8rem; height: 1.8rem; flex-shrink: 0; color: #d4a76a; }
 .gesture-item strong { display: block; color: #ede0c8; font-size: .75rem; font-weight: 500; }
 .gesture-item span { display: block; color: #9c8770; font-size: .66rem; font-family: 'DM Mono', monospace; }
-.tour-prompt-box { margin: 1rem 0; padding: .85rem 1rem; border-radius: .75rem; background: rgba(240, 163, 91, 0.08); border: 1px solid rgba(240, 163, 91, 0.28); }
-.prompt-badge { display: inline-block; color: #f0a35b; font: 600 .58rem 'DM Mono', monospace; text-transform: uppercase; letter-spacing: .08em; margin-bottom: .3rem; }
-.tour-prompt-box p { margin: 0; color: #e6d3b5; font-size: .82rem; line-height: 1.5; }
-.tour-actions { display: flex; align-items: center; gap: .65rem; margin-top: 1.4rem; padding-top: .9rem; border-top: 1px solid rgba(233, 198, 137, 0.12); }
+.tour-actions { display: flex; align-items: center; gap: .65rem; margin-top: 1.4rem; padding-top: .9rem; border-top: 1px solid rgba(233, 198, 137, 0.12); flex-wrap: wrap; }
 .tour-actions span { flex: 1; }
-.tour-actions button { padding: .55rem .95rem; color: #d7c3a0; border: 1px solid rgba(221,184,119,.24); border-radius: .45rem; background: rgba(255,255,255,.03); cursor: pointer; text-transform: uppercase; letter-spacing: .08em; font: 500 .62rem 'DM Mono', monospace; transition: background .18s, border-color .18s, color .18s; }
+.tour-actions button { padding: .55rem .95rem; color: #d7c3a0; border: 1px solid rgba(221,184,119,.24); border-radius: .45rem; background: rgba(255,255,255,.03); cursor: pointer; text-transform: uppercase; letter-spacing: .08em; font: 500 .62rem 'DM Mono', monospace; transition: background .18s, border-color .18s, color .18s, transform .14s; }
 .tour-actions button:hover { background: rgba(233,198,137,.1); border-color: rgba(233,198,137,.45); color: #fff; }
 .tour-actions .tour-btn-primary { background: #b4754d; border-color: #d18d5f; color: #160e0a; font-weight: 700; }
 .tour-actions .tour-btn-primary:hover { background: #d18d5f; color: #0d0705; border-color: #e5a478; }
+.tour-actions .tour-btn-secondary { background: rgba(233,198,137,.08); border-color: rgba(233,198,137,.28); color: #ecdcc1; }
+.tour-actions .tour-btn-secondary:hover { background: rgba(233,198,137,.18); border-color: rgba(233,198,137,.55); color: #fff; }
 .tour-actions .tour-skip { color: #8f7a63; border-color: transparent; background: none; }
 .tour-actions .tour-skip:hover { color: #bcaaa0; background: none; }
 @media (max-width: 600px) {

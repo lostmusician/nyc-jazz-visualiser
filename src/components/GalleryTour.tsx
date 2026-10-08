@@ -5,7 +5,6 @@ type StepData = {
   target?: string;
   title: string;
   copy: string;
-  highlight1920Prompt?: boolean;
   showControlsDiagram?: boolean;
 };
 
@@ -40,7 +39,6 @@ const STEPS: StepData[] = [
     target: '[data-tour="timeline"]',
     title: 'Follow the city through time',
     copy: 'Traverse the timeline along the top to travel through 11 distinct eras. Each decade unlocks curated historical narratives, archival club photography, and period-specific jazz recordings.',
-    highlight1920Prompt: true,
   },
 ];
 
@@ -48,7 +46,7 @@ export function GalleryTour({ step, required, onStep, onFinish }: {
   step: number;
   required: boolean;
   onStep: (step: number) => void;
-  onFinish: () => void;
+  onFinish: (mode?: 'first-time' | 'explore' | 'done') => void;
 }) {
   const calloutRef = React.useRef<HTMLElement>(null);
   const actionRef = React.useRef<HTMLButtonElement>(null);
@@ -110,7 +108,7 @@ export function GalleryTour({ step, required, onStep, onFinish }: {
 
   return (
     <div className="gallery-tour gallery-tour--centered" data-ui-layer data-required={required ? 'true' : 'false'}>
-      <div className="tour-backdrop" onClick={required ? undefined : onFinish} aria-hidden="true" />
+      <div className="tour-backdrop" onClick={required ? undefined : () => onFinish('explore')} aria-hidden="true" />
       {spotlightRect && (
         <div
           className="tour-spotlight"
@@ -200,18 +198,9 @@ export function GalleryTour({ step, required, onStep, onFinish }: {
           </div>
         )}
 
-        {current.highlight1920Prompt && (
-          <div className="tour-prompt-box">
-            <div className="prompt-badge">Recommended for First-Time Visitors</div>
-            <p>
-              Start at the <strong>1920s</strong> button on the timeline! Experience how jazz blossomed in Harlem speakeasies during Prohibition, then advance decade by decade through 52nd Street swing, bebop, the loft revolution, and the modern scene.
-            </p>
-          </div>
-        )}
-
         <div className="tour-actions">
           {!required && (
-            <button type="button" className="tour-skip" onClick={onFinish}>
+            <button type="button" className="tour-skip" onClick={() => onFinish('explore')}>
               Close
             </button>
           )}
@@ -221,14 +210,34 @@ export function GalleryTour({ step, required, onStep, onFinish }: {
               Back
             </button>
           )}
-          <button
-            ref={actionRef}
-            type="button"
-            className="tour-btn-primary"
-            onClick={() => (last ? onFinish() : onStep(step + 1))}
-          >
-            {last ? (required ? 'Done' : 'Explore') : 'Next'}
-          </button>
+          {last ? (
+            <>
+              <button
+                type="button"
+                className="tour-btn-secondary"
+                onClick={() => onFinish('explore')}
+              >
+                Explore
+              </button>
+              <button
+                ref={actionRef}
+                type="button"
+                className="tour-btn-primary"
+                onClick={() => onFinish('first-time')}
+              >
+                First Time? Start at 1920s
+              </button>
+            </>
+          ) : (
+            <button
+              ref={actionRef}
+              type="button"
+              className="tour-btn-primary"
+              onClick={() => onStep(step + 1)}
+            >
+              Next
+            </button>
+          )}
         </div>
       </aside>
     </div>

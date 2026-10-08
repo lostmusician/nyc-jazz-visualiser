@@ -14,7 +14,7 @@ const enterGallery = async (page: import('@playwright/test').Page, keepTour = fa
     await page.getByRole('button', { name: 'Next' }).click();
     await page.getByRole('button', { name: 'Next' }).click();
     await page.getByRole('button', { name: 'Next' }).click();
-    await page.getByRole('button', { name: 'Done' }).click();
+    await page.getByRole('button', { name: /First Time|1920s/ }).click();
     await expect(page.locator('[data-story-decade="1920"]')).toBeVisible();
     await page.getByRole('button', { name: 'Skip and continue to map' }).click();
   }
@@ -294,7 +294,8 @@ test('guided tutorial is compulsory, advances, persists, and can be replayed', a
   await expect(page.getByRole('dialog', { name: 'Watch the map' })).toBeVisible();
   await page.getByRole('button', { name: 'Next' }).click();
   await expect(page.getByRole('dialog', { name: 'Follow the city through time' })).toBeVisible();
-  await page.getByRole('button', { name: 'Done' }).click();
+  await expect(page.getByRole('button', { name: 'Explore' })).toBeVisible();
+  await page.getByRole('button', { name: /First Time|1920s/ }).click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await expect.poll(() => page.evaluate(() => localStorage.getItem('nyc-jazz-gallery-tour-v2'))).toBe('complete');
   await expect(page.locator('[data-story-decade="1920"]')).toBeVisible();

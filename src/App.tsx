@@ -117,16 +117,21 @@ export const App = () => {
     }, reducedMotion ? 180 : 1250);
   }, [continueIntoGallery, reducedMotion]);
 
-  const finishTour = React.useCallback(() => {
+  const finishTour = React.useCallback((mode: 'first-time' | 'explore' | 'done' = 'done') => {
     setTourStep(null);
-    if (!tourRequired) return;
     try { window.localStorage.setItem(TOUR_STORAGE_KEY, 'complete'); } catch { /* completion lasts for this visit */ }
     setTourRequired(false);
+    if (mode === 'explore') {
+      setStoryDecade(null);
+      setActiveStoryBeat(0);
+      return;
+    }
+    // Default or first-time: start in 1920s
     setDecade(1920);
     setStoryDecade(1920);
     setSoundtrackSelection(1920);
     setActiveStoryBeat(0);
-  }, [tourRequired]);
+  }, []);
 
   const exploreStory = React.useCallback(() => {
     setStoryDecade(null);
