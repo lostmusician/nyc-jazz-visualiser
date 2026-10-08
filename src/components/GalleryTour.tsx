@@ -3,9 +3,7 @@ import React from 'react';
 type StepData = {
   id: string;
   target?: string;
-  badge: string;
   title: string;
-  subtitle?: string;
   copy: string;
   highlight1920Prompt?: boolean;
   showControlsDiagram?: boolean;
@@ -15,43 +13,33 @@ const STEPS: StepData[] = [
   {
     id: 'intro',
     target: '[data-tour="controls"]',
-    badge: 'Welcome to NYC Jazz Visualiser',
     title: 'Move around',
-    subtitle: 'Over 100 years of iconic clubs, gentrification rents, and timeless music',
     copy: 'This interactive project documents the living history of New York City\'s jazz ecosystem—from 1920s Harlem speakeasies to modern outer-borough lofts. Explore historical venues in an infinite 3D visual gallery, see where clubs thrived across five boroughs on our city map, and listen to authentic decade soundtracks as rent and cultural geography evolved.\n\nUse your keyboard or mouse to navigate the infinite visual space:',
     showControlsDiagram: true,
   },
   {
     id: 'timeline',
     target: '[data-tour="timeline"]',
-    badge: 'Chronological Journey',
     title: 'Follow the city through time',
-    subtitle: '11 decades: 1920s Harlem Renaissance to 2020s modern revival',
     copy: 'Traverse the timeline along the top to travel through 11 distinct eras. Each decade unlocks curated historical narratives, archival club photography, and period-specific jazz recordings.',
     highlight1920Prompt: true,
   },
   {
     id: 'filter',
     target: '[data-tour="filter"]',
-    badge: 'Venue Directory & Scenes',
     title: 'Find a room',
-    subtitle: 'Search and filter across all historical and contemporary clubs',
     copy: 'Filter clubs by neighborhood and movement—from Harlem after hours and 52nd Street swing to 1970s loft collectives and Brooklyn\'s modern revival. Open the index anytime to discover venue profiles, archival photos, and curated listening recommendations.',
   },
   {
     id: 'soundtrack',
     target: '[data-tour="soundtrack"]',
-    badge: 'Synchronized Vinyl Soundtrack',
     title: 'Control the soundtrack',
-    subtitle: 'Master pressings and live recordings mastered to balanced loudness',
     copy: 'Use the record button to spin the music down to mute, or spin it back up to continue listening. Each decade features a signature track calibrated for balanced volume, complete with realistic vinyl spin-down physics.',
   },
   {
     id: 'map',
     target: '[data-tour="map"]',
-    badge: 'Interactive Map & Economics',
     title: 'Watch the map',
-    subtitle: 'Visualizing venue clusters and historical census rent data',
     copy: 'This is an interactive map to visualise all the jazz clubs in the city. The shading shows rising rent over the years across Manhattan, Brooklyn, Queens, and the Bronx, illustrating the displacement and rebirth of jazz neighborhoods over a century.',
   },
 ];
@@ -143,12 +131,10 @@ export function GalleryTour({ step, required, onStep, onFinish }: {
         aria-labelledby="tour-title"
       >
         <div className="tour-header">
-          <span className="tour-badge">{current.badge}</span>
           <div className="tour-count">{String(step + 1).padStart(2, '0')} / {String(STEPS.length).padStart(2, '0')}</div>
         </div>
 
         <h2 id="tour-title">{current.title}</h2>
-        {current.subtitle && <p className="tour-subtitle">{current.subtitle}</p>}
 
         <div className="tour-body">
           {current.copy.split('\n').map((paragraph, idx) => (
