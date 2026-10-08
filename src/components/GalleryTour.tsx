@@ -4,7 +4,7 @@ const STEPS = [
   {
     target: '[data-tour="controls"]',
     title: 'Move around',
-    copy: 'Drag to pan. Scroll—or pinch—to move through depth. A keyboard works too: WASD and Q/E.',
+    copy: 'Drag to pan. Scroll—or pinch—to move through depth. A keyboard works too: WASD to pan (up/down/left/right) and E/Q for depth.',
     preferred: 'top',
   },
   {

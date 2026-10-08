@@ -28,15 +28,15 @@ import { generateChunkPlanesCached, getChunkUpdateThrottleMs, shouldThrottleUpda
 
 const PLANE_GEOMETRY = new THREE.PlaneGeometry(1, 1);
 const KEYBOARD_MAP = [
-  { name: 'forward', keys: ['w', 'W', 'ArrowUp'] },
-  { name: 'backward', keys: ['s', 'S', 'ArrowDown'] },
+  { name: 'up', keys: ['w', 'W', 'ArrowUp'] },
+  { name: 'down', keys: ['s', 'S', 'ArrowDown'] },
   { name: 'left', keys: ['a', 'A', 'ArrowLeft'] },
   { name: 'right', keys: ['d', 'D', 'ArrowRight'] },
-  { name: 'up', keys: ['e', 'E'] },
-  { name: 'down', keys: ['q', 'Q'] },
+  { name: 'forward', keys: ['e', 'E'] },
+  { name: 'backward', keys: ['q', 'Q'] },
 ];
 
-type KeyboardKeys = { forward: boolean; backward: boolean; left: boolean; right: boolean; up: boolean; down: boolean };
+type KeyboardKeys = { up: boolean; down: boolean; left: boolean; right: boolean; forward: boolean; backward: boolean };
 type CameraGridState = { cx: number; cy: number; cz: number; camZ: number };
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
@@ -351,7 +351,7 @@ export function InfiniteCanvasScene({
           <fog attach="fog" args={[fogColor, fogNear, fogFar]} />
           <SceneController media={media} hoveredVenueId={hoveredVenueId} onHoverVenue={onHoverVenue} onSelectVenue={onSelectVenue} onTextureProgress={onTextureProgress} entryDepthImpulse={entryDepthImpulse} />
         </Canvas>
-        {showControls && <div className="canvas-controls" data-tour="controls" aria-hidden="true">{touch ? <><b>Drag</b> pan · <b>Pinch</b> depth</> : <><b>Drag</b> pan · <b>Scroll</b> depth · <b>WASD / QE</b> move</>}</div>}
+        {showControls && <div className="canvas-controls" data-tour="controls" aria-hidden="true">{touch ? <><b>Drag</b> pan · <b>Pinch</b> depth</> : <><b>Drag / WASD</b> pan · <b>Scroll / EQ</b> depth</>}</div>}
       </div>
     </KeyboardControls>
   );
