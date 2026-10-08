@@ -2,6 +2,7 @@ import React from 'react';
 
 type StepData = {
   id: string;
+  target?: string;
   badge: string;
   title: string;
   subtitle?: string;
@@ -13,6 +14,7 @@ type StepData = {
 const STEPS: StepData[] = [
   {
     id: 'intro',
+    target: '[data-tour="controls"]',
     badge: 'Welcome to NYC Jazz Visualiser',
     title: 'Move around',
     subtitle: 'Over 100 years of iconic clubs, gentrification rents, and timeless music',
@@ -21,6 +23,7 @@ const STEPS: StepData[] = [
   },
   {
     id: 'timeline',
+    target: '[data-tour="timeline"]',
     badge: 'Chronological Journey',
     title: 'Follow the city through time',
     subtitle: '11 decades: 1920s Harlem Renaissance to 2020s modern revival',
@@ -29,6 +32,7 @@ const STEPS: StepData[] = [
   },
   {
     id: 'filter',
+    target: '[data-tour="filter"]',
     badge: 'Venue Directory & Scenes',
     title: 'Find a room',
     subtitle: 'Search and filter across all historical and contemporary clubs',
@@ -36,6 +40,7 @@ const STEPS: StepData[] = [
   },
   {
     id: 'soundtrack',
+    target: '[data-tour="soundtrack"]',
     badge: 'Synchronized Vinyl Soundtrack',
     title: 'Control the soundtrack',
     subtitle: 'Master pressings and live recordings mastered to balanced loudness',
@@ -43,6 +48,7 @@ const STEPS: StepData[] = [
   },
   {
     id: 'map',
+    target: '[data-tour="map"]',
     badge: 'Interactive Map & Economics',
     title: 'Watch the map',
     subtitle: 'Visualizing venue clusters and historical census rent data',
@@ -58,7 +64,34 @@ export function GalleryTour({ step, required, onStep, onFinish }: {
 }) {
   const calloutRef = React.useRef<HTMLElement>(null);
   const actionRef = React.useRef<HTMLButtonElement>(null);
+  const [spotlightRect, setSpotlightRect] = React.useState<DOMRect | null>(null);
   const current = STEPS[step] ?? STEPS[0];
+
+  React.useLayoutEffect(() => {
+    if (!current.target) {
+      setSpotlightRect(null);
+      return;
+    }
+    const targetEl = document.querySelector<HTMLElement>(current.target);
+    const update = () => {
+      const rect = targetEl?.getBoundingClientRect() ?? null;
+      if (rect && rect.width > 0 && rect.height > 0) {
+        setSpotlightRect(rect);
+      } else {
+        setSpotlightRect(null);
+      }
+    };
+    update();
+    const observer = targetEl ? new ResizeObserver(update) : null;
+    if (targetEl) observer?.observe(targetEl);
+    window.addEventListener('resize', update);
+    window.addEventListener('scroll', update, true);
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener('resize', update);
+      window.removeEventListener('scroll', update, true);
+    };
+  }, [current.target]);
 
   React.useEffect(() => {
     actionRef.current?.focus();
@@ -90,6 +123,18 @@ export function GalleryTour({ step, required, onStep, onFinish }: {
   return (
     <div className="gallery-tour gallery-tour--centered" data-ui-layer data-required={required ? 'true' : 'false'}>
       <div className="tour-backdrop" onClick={required ? undefined : onFinish} aria-hidden="true" />
+      {spotlightRect && (
+        <div
+          className="tour-spotlight"
+          aria-hidden="true"
+          style={{
+            top: spotlightRect.top - 6,
+            left: spotlightRect.left - 6,
+            width: spotlightRect.width + 12,
+            height: spotlightRect.height + 12,
+          }}
+        />
+      )}
       <aside
         ref={calloutRef}
         className="tour-callout tour-callout--centered"
@@ -196,7 +241,7 @@ export function GalleryTour({ step, required, onStep, onFinish }: {
             className="tour-btn-primary"
             onClick={() => (last ? onFinish() : onStep(step + 1))}
           >
-            {last ? (required ? 'Start in 1920s' : 'Explore') : 'Next'}
+            {last ? (required ? 'Done' : 'Explore') : 'Next'}
           </button>
         </div>
       </aside>
