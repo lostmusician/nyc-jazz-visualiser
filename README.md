@@ -1,63 +1,120 @@
-# Rooms That Held the Night
+# Rooms That Held the Night: NYC Jazz Visualiser
 
-An infinite, interactive gallery of New York jazz clubs. Archival club cards drift through a three-dimensional canvas around a translucent city map; the map, card highlights, scene filters, listening selections, soundtrack, and timeline share one application state. Each decade also has a four-beat, GSAP-powered scrollytelling chapter that guides the Mapbox camera between representative rooms before opening the filtered gallery.
+> An interactive, infinite 3D visual archive and spatial cartography of over a century of New York City's jazz ecosystem—from 1920s Harlem speakeasies to modern outer-borough lofts.
 
-The shared top timeline runs from the 1920s through the 2020s and groups decades into larger periods of New York history. Selecting a decade opens its story; finishing or skipping restores the gallery filtered to that decade. Scene filters trace Harlem, Swing Street and the Village, loft jazz, downtown avant-garde music, outer-borough networks, and contemporary rooms.
+Archival club photography drifts through a three-dimensional WebGL space surrounding an interactive city map. The 3D canvas, map clusters, neighborhood rent heatmaps, synchronized decade soundtracks, and chronological timeline share a unified reactive state.
 
-## Run locally
+---
 
-Use Node 20.20 or newer and npm 10 or newer.
+## Motivation & Story Behind the Project
+
+This project was born out of a personal love for music—especially jazz—and a memorable school trip to New York City.
+
+During the trip, wandering through historical venues and experiencing live jazz events across Manhattan and Brooklyn revealed how deeply intertwined the music is with the geography and socioeconomic history of the city. Visiting the interactive music exhibit at the **Museum of the City of New York (MCNY)** left a lasting impression: seeing how multimedia, archival storytelling, and spatial geography could come together to make cultural history feel alive and tactile.
+
+*Rooms That Held the Night* was built to capture that experience:
+- How jazz in NYC was never static in one neighborhood—it moved from Harlem during Prohibition and the Renaissance, to the fever pitch of 52nd Street swing, into Greenwich Village basements and Lower East Side lofts, and out to modern community hubs in Brooklyn, Queens, and the Bronx.
+- How changing urban realities—from historical cabarets and blue laws to rising residential rents and gentrification—continually displaced and reshaped where artists could play.
+
+---
+
+## Key Features
+
+### 1. Infinite 3D Archival Canvas
+- **Immersive 3D Space**: Built on WebGL / Three.js, club cards and historical imagery drift through coordinate space.
+- **Fluid Multi-Modal Navigation**: Navigate using keyboard controls (**WASD** to pan up/down/left/right, **E/Q** to move through depth) or natural mouse gestures (click & drag to pan, wheel/pinch to travel through depth).
+
+### 2. Synchronized Cartography & Rent Economics
+- **Interactive 5-Borough Map**: Powered by Mapbox GL JS, visualising 78 researched historical and contemporary venues across Manhattan, Brooklyn, Queens, and the Bronx.
+- **Historical Census Rent Layer**: Visualizes U.S. Census median contract rent data from IPUMS NHGIS across census tracts, normalized to constant 2020 dollars via annual CPI-U. Illustrates how rising rents correlated with neighborhood displacement and rebirth across decades.
+
+### 3. Synchronized Vinyl Soundtrack with Physics & Equal Loudness
+- **Authentic Decade Soundtracks**: Each era features a curated signature track—from 1920s King Oliver to 1950s Miles Davis, 1970s loft fusion, and modern revivals.
+- **Balanced Loudness Mastering**: Track volumes are normalized using ITU-R BS.1770 / EBU R128 (-19.7 LUFS baseline) with custom Web Audio API gain adjustment to eliminate jarring volume spikes across recordings.
+- **Realistic Vinyl Spin-Down**: Turntable button incorporates realistic deceleration physics and tonearm mechanics when muting or unmuting.
+
+### 4. Guided Scrollytelling Stories (1920s–2020s)
+- **11 Curated Eras**: Traverse from the 1920s Harlem Renaissance to the 2020s modern scene.
+- **Camera-Driven Chapters**: Each decade features four-beat narrative chapters that guide the map camera through representative clubs before returning to the filtered canvas.
+
+### 5. Interactive First-Time Onboarding
+- **Interactive Non-Blocking Tour**: A lightweight, centered translucent guide introduces the controls, venue directory, soundtrack, and city map. Users can freely click and interact with live controls and the map during the tutorial.
+- **Onboarding Launchpad**: New visitors can jump straight into the chronological 1920s narrative or jump immediately into freeform exploration.
+
+---
+
+## Quick Start (Run Locally)
+
+Prerequisites: Node 20.20+ and npm 10+.
 
 ```bash
+# Install dependencies
 npm ci
+
+# Configure environment variables
 cp .env.example .env
+
+# Run local development server
 npm run dev
 ```
 
-Set `VITE_MAPBOX_TOKEN` in `.env` to enable the map. Without it, the gallery remains usable through an intentional map fallback and the DOM club index.
+> **Note**: Add a Mapbox access token as `VITE_MAPBOX_TOKEN` in your `.env` to enable the interactive map tiles. If omitted, the app gracefully falls back to an accessible token-free mode and the DOM club browser.
 
-Checks:
+### Quality Checks & Testing
 
 ```bash
+# Run unit and integration tests (30 test suites)
 npm test
+
+# Run ESLint
 npm run lint
+
+# Compile and verify production build
 npm run build
+
+# Run Playwright browser automation tests
 npm run test:browser
 ```
 
-The production build regenerates `public/data/nyc_rent_history.geojson` from the preserved NHGIS source inputs before compiling the app.
+The production build script automatically re-processes and validates the NHGIS census rent datasets into `public/data/nyc_rent_history.geojson` before compiling the bundle.
 
-## Architecture
+---
 
-- `src/infinite-canvas/` contains the adapted chunk-streaming WebGL gallery.
-- `src/components/CentralMap.tsx` and `src/hooks/useMapbox.ts` render the synchronized Mapbox venue and rent layers.
-- `src/components/DecadeStory.tsx` and `src/data/decadeStories.ts` pair ScrollTrigger-driven narration with curated venue clusters and explicit map cameras.
-- `src/data/venues.ts` and its era-specific imports retain 78 sourced geographic records across Manhattan, Brooklyn, Queens, and the Bronx.
-- `src/data/clubProfiles.ts` gives every sourced location a gallery card while keeping 16 launch profiles as the richer listening-research tier.
-- `src/data/decadeSoundtracks.ts` keeps “Skating in Central Park” for the entrance and first gallery, then maps each selected decade to its representative soundtrack after that decade’s story opens. Playback is exposed through the global soundtrack control.
-- `src/gallery/model.ts` owns decade overlap, lifecycle classification, and scene filtering.
-- `src/data/nhgis0001_csv/`, `src/data/nyct2010_26c/`, and `src/data/nyct2020_26c/` preserve the rent-generation inputs.
+## Architecture & Codebase
 
-The WebGL experience has a DOM club index for keyboard and screen-reader access and as a usable route when WebGL or Mapbox is unavailable. The first-visit tutorial must be completed before exploration; later replays are dismissible. Detail dialogs trap focus, close with Escape, and restore focus to their opener. Reduced-motion preferences suppress ambient camera drift, scroll scrubbing, and animated story camera flights.
+- `src/infinite-canvas/`: WebGL canvas engine with chunk-streaming, depth attenuation, and multi-input navigation.
+- `src/components/CentralMap.tsx` & `src/hooks/useMapbox.ts`: Synchronized Mapbox choropleth rent shading and venue marker layers.
+- `src/components/DecadeStory.tsx` & `src/data/decadeStories.ts`: GSAP ScrollTrigger-driven decade scrollytelling beats with choreographed map camera targets.
+- `src/data/venues.ts`: Sourced geographic coordinates, operational years, neighborhood scenes, and historical closure records for 78 NYC jazz venues.
+- `src/data/clubProfiles.ts`: Comprehensive venue cards and archival research tiers.
+- `src/data/decadeSoundtracks.ts` & `src/hooks/useGallerySoundtrack.ts`: Curated decade audio tracks with Web Audio gain calibration and spin-down physics.
+- `src/gallery/model.ts`: Decade boundaries, lifecycle filtering (`active`, `closed`, `future`), and scene taxonomies.
+- `scripts/process_census_data.js`: IPUMS NHGIS census data processing script.
 
-## Data boundaries
+---
 
-- Residential shading uses median contract rent from IPUMS NHGIS, normalized to constant 2020 dollars with annual CPI-U. It is not commercial venue rent or proof of why a club closed.
-- The rent layer is absent before 1980 because the preserved comparable census series begins in 1980; earlier housing pressure is conveyed through cited historical narration.
-- Venue closure descriptions remain distinct from the rent layer and retain their source links where available.
-- Listening items distinguish recordings made at a venue, documented performance relationships, and representative scene selections.
-- “Skating in Central Park” plays through the entrance and first gallery view. Once a decade’s story is opened, its representative soundtrack continues when the reader returns to the filtered gallery. The club-detail turntable is currently hidden until unique club tracks are sourced. Club-specific research selections remain labeled external listening links and do not claim that an era soundtrack was recorded in each room.
+## Historical Data & Sourcing Boundaries
 
-## Infinite Canvas attribution
+- **Residential Rent vs Commercial Rent**: Residential rent shading uses median contract rent from IPUMS NHGIS, normalized to 2020 dollars with annual CPI-U. This represents neighborhood residential cost trends rather than commercial venue leases, providing historical context on community displacement.
+- **Census Boundaries**: The comparable census tract series begins in 1980; earlier housing pressures and redlining are conveyed through cited historical narration and documentation.
+- **Venue Closure Records**: Venue histories and closure descriptions document researched historical records and preserve source citations.
+- **Listening Selections**: Track selections distinguish between recordings captured live at a venue, documented performer relationships, and era-representative listening pieces.
 
-The canvas engine, deterministic chunk generation, movement model, distance/depth fading, texture approach, controls, touch detection, DPR limits, and render-distance behavior are adapted from [edoardolunardi/infinite-canvas](https://github.com/edoardolunardi/infinite-canvas), pinned to commit `4e710decd0a99b2e312c594668dd2ccc834764ee`.
+---
 
-That source is MIT licensed. The original notice is retained in `THIRD_PARTY_NOTICES/Codrops-Infinite-Canvas-LICENSE.txt`, and adapted source files carry commit-level headers.
+## Credits & Attributions
 
-## Record player attribution
+- **Infinite Canvas Engine**: Adapted from [edoardolunardi/infinite-canvas](https://github.com/edoardolunardi/infinite-canvas) (MIT License, preserved in `THIRD_PARTY_NOTICES/Codrops-Infinite-Canvas-LICENSE.txt`).
+- **Tonearm & Turntable Geometry**: Adapted from [Codrops RecordPlayer](https://github.com/codrops/RecordPlayer) (MIT License, preserved in `THIRD_PARTY_NOTICES/Codrops-RecordPlayer-NOTICE.txt`).
+- **Census & Demographic Data**: U.S. Census Bureau data retrieved via [IPUMS NHGIS](https://www.nhgis.org/).
+- **Archival Imagery & Music**: Sourced from public domain archives, Library of Congress, and historical collections.
 
-The dormant club-detail turntable adapts the circle-intersection tonearm geometry and lift/drag/drop behavior from [Codrops RecordPlayer](https://github.com/codrops/RecordPlayer) to React, TypeScript, and Pointer Events. It remains hidden until unique club tracks are sourced. No visual assets, fonts, effects, or recordings from that experiment are redistributed. The MIT attribution is retained in `THIRD_PARTY_NOTICES/Codrops-RecordPlayer-NOTICE.txt`.
+---
 
-## Stack
+## Tech Stack
 
-React 19.2, Three.js 0.182, React Three Fiber 9.4, Drei 10.7, TypeScript 5.9, Vite 7, Mapbox GL JS, and Playwright.
+- **Frontend**: React 19, TypeScript, Vite
+- **3D Graphics**: Three.js, React Three Fiber (R3F), Drei
+- **Mapping & GIS**: Mapbox GL JS, GeoJSON
+- **Animation & Audio**: GSAP (ScrollTrigger), Web Audio API
+- **Testing**: Node Test Runner, Playwright
