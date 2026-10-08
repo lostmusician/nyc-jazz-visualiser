@@ -34,7 +34,7 @@ The production build regenerates `public/data/nyc_rent_history.geojson` from the
 - `src/components/DecadeStory.tsx` and `src/data/decadeStories.ts` pair ScrollTrigger-driven narration with curated venue clusters and explicit map cameras.
 - `src/data/venues.ts` and its era-specific imports retain 78 sourced geographic records across Manhattan, Brooklyn, Queens, and the Bronx.
 - `src/data/clubProfiles.ts` gives every sourced location a gallery card while keeping 16 launch profiles as the richer listening-research tier.
-- `src/data/decadeSoundtracks.ts` keeps “Skating in Central Park” as the gallery soundtrack and maps each timeline decade to the soundtrack used only in its story. Playback is currently exposed through the global soundtrack control.
+- `src/data/decadeSoundtracks.ts` keeps “Skating in Central Park” for the entrance and first gallery, then maps each selected decade to its representative soundtrack after that decade’s story opens. Playback is exposed through the global soundtrack control.
 - `src/gallery/model.ts` owns decade overlap, lifecycle classification, and scene filtering.
 - `src/data/nhgis0001_csv/`, `src/data/nyct2010_26c/`, and `src/data/nyct2020_26c/` preserve the rent-generation inputs.
 
@@ -46,7 +46,7 @@ The WebGL experience has a DOM club index for keyboard and screen-reader access 
 - The rent layer is absent before 1980 because the preserved comparable census series begins in 1980; earlier housing pressure is conveyed through cited historical narration.
 - Venue closure descriptions remain distinct from the rent layer and retain their source links where available.
 - Listening items distinguish recordings made at a venue, documented performance relationships, and representative scene selections.
-- The gallery plays “Skating in Central Park,” while a decade’s representative soundtrack plays only while that decade’s story is open. The club-detail turntable is currently hidden until unique club tracks are sourced. Club-specific research selections remain labeled external listening links and do not claim that an era soundtrack was recorded in each room.
+- “Skating in Central Park” plays through the entrance and first gallery view. Once a decade’s story is opened, its representative soundtrack continues when the reader returns to the filtered gallery. The club-detail turntable is currently hidden until unique club tracks are sourced. Club-specific research selections remain labeled external listening links and do not claim that an era soundtrack was recorded in each room.
 
 ## Infinite Canvas attribution
 

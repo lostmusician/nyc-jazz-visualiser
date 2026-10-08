@@ -70,7 +70,6 @@ export function CentralMap({
     <section className={`central-map central-map--${mode}`} data-ui-layer data-tour="map" data-map-mode={mode} aria-label={`New York jazz-club map in the ${decade}s`}>
       <div ref={containerRef} className="central-map-canvas" />
       <div className="map-glass" aria-hidden="true" />
-      <small className="map-model-note">{decade < 1980 ? 'Historical housing context only · mapped rent begins in 1980' : `${decade} median residential contract rent · constant 2020 dollars · not commercial leases`}</small>
       {!configured && (
         <div className="map-token-fallback" role="status">
           <span>NEW YORK</span>

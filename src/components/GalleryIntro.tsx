@@ -1,5 +1,10 @@
 import React from 'react';
-import { getHoldProgress, getHoldReleaseOutcome } from '../gallery/entry-state';
+import {
+  getHoldProgress,
+  getHoldReleaseOutcome,
+  HOLD_READY_PROGRESS,
+  getVisualHoldProgress,
+} from '../gallery/entry-state';
 
 export function GalleryIntro({
   audioStatus,
@@ -14,6 +19,7 @@ export function GalleryIntro({
 }) {
   const [progress, setProgress] = React.useState(0);
   const [isHolding, setIsHolding] = React.useState(false);
+  const progressRef = React.useRef(0);
   const holdingRef = React.useRef(false);
   const armedRef = React.useRef(false);
   const startedAtRef = React.useRef(0);
@@ -22,10 +28,11 @@ export function GalleryIntro({
   const clickAudioRef = React.useRef<HTMLAudioElement>(null);
   const clickAudioPoolRef = React.useRef<HTMLAudioElement[]>([]);
   const clickAudioIndexRef = React.useRef(0);
-  const [pathLength, setPathLength] = React.useState(1);
+  const [pathLength, setPathLength] = React.useState(694.18);
 
   React.useLayoutEffect(() => {
-    setPathLength(progressPathRef.current?.getTotalLength() ?? 1);
+    const measured = progressPathRef.current?.getTotalLength();
+    if (measured && measured > 0) setPathLength(measured);
   }, []);
 
   React.useEffect(() => {
@@ -62,6 +69,7 @@ export function GalleryIntro({
     setIsHolding(true);
     armedRef.current = false;
     startedAtRef.current = performance.now();
+    progressRef.current = 0;
     setProgress(0);
     const pool = clickAudioPoolRef.current;
     const clickAudio = pool.length
@@ -75,10 +83,12 @@ export function GalleryIntro({
     onHoldStart();
     const tick = (now: number) => {
       if (!holdingRef.current) return;
-      const next = getHoldProgress(now - startedAtRef.current);
+      const elapsed = now - startedAtRef.current;
+      const next = getHoldProgress(elapsed);
+      progressRef.current = next;
       setProgress(next);
-      if (next >= 1) armedRef.current = true;
-      else frameRef.current = requestAnimationFrame(tick);
+      if (getHoldReleaseOutcome(elapsed) === 'enter' || next >= HOLD_READY_PROGRESS) armedRef.current = true;
+      if (next < 1) frameRef.current = requestAnimationFrame(tick);
     };
     frameRef.current = requestAnimationFrame(tick);
   }, [clearFrame, onHoldStart]);
@@ -88,12 +98,38 @@ export function GalleryIntro({
     holdingRef.current = false;
     setIsHolding(false);
     clearFrame();
-    if (armedRef.current || getHoldReleaseOutcome(performance.now() - startedAtRef.current) === 'enter') {
+    const elapsed = performance.now() - startedAtRef.current;
+    const currentProgress = progressRef.current;
+    if (armedRef.current || getHoldReleaseOutcome(elapsed) === 'enter' || currentProgress >= HOLD_READY_PROGRESS) {
+      progressRef.current = 1;
       setProgress(1);
       onEnter();
     } else {
-      setProgress(0);
       onHoldAbort();
+      const fromProgress = currentProgress;
+      if (fromProgress <= 0) {
+        progressRef.current = 0;
+        setProgress(0);
+        return;
+      }
+      const retractStart = performance.now();
+      const retractDuration = Math.max(160, 400 * fromProgress);
+      const tickRetract = (now: number) => {
+        if (holdingRef.current) return;
+        const t = Math.min((now - retractStart) / retractDuration, 1);
+        const eased = 1 - t * t * (3 - 2 * t);
+        const current = Math.max(0, fromProgress * eased);
+        progressRef.current = current;
+        setProgress(current);
+        if (t < 1 && !holdingRef.current) {
+          frameRef.current = requestAnimationFrame(tickRetract);
+        } else if (!holdingRef.current) {
+          progressRef.current = 0;
+          setProgress(0);
+          frameRef.current = null;
+        }
+      };
+      frameRef.current = requestAnimationFrame(tickRetract);
     }
   }, [clearFrame, onEnter, onHoldAbort]);
 
@@ -101,10 +137,33 @@ export function GalleryIntro({
     if (!holdingRef.current) return;
     holdingRef.current = false;
     setIsHolding(false);
-    armedRef.current = false;
     clearFrame();
-    setProgress(0);
+    armedRef.current = false;
     onHoldAbort();
+    const fromProgress = progressRef.current;
+    if (fromProgress <= 0) {
+      progressRef.current = 0;
+      setProgress(0);
+      return;
+    }
+    const retractStart = performance.now();
+    const retractDuration = Math.max(160, 400 * fromProgress);
+    const tickRetract = (now: number) => {
+      if (holdingRef.current) return;
+      const t = Math.min((now - retractStart) / retractDuration, 1);
+      const eased = 1 - t * t * (3 - 2 * t);
+      const current = Math.max(0, fromProgress * eased);
+      progressRef.current = current;
+      setProgress(current);
+      if (t < 1 && !holdingRef.current) {
+        frameRef.current = requestAnimationFrame(tickRetract);
+      } else if (!holdingRef.current) {
+        progressRef.current = 0;
+        setProgress(0);
+        frameRef.current = null;
+      }
+    };
+    frameRef.current = requestAnimationFrame(tickRetract);
   }, [clearFrame, onHoldAbort]);
 
   React.useEffect(() => {
@@ -125,9 +184,13 @@ export function GalleryIntro({
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('keyup', onKeyUp);
       window.removeEventListener('blur', cancelHold);
-      clearFrame();
     };
-  }, [cancelHold, clearFrame, endHold, startHold]);
+  }, [cancelHold, endHold, startHold]);
+
+  React.useEffect(() => () => clearFrame(), [clearFrame]);
+
+  const visualProgress = getVisualHoldProgress(progress);
+  const isReady = visualProgress >= 1;
 
   return (
     <main className="gallery-intro">
@@ -137,8 +200,8 @@ export function GalleryIntro({
           <span>Hold</span>
           <button
             type="button"
-            className={`hold-enter${isHolding ? ' is-holding' : ''}${progress >= 1 ? ' is-ready' : ''}`}
-            aria-label="Press and hold for five seconds to enter the gallery with audio"
+            className={`hold-enter${isHolding ? ' is-holding' : ''}${isReady ? ' is-ready' : ''}`}
+            aria-label="Press and hold to enter the gallery with audio"
             aria-pressed={isHolding}
             data-hold-progress={progress.toFixed(4)}
             onPointerDown={(event) => {
@@ -171,21 +234,22 @@ export function GalleryIntro({
               <path className="hold-track" d="M1 44A43 43 0 0 1 44 1H256A43 43 0 0 1 299 44A43 43 0 0 1 256 87H44A43 43 0 0 1 1 44" />
               <path
                 ref={progressPathRef}
+                pathLength={pathLength}
                 className="hold-progress"
                 strokeDasharray={pathLength}
-                strokeDashoffset={pathLength * (1 - progress)}
-                style={{ opacity: progress === 0 ? 0 : 1 }}
+                strokeDashoffset={pathLength * (1 - visualProgress)}
+                style={{ opacity: visualProgress <= 0.005 ? 0 : 1 }}
                 d="M1 44A43 43 0 0 1 44 1H256A43 43 0 0 1 299 44A43 43 0 0 1 256 87H44A43 43 0 0 1 1 44"
               />
             </svg>
-            <span>{progress >= 1 ? 'Release' : 'Spacebar'}</span>
+            <span>{isReady ? 'Release' : 'Spacebar'}</span>
           </button>
           <span>to launch gallery</span>
         </div>
         <audio ref={clickAudioRef} src="/audio/spacebar-click.mp3" preload="auto" aria-hidden="true" />
         <p>this is an audiovisual tour of the jazz clubs in New York. Turn on your audio as we zoom over the decades and listen to music that helped build New York City.</p>
         <span className="sr-status" role="status" aria-live="polite">
-          {audioStatus === 'error' ? 'Audio is unavailable. You can still hold to enter the gallery.' : progress >= 1 ? 'Ready. Release to enter.' : ''}
+          {audioStatus === 'error' ? 'Audio is unavailable. You can still hold to enter the gallery.' : isReady ? 'Ready. Release to enter.' : ''}
         </span>
       </div>
     </main>
