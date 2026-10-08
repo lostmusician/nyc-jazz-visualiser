@@ -252,11 +252,11 @@ export const ADDITIONAL_VENUE_PROFILES: ClubProfile[] = [
   },
   {
     venueId: 'vp-bottom-line',
-    description: 'A 400-seat Greenwich Village cabaret showroom on West 4th Street that hosted fusion giants, rock legends, and electric jazz masters.',
+    description: 'Legendary 400-seat Greenwich Village cabaret and showroom on West 4th Street founded by Allan Pepper and Stanley Snadowsky, hosting fusion giants, jazz legends, and rock innovators.',
     image: '/images/venues/vp-bottom-line.jpg',
-    imageAlt: 'Historic masonry building at West 4th and Mercer Street, former home of The Bottom Line cabaret.',
-    imageCredit: 'Wikimedia Commons / Street photograph',
-    imageSourceUrl: 'https://commons.wikimedia.org/wiki/File:19_West_4th_Street.jpg',
+    imageAlt: 'Crowd lined up outside The Bottom Line Cabaret entrance beneath the curved marquee canopy and lit performance bill on West 4th Street in Greenwich Village.',
+    imageCredit: 'The Bottom Line Archive / Historic entrance photograph',
+    imageSourceUrl: 'https://www.bottomlinearchive.com/',
     tracks: [{ id: 'bottom-line-weather', title: 'Birdland', artist: 'Weather Report', year: 1977, relationship: 'representative-of-scene', listenUrl: youtubeSearch('Weather Report Birdland'), evidenceUrl: 'https://www.latimes.com/archives/la-xpm-2003-dec-23-et-duke23-story.html', note: 'Weather Report and modern jazz-fusion innovators packed The Bottom Line during the late 1970s.' }],
   },
   {
