@@ -14,21 +14,14 @@ const STEPS: StepData[] = [
     id: 'intro',
     target: '[data-tour="controls"]',
     title: 'Move around',
-    copy: 'This interactive project documents the living history of New York City\'s jazz ecosystem—from 1920s Harlem speakeasies to modern outer-borough lofts. Explore historical venues in an infinite 3D visual gallery, see where clubs thrived across five boroughs on our city map, and listen to authentic decade soundtracks as rent and cultural geography evolved.\n\nUse your keyboard or mouse to navigate the infinite visual space:',
+    copy: 'This interactive project documents the living history of New York City\'s jazz ecosystem—from 1920s Harlem speakeasies to modern outer-borough lofts. Explore historical venues in an infinite 3D visual gallery, see where clubs thrived across five boroughs on our city map, and listen to authentic decade soundtracks as rent and cultural geography evolved.\n\nTry moving around right now using your keyboard or mouse:',
     showControlsDiagram: true,
-  },
-  {
-    id: 'timeline',
-    target: '[data-tour="timeline"]',
-    title: 'Follow the city through time',
-    copy: 'Traverse the timeline along the top to travel through 11 distinct eras. Each decade unlocks curated historical narratives, archival club photography, and period-specific jazz recordings.',
-    highlight1920Prompt: true,
   },
   {
     id: 'filter',
     target: '[data-tour="filter"]',
     title: 'Find a room',
-    copy: 'Filter clubs by neighborhood and movement—from Harlem after hours and 52nd Street swing to 1970s loft collectives and Brooklyn\'s modern revival. Open the index anytime to discover venue profiles, archival photos, and curated listening recommendations.',
+    copy: 'Filter clubs by neighborhood and movement—from Harlem after hours and 52nd Street swing to 1970s loft collectives and Brooklyn\'s modern revival. Feel free to open the index to browse venue profiles, archival photos, and curated listening recommendations.',
   },
   {
     id: 'soundtrack',
@@ -40,7 +33,14 @@ const STEPS: StepData[] = [
     id: 'map',
     target: '[data-tour="map"]',
     title: 'Watch the map',
-    copy: 'This is an interactive map to visualise all the jazz clubs in the city. The shading shows rising rent over the years across Manhattan, Brooklyn, Queens, and the Bronx, illustrating the displacement and rebirth of jazz neighborhoods over a century.',
+    copy: 'This is an interactive map to visualise all the jazz clubs in the city. You can pan and zoom into neighborhoods. The shading shows rising rent over the years across Manhattan, Brooklyn, Queens, and the Bronx, illustrating the displacement and rebirth of jazz neighborhoods over a century.',
+  },
+  {
+    id: 'timeline',
+    target: '[data-tour="timeline"]',
+    title: 'Follow the city through time',
+    copy: 'Traverse the timeline along the top to travel through 11 distinct eras. Each decade unlocks curated historical narratives, archival club photography, and period-specific jazz recordings.',
+    highlight1920Prompt: true,
   },
 ];
 

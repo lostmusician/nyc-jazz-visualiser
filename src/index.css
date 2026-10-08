@@ -243,11 +243,11 @@ button:focus-visible, a:focus-visible, summary:focus-visible, input:focus-visibl
 .listening-note, .no-audio { color: #806a57 !important; font-size: .66rem !important; }
 .club-dialog footer { display: flex; flex-wrap: wrap; gap: .6rem 1rem; margin-top: 2rem; padding-top: 1.1rem; border-top: 1px solid rgba(55,37,27,.2); color: #705b49; font: .57rem 'DM Mono', monospace; }
 .club-dialog footer a { color: #9f3f29; }
-.gallery-tour { position: fixed; inset: 0; z-index: 55; pointer-events: auto; display: flex; align-items: center; justify-content: center; }
+.gallery-tour { position: fixed; inset: 0; z-index: 55; pointer-events: none; display: flex; align-items: center; justify-content: center; }
 .gallery-tour--centered { background: rgba(5, 3, 3, 0.4); }
-.tour-backdrop { position: absolute; inset: 0; }
+.tour-backdrop { position: absolute; inset: 0; pointer-events: none; }
 .tour-spotlight { position: fixed; z-index: 56; pointer-events: none; border: 2px solid rgba(255, 215, 133, 0.95); border-radius: .65rem; box-shadow: 0 0 0 9999px rgba(4, 3, 3, 0.28), 0 0 24px rgba(255, 190, 92, 0.5); transition: inset .24s cubic-bezier(.2,.8,.2,1), width .24s ease, height .24s ease; }
-.tour-callout { position: relative; z-index: 58; width: min(34rem, calc(100vw - 2rem)); max-height: calc(100vh - 3rem); overflow-y: auto; padding: 1.75rem 2rem; color: #e8d9bf; border: 1px solid rgba(233,198,137,.32); border-radius: 1.1rem; background: rgba(18,12,10,.92); box-shadow: 0 24px 80px rgba(0,0,0,.7), 0 0 0 1px rgba(255,215,133,.12); backdrop-filter: blur(28px); animation: rise-in .32s cubic-bezier(.16,1,.3,1); }
+.tour-callout { position: relative; z-index: 58; width: min(34rem, calc(100vw - 2rem)); max-height: calc(100vh - 3rem); overflow-y: auto; padding: 1.75rem 2rem; color: #e8d9bf; border: 1px solid rgba(233,198,137,.32); border-radius: 1.1rem; background: rgba(18,12,10,.92); box-shadow: 0 24px 80px rgba(0,0,0,.7), 0 0 0 1px rgba(255,215,133,.12); backdrop-filter: blur(28px); animation: rise-in .32s cubic-bezier(.16,1,.3,1); pointer-events: auto; }
 .tour-header { display: flex; align-items: center; justify-content: flex-end; margin-bottom: .4rem; }
 .tour-count { color: #b4754d; text-transform: uppercase; letter-spacing: .12em; font: .58rem 'DM Mono', monospace; }
 .tour-callout h2 { margin: 0 0 .5rem; color: #faebd0; font: 400 2.05rem/1.18 'Instrument Serif', serif; letter-spacing: -.01em; }

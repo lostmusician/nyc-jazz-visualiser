@@ -139,7 +139,7 @@ export const App = () => {
   return (
     <div className="experience-shell">
     {entryPhase !== 'intro' && <main className={`gallery-app${entryPhase === 'transitioning' ? ' is-entering' : ''}${story ? ' has-story' : ''}`}>
-      <div className="gallery-surface" inert={tourStep !== null && tourRequired ? true : undefined}>
+      <div className="gallery-surface">
       <a className="skip-link" href="#club-index">Skip to filters and club index</a>
       {!story && <InfiniteCanvas media={media} hoveredVenueId={hoveredVenueId} onHoverVenue={setHoveredVenueId} onSelectVenue={openVenue} entryDepthImpulse={reducedMotion ? 0 : 1.45} />}
       <div className="atmosphere" aria-hidden="true" />

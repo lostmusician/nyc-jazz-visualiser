@@ -283,10 +283,7 @@ test('guided tutorial is compulsory, advances, persists, and can be replayed', a
   await expect(tour.getByRole('button', { name: /Skip|Close/ })).toHaveCount(0);
   await page.keyboard.press('Escape');
   await expect(tour).toBeVisible();
-  await expect(page.locator('.gallery-surface')).toHaveAttribute('inert', '');
   await tour.getByRole('button', { name: 'Next' }).click();
-  await expect(page.getByRole('dialog', { name: 'Follow the city through time' })).toBeVisible();
-  await page.getByRole('button', { name: 'Next' }).click();
   await expect(page.getByRole('dialog', { name: 'Find a room' })).toBeVisible();
   await page.getByRole('button', { name: 'Next' }).click();
   const soundtrackTour = page.getByRole('dialog', { name: 'Control the soundtrack' });
@@ -295,6 +292,8 @@ test('guided tutorial is compulsory, advances, persists, and can be replayed', a
   await expect(page.locator('[data-tour="soundtrack"]')).toBeVisible();
   await soundtrackTour.getByRole('button', { name: 'Next' }).click();
   await expect(page.getByRole('dialog', { name: 'Watch the map' })).toBeVisible();
+  await page.getByRole('button', { name: 'Next' }).click();
+  await expect(page.getByRole('dialog', { name: 'Follow the city through time' })).toBeVisible();
   await page.getByRole('button', { name: 'Done' }).click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await expect.poll(() => page.evaluate(() => localStorage.getItem('nyc-jazz-gallery-tour-v2'))).toBe('complete');
