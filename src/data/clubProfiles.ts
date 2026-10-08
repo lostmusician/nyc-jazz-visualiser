@@ -69,11 +69,11 @@ export const CLUB_PROFILES: ClubProfile[] = [
   },
   {
     venueId: '0025',
-    description: 'A Cooper Square room where Monk’s return, Coltrane’s development, and Ornette Coleman’s arrival made listening feel confrontational and new.',
+    description: 'A legendary Bowery and Cooper Square vanguard room where Monk’s return, Coltrane’s breakthrough, and Ornette Coleman’s historic 1959 debut ignited the free jazz revolution.',
     image: '/images/venues/0025.jpg',
-    imageAlt: 'Cooper Square and the Third Avenue El corridor in the East Village, 1957, home to the Five Spot Café.',
-    imageCredit: 'Wikimedia Commons / Historic street photograph (1957)',
-    imageSourceUrl: 'https://commons.wikimedia.org/wiki/File:Cooper_Square_-_NYC_-_1957_crop.jpg',
+    imageAlt: 'Ornette Coleman playing his white plastic Grafton alto saxophone before a dense, captivated crowd in the smoky Five Spot Café in 1959.',
+    imageCredit: 'Five Spot Café / Historic performance photograph (1959)',
+    imageSourceUrl: 'https://en.wikipedia.org/wiki/Five_Spot_Caf%C3%A9',
     tracks: [{ id: 'five-spot-monks-mood', title: "Monk’s Mood", artist: 'Thelonious Monk with John Coltrane', year: 1957, relationship: 'representative-of-scene', listenUrl: youtubeSearch('Thelonious Monk John Coltrane Monks Mood 1957'), evidenceUrl: 'https://www.loc.gov/item/ihas.200182840/', note: 'Monk and Coltrane’s Five Spot residency defined this partnership; the surviving recording was made elsewhere.' }],
   },
   {
