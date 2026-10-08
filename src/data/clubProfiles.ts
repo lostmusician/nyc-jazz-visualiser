@@ -132,11 +132,11 @@ export const CLUB_PROFILES: ClubProfile[] = [
   },
   {
     venueId: '0017',
-    description: 'A Park Slope back room built for adventurous, border-crossing music, from jazz improvisation to global folk traditions.',
+    description: 'A legendary Park Slope back room beneath ornate pressed-tin ceilings, built for adventurous, border-crossing music, avant-garde jazz improvisation, and global folk traditions.',
     image: '/images/venues/0017.jpg',
-    imageAlt: 'Historic brownstone row on 9th Street in South Park Slope, Brooklyn, home to Barbès.',
-    imageCredit: 'Wikimedia Commons / Street photograph (Creative Commons Attribution-Share Alike 3.0)',
-    imageSourceUrl: 'https://commons.wikimedia.org/wiki/File:466-480_9th_Street_South_Slope_from_west.jpg',
+    imageAlt: 'Live jazz quintet performing in the intimate back room of Barbès beneath ornate pressed-tin ceilings, featuring two saxophonists, drummer, upright bassist, and pianist before a red velvet backdrop and seated crowd.',
+    imageCredit: 'Barbès / Live performance photograph',
+    imageSourceUrl: 'https://www.barbesbrooklyn.com/',
     tracks: [{ id: 'barbes-slavic', title: 'Taketron', artist: 'Slavic Soul Party!', year: 2015, relationship: 'documented-performance', listenUrl: youtubeSearch('Slavic Soul Party Taketron'), evidenceUrl: 'https://www.barbesbrooklyn.com/about', note: 'Slavic Soul Party!’s long-running Barbès residency embodies the room’s cross-genre identity.' }],
   },
   {
