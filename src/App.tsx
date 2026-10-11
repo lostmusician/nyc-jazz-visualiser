@@ -119,11 +119,14 @@ export const App = () => {
 
   const finishTour = React.useCallback((mode: 'first-time' | 'explore' | 'done' = 'done') => {
     setTourStep(null);
+    setBrowserOpen(false);
+    setSelectedVenueId(null);
     try { window.localStorage.setItem(TOUR_STORAGE_KEY, 'complete'); } catch { /* completion lasts for this visit */ }
     setTourRequired(false);
     if (mode === 'explore') {
       setStoryDecade(null);
       setActiveStoryBeat(0);
+      window.requestAnimationFrame(() => document.querySelector<HTMLElement>('.tour-toggle')?.focus());
       return;
     }
     // Default or first-time: start in 1920s
@@ -190,7 +193,7 @@ export const App = () => {
         />
       )}
       </div>
-      {tourStep !== null && <GalleryTour step={tourStep} required={tourRequired} onStep={setTourStep} onFinish={finishTour} />}
+      {tourStep !== null && <GalleryTour step={tourStep} required={tourRequired} onStep={(nextStep) => { setBrowserOpen(false); setSelectedVenueId(null); setTourStep(nextStep); }} onFinish={finishTour} />}
     </main>}
     {entryPhase !== 'gallery' && (
       <div className={`intro-layer${entryPhase === 'transitioning' ? ' is-leaving' : ''}`}>
