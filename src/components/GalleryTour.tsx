@@ -5,40 +5,39 @@ type StepData = {
   target?: string;
   title: string;
   copy: string;
-  showControlsDiagram?: boolean;
+  showControls?: boolean;
 };
 
 const STEPS: StepData[] = [
   {
     id: 'intro',
-    target: '[data-tour="controls"]',
     title: 'Move around',
-    copy: 'This interactive project documents the living history of New York City\'s jazz ecosystem—from 1920s Harlem speakeasies to modern outer-borough lofts. Explore historical venues in an infinite 3D visual gallery, see where clubs thrived across five boroughs on our city map, and listen to authentic decade soundtracks as rent and cultural geography evolved.\n\nTry moving around right now using your keyboard or mouse:',
-    showControlsDiagram: true,
+    copy: "Explore a century of New York jazz through the clubs, stories and sounds that shaped the city. Here’s how to navigate the gallery.",
+    showControls: true,
   },
   {
     id: 'filter',
     target: '[data-tour="filter"]',
-    title: 'Find a room',
-    copy: 'Filter clubs by neighborhood and movement—from Harlem after hours and 52nd Street swing to 1970s loft collectives and Brooklyn\'s modern revival. Feel free to open the index to browse venue profiles, archival photos, and curated listening recommendations.',
+    title: 'Search for venues',
+    copy: "Try the highlighted filter icon at the top right to browse clubs by neighborhood or jazz scene. Select a venue to see its history, photos and listening recommendations.",
   },
   {
     id: 'soundtrack',
     target: '[data-tour="soundtrack"]',
-    title: 'Control the soundtrack',
-    copy: 'Use the record button to spin the music down to mute, or spin it back up to continue listening. Each decade features a signature track calibrated for balanced volume, complete with realistic vinyl spin-down physics.',
+    title: 'Sound controls',
+    copy: "Try the highlighted vinyl icon at the top right to mute the music. Select it again to listen. The soundtrack changes with each decade.",
   },
   {
     id: 'map',
     target: '[data-tour="map"]',
-    title: 'Watch the map',
-    copy: 'This is an interactive map to visualise all the jazz clubs in the city. You can pan and zoom into neighborhoods. The shading shows rising rent over the years across Manhattan, Brooklyn, Queens, and the Bronx, illustrating the displacement and rebirth of jazz neighborhoods over a century.',
+    title: 'Read the map',
+    copy: "The map at the top left shows where the clubs are. Pan or zoom to explore a neighborhood, and select a club to learn more. Brighter shading shows higher rents in the selected decade.",
   },
   {
     id: 'timeline',
     target: '[data-tour="timeline"]',
-    title: 'Follow the city through time',
-    copy: 'Traverse the timeline along the top to travel through 11 distinct eras. Each decade unlocks curated historical narratives, archival club photography, and period-specific jazz recordings.',
+    title: 'Choose a decade',
+    copy: "Select a year on the timeline at the top to open that decade’s story and music. Scroll through the story, then explore its clubs in the gallery.",
   },
 ];
 
@@ -50,12 +49,14 @@ export function GalleryTour({ step, required, onStep, onFinish }: {
 }) {
   const calloutRef = React.useRef<HTMLElement>(null);
   const actionRef = React.useRef<HTMLButtonElement>(null);
+  const [calloutPosition, setCalloutPosition] = React.useState<{ top: number; left: number; width: number } | null>(null);
   const [spotlightRect, setSpotlightRect] = React.useState<DOMRect | null>(null);
   const current = STEPS[step] ?? STEPS[0];
 
   React.useLayoutEffect(() => {
     if (!current.target) {
       setSpotlightRect(null);
+      setCalloutPosition(null);
       return;
     }
     const targetEl = document.querySelector<HTMLElement>(current.target);
@@ -63,6 +64,12 @@ export function GalleryTour({ step, required, onStep, onFinish }: {
       const rect = targetEl?.getBoundingClientRect() ?? null;
       if (rect && rect.width > 0 && rect.height > 0) {
         setSpotlightRect(rect);
+        const margin = 16;
+        const width = Math.min(400, window.innerWidth - margin * 2);
+        const besideMap = current.id === 'map' && rect.right + width + margin * 2 <= window.innerWidth;
+        const top = besideMap ? Math.max(margin, rect.top) : rect.bottom + margin;
+        const left = besideMap ? rect.right + margin : Math.max(margin, Math.min(rect.right - width, window.innerWidth - width - margin));
+        setCalloutPosition({ top, left, width });
       } else {
         setSpotlightRect(null);
       }
@@ -70,6 +77,7 @@ export function GalleryTour({ step, required, onStep, onFinish }: {
     update();
     const observer = targetEl ? new ResizeObserver(update) : null;
     if (targetEl) observer?.observe(targetEl);
+    observer?.observe(document.documentElement);
     window.addEventListener('resize', update);
     window.addEventListener('scroll', update, true);
     return () => {
@@ -77,7 +85,43 @@ export function GalleryTour({ step, required, onStep, onFinish }: {
       window.removeEventListener('resize', update);
       window.removeEventListener('scroll', update, true);
     };
-  }, [current.target]);
+  }, [current]);
+
+  // Keep the real control and its preview panel interactive; quiet everything else.
+  React.useLayoutEffect(() => {
+    const surface = document.querySelector<HTMLElement>('.gallery-surface');
+    if (!surface) return;
+    const allowedSelector = [current.target, current.id === 'filter' ? '#club-browser, .club-dialog-backdrop' : null].filter(Boolean).join(', ');
+    const originals = new Map<HTMLElement, boolean>();
+    const update = () => {
+      const allowed = allowedSelector ? [...surface.querySelectorAll(allowedSelector)] : [];
+      for (const child of surface.children) {
+        if (!(child instanceof HTMLElement)) continue;
+        if (!originals.has(child)) originals.set(child, child.inert);
+        const active = allowed.some((element) => child === element || child.contains(element));
+        child.inert = !active;
+        child.toggleAttribute('data-tour-active', active);
+      }
+    };
+    surface.dataset.tourPreview = current.id;
+    update();
+    const observer = new MutationObserver(update);
+    observer.observe(surface, { childList: true });
+    const sizeObserver = new ResizeObserver(() => {
+      surface.style.setProperty('--tour-guide-bottom', `${calloutRef.current?.getBoundingClientRect().bottom ?? 0}px`);
+    });
+    if (calloutRef.current) sizeObserver.observe(calloutRef.current);
+    return () => {
+      observer.disconnect();
+      sizeObserver.disconnect();
+      for (const [element, inert] of originals) {
+        element.inert = inert;
+        element.removeAttribute('data-tour-active');
+      }
+      delete surface.dataset.tourPreview;
+      surface.style.removeProperty('--tour-guide-bottom');
+    };
+  }, [current, calloutPosition]);
 
   React.useEffect(() => {
     actionRef.current?.focus();
@@ -85,29 +129,27 @@ export function GalleryTour({ step, required, onStep, onFinish }: {
 
   React.useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && !required) onFinish();
+      if (document.querySelector('.club-dialog-backdrop')) return;
+      if (event.key === 'Escape' && document.querySelector('.club-browser.is-open')) return;
+      if (event.key === 'Escape' && !required) onFinish('explore');
       if (event.key !== 'Tab' || !calloutRef.current) return;
-      const focusable = [...calloutRef.current.querySelectorAll<HTMLElement>('button, a[href], [tabindex]:not([tabindex="-1"])')]
-        .filter((element) => !element.hasAttribute('disabled'));
+      const roots = [calloutRef.current, ...document.querySelectorAll<HTMLElement>('.gallery-surface > [data-tour-active]')];
+      const focusable = roots.flatMap((root) => [root, ...root.querySelectorAll<HTMLElement>('button, input, a[href], [tabindex]:not([tabindex="-1"])')])
+        .filter((element) => element.tabIndex >= 0 && !element.hasAttribute('disabled') && !element.closest('[inert]') && element.getClientRects().length > 0 && getComputedStyle(element).visibility !== 'hidden');
       if (!focusable.length) return;
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
-      }
+      event.preventDefault();
+      const index = focusable.indexOf(document.activeElement as HTMLElement);
+      const next = index < 0 ? 0 : (index + (event.shiftKey ? -1 : 1) + focusable.length) % focusable.length;
+      focusable[next].focus();
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [onFinish, required]);
+  }, [onFinish, required, current]);
 
   const last = step === STEPS.length - 1;
 
   return (
-    <div className="gallery-tour gallery-tour--centered" data-ui-layer data-required={required ? 'true' : 'false'}>
+    <div className={`gallery-tour${current.target ? " gallery-tour--preview" : ""}`} data-ui-layer data-required={required ? 'true' : 'false'}>
       <div className="tour-backdrop" onClick={required ? undefined : () => onFinish('explore')} aria-hidden="true" />
       {spotlightRect && (
         <div
@@ -123,121 +165,52 @@ export function GalleryTour({ step, required, onStep, onFinish }: {
       )}
       <aside
         ref={calloutRef}
-        className="tour-callout tour-callout--centered"
+        className={`tour-callout${calloutPosition ? ' tour-callout--anchored' : ''}`}
+        style={calloutPosition ? { ...calloutPosition, maxHeight: `calc(100dvh - ${calloutPosition.top + 16}px)` } : undefined}
         role="dialog"
-        aria-modal={required}
+        aria-modal={!current.target}
         aria-labelledby="tour-title"
+        aria-describedby="tour-description"
       >
         <div className="tour-header">
-          <div className="tour-count">{String(step + 1).padStart(2, '0')} / {String(STEPS.length).padStart(2, '0')}</div>
+          <div className="tour-count">Gallery guide · {step + 1} of {STEPS.length}</div>
+          {!required && <button type="button" className="tour-close" onClick={() => onFinish('explore')}>Close</button>}
         </div>
 
         <h2 id="tour-title">{current.title}</h2>
 
-        <div className="tour-body">
-          {current.copy.split('\n').map((paragraph, idx) => (
-            <p key={idx} className={paragraph.startsWith('•') ? 'tour-bullet' : 'tour-paragraph'}>
-              {paragraph}
-            </p>
-          ))}
+        <div className="tour-body" id="tour-description">
+          {current.copy
+            .split('\n')
+            .map((p) => p.trim())
+            .filter(Boolean)
+            .map((paragraph, idx) => (
+              <p key={idx} className={paragraph.startsWith('•') ? 'tour-bullet' : 'tour-paragraph'}>
+                {paragraph}
+              </p>
+            ))}
         </div>
 
-        {current.showControlsDiagram && (
-          <div className="tour-controls-diagram" aria-label="Visual control guide">
-            <div className="control-card">
-              <span className="control-card-title">Keyboard Navigation</span>
-              <div className="control-keys-grid">
-                <div className="keys-cluster keys-cluster--wasd">
-                  <div className="key-row">
-                    <kbd className="key-cap">W</kbd>
-                  </div>
-                  <div className="key-row">
-                    <kbd className="key-cap">A</kbd>
-                    <kbd className="key-cap">S</kbd>
-                    <kbd className="key-cap">D</kbd>
-                  </div>
-                  <span className="key-desc">Pan (Up / Left / Down / Right)</span>
-                </div>
-                <div className="keys-divider" />
-                <div className="keys-cluster keys-cluster--eq">
-                  <div className="key-row">
-                    <kbd className="key-cap key-cap--accent">E</kbd>
-                    <kbd className="key-cap key-cap--accent">Q</kbd>
-                  </div>
-                  <span className="key-desc">Depth (<b>E</b> Forward / <b>Q</b> Back)</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="control-card">
-              <span className="control-card-title">Mouse & Touch</span>
-              <div className="mouse-gestures-grid">
-                <div className="gesture-item">
-                  <svg className="gesture-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
-                    <path d="M12 2a5 5 0 0 0-5 5v10a5 5 0 0 0 10 0V7a5 5 0 0 0-5-5z" />
-                    <path d="M12 6v4" strokeLinecap="round" />
-                    <path d="M9 14l-2 2M15 14l2 2M9 10l-2-2M15 10l2-2" strokeLinecap="round" />
-                  </svg>
-                  <div>
-                    <strong>Click & Drag</strong>
-                    <span>Pan across canvas</span>
-                  </div>
-                </div>
-                <div className="gesture-item">
-                  <svg className="gesture-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
-                    <path d="M12 2a5 5 0 0 0-5 5v10a5 5 0 0 0 10 0V7a5 5 0 0 0-5-5z" />
-                    <path d="M12 6v4" strokeWidth="2.5" stroke="var(--color-accent, #e8c578)" strokeLinecap="round" />
-                  </svg>
-                  <div>
-                    <strong>Mouse Wheel / Pinch</strong>
-                    <span>Zoom through depth</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+        {current.showControls && (
+          <dl className="tour-controls" aria-label="Gallery controls">
+            <div><dt>Move around</dt><dd>Drag with your mouse or finger.</dd></div>
+            <div><dt>Move through depth</dt><dd>Scroll with your mouse or pinch on touch.</dd></div>
+            <div className="tour-keyboard"><dt>Keyboard</dt><dd><kbd>W A S D</kbd> to pan · <kbd>E</kbd> forward · <kbd>Q</kbd> back</dd></div>
+          </dl>
         )}
 
+        {last && required && <p className="tour-start-note">Start with the 1920s story. You can explore the gallery at any point.</p>}
+
         <div className="tour-actions">
-          {!required && (
-            <button type="button" className="tour-skip" onClick={() => onFinish('explore')}>
-              Close
-            </button>
-          )}
-          <span />
-          {step > 0 && (
-            <button type="button" onClick={() => onStep(step - 1)}>
-              Back
-            </button>
-          )}
-          {last ? (
-            <>
-              <button
-                type="button"
-                className="tour-btn-secondary"
-                onClick={() => onFinish('explore')}
-              >
-                Explore
-              </button>
-              <button
-                ref={actionRef}
-                type="button"
-                className="tour-btn-primary"
-                onClick={() => onFinish('first-time')}
-              >
-                First Time? Start at 1920s
-              </button>
-            </>
-          ) : (
-            <button
-              ref={actionRef}
-              type="button"
-              className="tour-btn-primary"
-              onClick={() => onStep(step + 1)}
-            >
-              Next
-            </button>
-          )}
+          {step > 0 && <button type="button" className="tour-back" onClick={() => onStep(step - 1)}>Back</button>}
+          <button
+            ref={actionRef}
+            type="button"
+            className="tour-btn-primary"
+            onClick={() => last ? onFinish(required ? 'first-time' : 'explore') : onStep(step + 1)}
+          >
+            {last ? (required ? 'Start at the 1920s' : 'Done') : 'Next'}
+          </button>
         </div>
       </aside>
     </div>
