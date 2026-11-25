@@ -247,17 +247,38 @@ button:focus-visible, a:focus-visible, summary:focus-visible, input:focus-visibl
 .listening-note, .no-audio { color: #806a57 !important; font-size: .66rem !important; }
 .club-dialog footer { display: flex; flex-wrap: wrap; gap: .6rem 1rem; margin-top: 2rem; padding-top: 1.1rem; border-top: 1px solid rgba(55,37,27,.2); color: #705b49; font: .57rem 'DM Mono', monospace; }
 .club-dialog footer a { color: #9f3f29; }
-.gallery-tour { position: fixed; inset: 0; z-index: 55; pointer-events: auto; background: rgba(4,3,3,.18); }
-.gallery-tour[data-required='true'] { background: rgba(4,3,3,.3); }
-.tour-spotlight { position: fixed; pointer-events: none; border: 1px solid rgba(255,215,133,.88); border-radius: .55rem; box-shadow: 0 0 0 9999px rgba(4,3,3,.38), 0 0 24px rgba(255,190,92,.28); transition: inset .3s, width .3s, height .3s; }
-.tour-callout { position: fixed; width: min(19rem, calc(100vw - 1.5rem)); padding: 1.1rem; color: #e8d9bf; border: 1px solid rgba(233,198,137,.24); border-radius: .8rem; background: rgba(18,12,10,.9); box-shadow: 0 18px 60px rgba(0,0,0,.5); backdrop-filter: blur(22px); pointer-events: auto; }
-.tour-count { color: #b4754d; text-transform: uppercase; letter-spacing: .12em; font: .5rem 'DM Mono', monospace; }
-.tour-callout h2 { margin: .55rem 0 .35rem; color: #f5dfb7; font: 400 1.55rem 'Instrument Serif', serif; }
-.tour-callout p { margin: 0; color: #a9957b; font-size: .72rem; line-height: 1.55; }
-.tour-actions { display: flex; align-items: center; gap: .5rem; margin-top: 1rem; }
-.tour-actions span { flex: 1; }
-.tour-actions button { padding: .4rem .55rem; color: #d7c3a0; border: 1px solid rgba(221,184,119,.2); background: rgba(255,255,255,.025); cursor: pointer; text-transform: uppercase; letter-spacing: .08em; font: .52rem 'DM Mono', monospace; }
-.tour-actions .tour-skip { color: #8f7a63; border-color: transparent; background: none; }
+.gallery-tour { position: absolute; inset: 0; display: grid; place-items: center; padding: 1rem; pointer-events: none; }
+.tour-backdrop { position: fixed; inset: 0; z-index: 55; background: rgba(5,3,3,.55); pointer-events: auto; }
+.gallery-surface > [data-tour-active] { z-index: 57; }
+.gallery-surface > .club-dialog-backdrop[data-tour-active] { z-index: 60; }
+.gallery-surface[data-tour-preview="filter"] .club-browser { top: calc(var(--tour-guide-bottom, 24rem) + 1rem); opacity: 1; max-height: calc(100dvh - var(--tour-guide-bottom, 24rem) - 2rem); overflow-y: auto; scrollbar-width: thin; scrollbar-color: #8f7b66 transparent; }
+.gallery-surface[data-tour-preview="filter"] .club-index-list { max-height: none; }
+.gallery-surface[data-tour-preview="soundtrack"] .soundtrack-popover { position: fixed; top: calc(var(--tour-guide-bottom, 24rem) + 1rem); right: 1rem; max-height: calc(100dvh - var(--tour-guide-bottom, 24rem) - 2rem); overflow-y: auto; }
+.tour-spotlight { position: fixed; z-index: 56; pointer-events: none; border: 1px solid #dfbe84; border-radius: .25rem; box-shadow: 0 0 0 9999px rgba(4,3,3,.18); transition: inset .24s ease, width .24s ease, height .24s ease; }
+.tour-callout { position: relative; z-index: 58; width: min(34rem, 100%); max-height: calc(100dvh - 2rem); overflow-y: auto; padding: 2rem; color: #f0e3ce; border: 1px solid rgba(233,198,137,.25); border-radius: .25rem; background: #120e0b; pointer-events: auto; box-shadow: 0 20px 60px rgba(0,0,0,.5); animation: rise-in .32s cubic-bezier(.16,1,.3,1); }
+.tour-callout--anchored { position: fixed; padding: 1.4rem; animation: fade-in .2s ease; }
+.tour-callout--anchored h2 { font-size: 2rem; }
+.tour-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.25rem; }
+.tour-count { color: #bca789; letter-spacing: .04em; font: .75rem 'DM Mono', monospace; }
+.tour-callout h2 { margin: 0 0 .75rem; color: #fff3df; font: 400 2.35rem/1.15 'Instrument Serif', serif; }
+.tour-paragraph { margin: 0; color: #dfd2be; font-size: 1rem; line-height: 1.65; }
+.tour-paragraph + .tour-paragraph { margin-top: .75rem; }
+.tour-controls { display: grid; gap: .85rem; margin: 1.25rem 0 0; padding-top: 1.25rem; border-top: 1px solid rgba(233,198,137,.16); }
+.tour-controls dt { margin-bottom: .2rem; color: #f0e3ce; font-size: .95rem; font-weight: 600; }
+.tour-controls dd { margin: 0; color: #c5b49d; font-size: .9rem; line-height: 1.55; }
+.tour-keyboard { padding-top: .85rem; border-top: 1px solid rgba(233,198,137,.1); }
+.tour-keyboard kbd { color: #e5c994; font: .82rem 'DM Mono', monospace; white-space: nowrap; }
+.tour-start-note { margin: 1rem 0 0; color: #bca789; font-size: .85rem; line-height: 1.55; }
+.tour-actions { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid rgba(233,198,137,.16); }
+.tour-actions button, .tour-close { min-height: 2.75rem; cursor: pointer; font-size: .9rem; transition: background .18s, color .18s; }
+.tour-back, .tour-close { padding: .5rem 0; color: #bca789; border: 0; border-radius: 0; background: none; }
+.tour-back:hover, .tour-close:hover { color: #fff3df; text-decoration: underline; text-underline-offset: .25rem; }
+.tour-actions .tour-btn-primary { margin-left: auto; padding: .65rem 1.1rem; color: #160e0a; border: 1px solid #d4ae78; border-radius: .15rem; background: #d4ae78; font-weight: 600; }
+.tour-actions .tour-btn-primary:hover { background: #e5c994; }
+@media (max-width: 600px) {
+  .tour-callout { padding: 1.4rem; }
+  .tour-callout h2 { font-size: 2rem; }
+}
 @keyframes fade-in { from { opacity: 0; } }
 @keyframes rise-in { from { opacity: 0; transform: translateY(2rem) scale(.98); } }
 @keyframes record-spin { to { transform: rotate(360deg); } }

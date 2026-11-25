@@ -1,137 +1,216 @@
 import React from 'react';
 
-const STEPS = [
-  {
-    target: '[data-tour="controls"]',
-    title: 'Move around',
-    copy: 'Drag to pan. Scroll—or pinch—to move through depth. A keyboard works too: WASD and Q/E.',
-    preferred: 'top',
-  },
-  {
-    target: '[data-tour="timeline"]',
-    title: 'Follow the city through time',
-    copy: 'Traverse the timeline to see how jazz in New York City changed over the decades.',
-    preferred: 'top',
-  },
-  {
-    target: '[data-tour="filter"]',
-    title: 'Find a room',
-    copy: 'Filter by location, or open the club index to view a list of all active clubs.',
-    preferred: 'bottom-left',
-  },
-  {
-    target: '[data-tour="soundtrack"]',
-    title: 'Control the soundtrack',
-    copy: 'Use the record button to spin the music down to mute, or spin it back up to continue listening.',
-    preferred: 'bottom-left',
-  },
-  {
-    target: '[data-tour="map"]',
-    title: 'Watch the map',
-    copy: 'This is an interactive map to visualise all the jazz clubs in the city. The shading shows rising rent over the years.',
-    preferred: 'right',
-  },
-] as const;
+type StepData = {
+  id: string;
+  target?: string;
+  title: string;
+  copy: string;
+  showControls?: boolean;
+};
 
-type Placement = { top: number; left: number; target: DOMRect | null };
+const STEPS: StepData[] = [
+  {
+    id: 'intro',
+    title: 'Move around',
+    copy: "Explore a century of New York jazz through the clubs, stories and sounds that shaped the city. Here’s how to navigate the gallery.",
+    showControls: true,
+  },
+  {
+    id: 'filter',
+    target: '[data-tour="filter"]',
+    title: 'Search for venues',
+    copy: "Try the highlighted filter icon at the top right to browse clubs by neighborhood or jazz scene. Select a venue to see its history, photos and listening recommendations.",
+  },
+  {
+    id: 'soundtrack',
+    target: '[data-tour="soundtrack"]',
+    title: 'Sound controls',
+    copy: "Try the highlighted vinyl icon at the top right to mute the music. Select it again to listen. The soundtrack changes with each decade.",
+  },
+  {
+    id: 'map',
+    target: '[data-tour="map"]',
+    title: 'Read the map',
+    copy: "The map at the top left shows where the clubs are. Pan or zoom to explore a neighborhood, and select a club to learn more. Brighter shading shows higher rents in the selected decade.",
+  },
+  {
+    id: 'timeline',
+    target: '[data-tour="timeline"]',
+    title: 'Choose a decade',
+    copy: "Select a year on the timeline at the top to open that decade’s story and music. Scroll through the story, then explore its clubs in the gallery.",
+  },
+];
 
 export function GalleryTour({ step, required, onStep, onFinish }: {
   step: number;
   required: boolean;
   onStep: (step: number) => void;
-  onFinish: () => void;
+  onFinish: (mode?: 'first-time' | 'explore' | 'done') => void;
 }) {
   const calloutRef = React.useRef<HTMLElement>(null);
   const actionRef = React.useRef<HTMLButtonElement>(null);
-  const [placement, setPlacement] = React.useState<Placement>({ top: 24, left: 24, target: null });
-  const current = STEPS[step];
+  const [calloutPosition, setCalloutPosition] = React.useState<{ top: number; left: number; width: number } | null>(null);
+  const [spotlightRect, setSpotlightRect] = React.useState<DOMRect | null>(null);
+  const current = STEPS[step] ?? STEPS[0];
 
   React.useLayoutEffect(() => {
-    const target = document.querySelector<HTMLElement>(current.target);
+    if (!current.target) {
+      setSpotlightRect(null);
+      setCalloutPosition(null);
+      return;
+    }
+    const targetEl = document.querySelector<HTMLElement>(current.target);
     const update = () => {
-      const viewportWidth = window.innerWidth;
-      const viewportHeight = window.innerHeight;
-      const width = Math.min(calloutRef.current?.offsetWidth ?? 304, viewportWidth - 24);
-      const height = calloutRef.current?.offsetHeight ?? 190;
-      const rect = target?.getBoundingClientRect() ?? null;
-      if (!rect || rect.width === 0 || rect.height === 0) {
-        setPlacement({ top: Math.max(12, (viewportHeight - height) / 2), left: Math.max(12, (viewportWidth - width) / 2), target: null });
-        return;
+      const rect = targetEl?.getBoundingClientRect() ?? null;
+      if (rect && rect.width > 0 && rect.height > 0) {
+        setSpotlightRect(rect);
+        const margin = 16;
+        const width = Math.min(400, window.innerWidth - margin * 2);
+        const besideMap = current.id === 'map' && rect.right + width + margin * 2 <= window.innerWidth;
+        const top = besideMap ? Math.max(margin, rect.top) : rect.bottom + margin;
+        const left = besideMap ? rect.right + margin : Math.max(margin, Math.min(rect.right - width, window.innerWidth - width - margin));
+        setCalloutPosition({ top, left, width });
+      } else {
+        setSpotlightRect(null);
       }
-      const gap = 14;
-      let top = rect.top - height - gap;
-      let left = rect.left + rect.width / 2 - width / 2;
-      if (current.preferred === 'bottom-left') {
-        top = rect.bottom + gap;
-        left = rect.right - width;
-      } else if (current.preferred === 'right') {
-        top = rect.top + rect.height / 2 - height / 2;
-        left = rect.right + gap;
-      }
-      if (top < 12) top = Math.min(viewportHeight - height - 12, rect.bottom + gap);
-      if (top + height > viewportHeight - 12) top = Math.max(12, rect.top - height - gap);
-      if (left < 12) left = 12;
-      if (left + width > viewportWidth - 12) left = viewportWidth - width - 12;
-      setPlacement({ top, left, target: rect });
     };
     update();
-    const observer = target ? new ResizeObserver(update) : null;
-    if (target) observer?.observe(target);
+    const observer = targetEl ? new ResizeObserver(update) : null;
+    if (targetEl) observer?.observe(targetEl);
+    observer?.observe(document.documentElement);
     window.addEventListener('resize', update);
-    window.addEventListener('orientationchange', update);
-    actionRef.current?.focus();
+    window.addEventListener('scroll', update, true);
     return () => {
       observer?.disconnect();
       window.removeEventListener('resize', update);
-      window.removeEventListener('orientationchange', update);
+      window.removeEventListener('scroll', update, true);
     };
   }, [current]);
 
+  // Keep the real control and its preview panel interactive; quiet everything else.
+  React.useLayoutEffect(() => {
+    const surface = document.querySelector<HTMLElement>('.gallery-surface');
+    if (!surface) return;
+    const allowedSelector = [current.target, current.id === 'filter' ? '#club-browser, .club-dialog-backdrop' : null].filter(Boolean).join(', ');
+    const originals = new Map<HTMLElement, boolean>();
+    const update = () => {
+      const allowed = allowedSelector ? [...surface.querySelectorAll(allowedSelector)] : [];
+      for (const child of surface.children) {
+        if (!(child instanceof HTMLElement)) continue;
+        if (!originals.has(child)) originals.set(child, child.inert);
+        const active = allowed.some((element) => child === element || child.contains(element));
+        child.inert = !active;
+        child.toggleAttribute('data-tour-active', active);
+      }
+    };
+    surface.dataset.tourPreview = current.id;
+    update();
+    const observer = new MutationObserver(update);
+    observer.observe(surface, { childList: true });
+    const sizeObserver = new ResizeObserver(() => {
+      surface.style.setProperty('--tour-guide-bottom', `${calloutRef.current?.getBoundingClientRect().bottom ?? 0}px`);
+    });
+    if (calloutRef.current) sizeObserver.observe(calloutRef.current);
+    return () => {
+      observer.disconnect();
+      sizeObserver.disconnect();
+      for (const [element, inert] of originals) {
+        element.inert = inert;
+        element.removeAttribute('data-tour-active');
+      }
+      delete surface.dataset.tourPreview;
+      surface.style.removeProperty('--tour-guide-bottom');
+    };
+  }, [current, calloutPosition]);
+
+  React.useEffect(() => {
+    actionRef.current?.focus();
+  }, [step]);
+
   React.useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && !required) onFinish();
+      if (document.querySelector('.club-dialog-backdrop')) return;
+      if (event.key === 'Escape' && document.querySelector('.club-browser.is-open')) return;
+      if (event.key === 'Escape' && !required) onFinish('explore');
       if (event.key !== 'Tab' || !calloutRef.current) return;
-      const focusable = [...calloutRef.current.querySelectorAll<HTMLElement>('button, a[href], [tabindex]:not([tabindex="-1"])')]
-        .filter((element) => !element.hasAttribute('disabled'));
+      const roots = [calloutRef.current, ...document.querySelectorAll<HTMLElement>('.gallery-surface > [data-tour-active]')];
+      const focusable = roots.flatMap((root) => [root, ...root.querySelectorAll<HTMLElement>('button, input, a[href], [tabindex]:not([tabindex="-1"])')])
+        .filter((element) => element.tabIndex >= 0 && !element.hasAttribute('disabled') && !element.closest('[inert]') && element.getClientRects().length > 0 && getComputedStyle(element).visibility !== 'hidden');
       if (!focusable.length) return;
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
-      }
+      event.preventDefault();
+      const index = focusable.indexOf(document.activeElement as HTMLElement);
+      const next = index < 0 ? 0 : (index + (event.shiftKey ? -1 : 1) + focusable.length) % focusable.length;
+      focusable[next].focus();
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [onFinish, required]);
+  }, [onFinish, required, current]);
 
   const last = step === STEPS.length - 1;
+
   return (
-    <div className="gallery-tour" data-ui-layer data-required={required ? 'true' : 'false'}>
-      {placement.target && (
+    <div className={`gallery-tour${current.target ? " gallery-tour--preview" : ""}`} data-ui-layer data-required={required ? 'true' : 'false'}>
+      <div className="tour-backdrop" onClick={required ? undefined : () => onFinish('explore')} aria-hidden="true" />
+      {spotlightRect && (
         <div
           className="tour-spotlight"
           aria-hidden="true"
           style={{
-            top: placement.target.top - 6,
-            left: placement.target.left - 6,
-            width: placement.target.width + 12,
-            height: placement.target.height + 12,
+            top: spotlightRect.top - 6,
+            left: spotlightRect.left - 6,
+            width: spotlightRect.width + 12,
+            height: spotlightRect.height + 12,
           }}
         />
       )}
-      <aside ref={calloutRef} className="tour-callout" role="dialog" aria-modal={required} aria-labelledby="tour-title" style={{ top: placement.top, left: placement.left }}>
-        <div className="tour-count">{String(step + 1).padStart(2, '0')} / {String(STEPS.length).padStart(2, '0')}</div>
+      <aside
+        ref={calloutRef}
+        className={`tour-callout${calloutPosition ? ' tour-callout--anchored' : ''}`}
+        style={calloutPosition ? { ...calloutPosition, maxHeight: `calc(100dvh - ${calloutPosition.top + 16}px)` } : undefined}
+        role="dialog"
+        aria-modal={!current.target}
+        aria-labelledby="tour-title"
+        aria-describedby="tour-description"
+      >
+        <div className="tour-header">
+          <div className="tour-count">Gallery guide · {step + 1} of {STEPS.length}</div>
+          {!required && <button type="button" className="tour-close" onClick={() => onFinish('explore')}>Close</button>}
+        </div>
+
         <h2 id="tour-title">{current.title}</h2>
-        <p>{current.copy}</p>
+
+        <div className="tour-body" id="tour-description">
+          {current.copy
+            .split('\n')
+            .map((p) => p.trim())
+            .filter(Boolean)
+            .map((paragraph, idx) => (
+              <p key={idx} className={paragraph.startsWith('•') ? 'tour-bullet' : 'tour-paragraph'}>
+                {paragraph}
+              </p>
+            ))}
+        </div>
+
+        {current.showControls && (
+          <dl className="tour-controls" aria-label="Gallery controls">
+            <div><dt>Move around</dt><dd>Drag with your mouse or finger.</dd></div>
+            <div><dt>Move through depth</dt><dd>Scroll with your mouse or pinch on touch.</dd></div>
+            <div className="tour-keyboard"><dt>Keyboard</dt><dd><kbd>W A S D</kbd> to pan · <kbd>E</kbd> forward · <kbd>Q</kbd> back</dd></div>
+          </dl>
+        )}
+
+        {last && required && <p className="tour-start-note">Start with the 1920s story. You can explore the gallery at any point.</p>}
+
         <div className="tour-actions">
-          {!required && <button type="button" className="tour-skip" onClick={onFinish}>Close</button>}
-          <span />
-          {step > 0 && <button type="button" onClick={() => onStep(step - 1)}>Back</button>}
-          <button ref={actionRef} type="button" onClick={() => last ? onFinish() : onStep(step + 1)}>{last ? 'Done' : 'Next'}</button>
+          {step > 0 && <button type="button" className="tour-back" onClick={() => onStep(step - 1)}>Back</button>}
+          <button
+            ref={actionRef}
+            type="button"
+            className="tour-btn-primary"
+            onClick={() => last ? onFinish(required ? 'first-time' : 'explore') : onStep(step + 1)}
+          >
+            {last ? (required ? 'Start at the 1920s' : 'Done') : 'Next'}
+          </button>
         </div>
       </aside>
     </div>

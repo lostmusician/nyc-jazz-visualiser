@@ -22,6 +22,7 @@ test('every gallery decade has one playable soundtrack asset', () => {
     assert.ok(existsSync(`public${track.src}`), track.src);
     assert.ok(track.credit);
     assert.ok(track.sourceFilename.endsWith('.mp3'));
+    assert.ok(typeof track.gainAdjustment === 'number' && track.gainAdjustment > 0.2 && track.gainAdjustment <= 1.0);
   }
 });
 
@@ -29,6 +30,7 @@ test('the gallery keeps Skating in Central Park separate from era soundtracks', 
   assert.equal(GALLERY_SOUNDTRACK.title, 'Skating in Central Park');
   assert.equal(GALLERY_SOUNDTRACK.decade, undefined);
   assert.equal(GALLERY_SOUNDTRACK.src, '/audio/skating-in-central-park.mp3');
+  assert.equal(GALLERY_SOUNDTRACK.gainAdjustment, 1.0);
   assert.ok(existsSync(`public${GALLERY_SOUNDTRACK.src}`));
   assert.ok(Object.values(DECADE_SOUNDTRACKS).every((track) => track.src !== GALLERY_SOUNDTRACK.src));
 });

@@ -129,16 +129,24 @@ export const App = () => {
     }, reducedMotion ? 180 : 1250);
   }, [continueIntoGallery, reducedMotion]);
 
-  const finishTour = React.useCallback(() => {
+  const finishTour = React.useCallback((mode: 'first-time' | 'explore' | 'done' = 'done') => {
     setTourStep(null);
-    if (!tourRequired) return;
+    setBrowserOpen(false);
+    setSelectedVenueId(null);
     try { window.localStorage.setItem(TOUR_STORAGE_KEY, 'complete'); } catch { /* completion lasts for this visit */ }
     setTourRequired(false);
+    if (mode === 'explore') {
+      setStoryDecade(null);
+      setActiveStoryBeat(0);
+      window.requestAnimationFrame(() => document.querySelector<HTMLElement>('.tour-toggle')?.focus());
+      return;
+    }
+    // Default or first-time: start in 1920s
     setDecade(1920);
     setStoryDecade(1920);
     setSoundtrackSelection(1920);
     setActiveStoryBeat(0);
-  }, [tourRequired]);
+  }, []);
 
   const skipStory = React.useCallback(() => {
     setStoryDecade(null);
@@ -173,7 +181,7 @@ export const App = () => {
   return (
     <div className="experience-shell">
     {entryPhase !== 'intro' && <main className={`gallery-app${entryPhase === 'transitioning' ? ' is-entering' : ''}${story ? ' has-story' : ''}`}>
-      <div className="gallery-surface" inert={tourStep !== null && tourRequired ? true : undefined}>
+      <div className="gallery-surface">
       <a className="skip-link" href="#club-index">Skip to filters and club index</a>
       <InfiniteCanvas media={media} catalog={GALLERY_MEDIA} paused={Boolean(story)} transition={decadeTransition} onTransitionReady={markTransitionReady} hoveredVenueId={hoveredVenueId} onHoverVenue={setHoveredVenueId} onSelectVenue={openVenue} entryDepthImpulse={reducedMotion ? 0 : 1.45} />
       <div className="atmosphere" aria-hidden="true" />
@@ -222,7 +230,7 @@ export const App = () => {
       )}
       {decadeTransition && <React.Suspense fallback={<div className="canvas-loading" role="status">Preparing the changing city…</div>}><DecadeTransition transition={decadeTransition} ready={transitionReady} onComplete={finishChange} /></React.Suspense>}
       </div>
-      {tourStep !== null && <GalleryTour step={tourStep} required={tourRequired} onStep={setTourStep} onFinish={finishTour} />}
+      {tourStep !== null && <GalleryTour step={tourStep} required={tourRequired} onStep={(nextStep) => { setBrowserOpen(false); setSelectedVenueId(null); setTourStep(nextStep); }} onFinish={finishTour} />}
     </main>}
     {entryPhase !== 'gallery' && (
       <div className={`intro-layer${entryPhase === 'transitioning' ? ' is-leaving' : ''}`}>

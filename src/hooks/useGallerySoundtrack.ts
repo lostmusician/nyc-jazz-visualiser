@@ -203,8 +203,10 @@ export function useGallerySoundtrack(
         rightBuffer: right.buffer,
         seekCursor: safeOffset * buffer.sampleRate,
       }, [left.buffer, right.buffer]);
+      const trackGain = track.gainAdjustment ?? 1;
+      const targetVolume = volumeRef.current * trackGain;
       if (speed) speed.setValueAtTime(shouldPlay ? 1 : 0, context.currentTime);
-      gain.gain.setValueAtTime(outgoing && shouldPlay ? SILENCE : shouldPlay ? volumeRef.current : SILENCE, context.currentTime);
+      gain.gain.setValueAtTime(outgoing && shouldPlay ? SILENCE : shouldPlay ? targetVolume : SILENCE, context.currentTime);
       node.connect(gain).connect(context.destination);
 
       const incoming: Engine = { node, gain, buffer, track };
@@ -220,7 +222,7 @@ export function useGallerySoundtrack(
         outgoing.gain.gain.cancelScheduledValues(now);
         outgoing.gain.gain.setValueAtTime(outgoing.gain.gain.value, now);
         outgoing.gain.gain.linearRampToValueAtTime(SILENCE, now + CROSSFADE_SECONDS);
-        gain.gain.linearRampToValueAtTime(volumeRef.current, now + CROSSFADE_SECONDS);
+        gain.gain.linearRampToValueAtTime(targetVolume, now + CROSSFADE_SECONDS);
         crossfadeTimerRef.current = window.setTimeout(() => {
           if (outgoingEngineRef.current === outgoing) {
             disconnectEngine(outgoing);
@@ -279,10 +281,12 @@ export function useGallerySoundtrack(
       void startTrack(activeTrackRef.current);
       return;
     }
+    const trackGain = engine.track.gainAdjustment ?? 1;
+    const targetVolume = volumeRef.current * trackGain;
     clearAutomation();
     playbackSpeedRef.current = 1;
     setParam(speed, context, 1);
-    setParam(engine.gain.gain, context, volumeRef.current);
+    setParam(engine.gain.gain, context, targetVolume);
     setStatus('playing');
   }, [clearAutomation, startTrack]);
 
@@ -345,6 +349,8 @@ export function useGallerySoundtrack(
     const fromSpeed = playbackSpeedRef.current;
     const fromGain = engine.gain.gain.value;
     const targetSpeed = nextMuted ? 0 : 1;
+    const trackGain = engine.track.gainAdjustment ?? 1;
+    const targetVolume = volumeRef.current * trackGain;
     setStatus(nextMuted ? 'dropping' : 'playing');
     const tick = (now: number) => {
       if (generation !== automationGenerationRef.current) return;
@@ -352,7 +358,7 @@ export function useGallerySoundtrack(
       const nextSpeed = getTurntableSpeed(fromSpeed, targetSpeed, progress);
       playbackSpeedRef.current = nextSpeed;
       setParam(speed, context, nextSpeed);
-      setParam(engine.gain.gain, context, Math.max(SILENCE, fromGain + (nextMuted ? SILENCE - fromGain : volumeRef.current - fromGain) * progress));
+      setParam(engine.gain.gain, context, Math.max(SILENCE, fromGain + (nextMuted ? SILENCE - fromGain : targetVolume - fromGain) * progress));
       if (progress < 1) automationFrameRef.current = requestAnimationFrame(tick);
       else setStatus(nextMuted ? 'paused' : 'playing');
     };
@@ -393,8 +399,10 @@ export function useGallerySoundtrack(
     volumeRef.current = safeVolume;
     setVolumeState(safeVolume);
     const context = contextRef.current;
-    const gain = engineRef.current?.gain.gain;
-    if (context && gain && !mutedRef.current) setParam(gain, context, safeVolume * playbackSpeedRef.current);
+    const engine = engineRef.current;
+    const gain = engine?.gain.gain;
+    const trackGain = engine?.track.gainAdjustment ?? 1;
+    if (context && gain && !mutedRef.current) setParam(gain, context, safeVolume * trackGain * playbackSpeedRef.current);
   }, []);
 
   const seek = React.useCallback((seconds: number) => {
@@ -440,8 +448,9 @@ export function useGallerySoundtrack(
           const engine = engineRef.current;
           if (!engine) return;
           const speed = engine.node.parameters.get('speed');
+          const trackGain = engine.track.gainAdjustment ?? 1;
           if (speed) setParam(speed, context, 1);
-          setParam(engine.gain.gain, context, volumeRef.current);
+          setParam(engine.gain.gain, context, volumeRef.current * trackGain);
           playbackSpeedRef.current = 1;
           setStatus('playing');
         }).catch(() => setStatus('error'));

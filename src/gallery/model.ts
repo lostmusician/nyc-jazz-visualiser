@@ -11,6 +11,7 @@ export interface Soundtrack {
   src: string;
   credit: string;
   sourceFilename: string;
+  gainAdjustment?: number;
 }
 
 export interface DecadeSoundtrack extends Soundtrack {
