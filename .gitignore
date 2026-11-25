@@ -31,3 +31,7 @@ playwright-report
 # Environment variables
 .env
 .env.production
+
+# Optional raw boundary inputs; builds use the public/data snapshots.
+src/data/nyct1990/
+src/data/nyct2000/

@@ -1,4 +1,5 @@
 import React from 'react';
+import type { DecadeTransitionState } from '../gallery/decade-transition';
 import type { Decade } from '../gallery/model';
 import { useMapbox } from '../hooks/useMapbox';
 import type { MapCameraState, SceneMovement, VenueFeature } from '../types';
@@ -10,6 +11,7 @@ interface CentralMapProps {
   hoveredVenueId: string | null;
   selectedVenueId: string | null;
   mode?: 'gallery' | 'story';
+  transition?: DecadeTransitionState | null;
   cameraTarget?: MapCameraState;
   highlightedVenueIds?: string[];
   interactionEnabled?: boolean;
@@ -27,6 +29,7 @@ export function CentralMap({
   hoveredVenueId,
   selectedVenueId,
   mode = 'gallery',
+  transition,
   cameraTarget,
   highlightedVenueIds,
   interactionEnabled = true,
@@ -47,6 +50,7 @@ export function CentralMap({
     lifecycleDecade: decade,
     selectedScene: scene,
     interactionEnabled,
+    transition,
     onHoverVenue,
     onSelectVenue: (venue) => onSelectVenue(venue.properties.id),
   });

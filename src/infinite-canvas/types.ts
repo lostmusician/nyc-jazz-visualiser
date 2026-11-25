@@ -1,3 +1,4 @@
+import type { DecadeTransitionState } from '../gallery/decade-transition';
 import type * as THREE from 'three';
 import type { ClubProfile } from '../gallery/model';
 import type { VenueFeature } from '../types';
@@ -11,6 +12,10 @@ export interface ClubMediaItem {
 
 export interface InfiniteCanvasProps {
   media: ClubMediaItem[];
+  catalog?: ClubMediaItem[];
+  transition?: DecadeTransitionState | null;
+  paused?: boolean;
+  onTransitionReady?: () => void;
   hoveredVenueId: string | null;
   onHoverVenue: (venueId: string | null) => void;
   onSelectVenue: (venueId: string) => void;

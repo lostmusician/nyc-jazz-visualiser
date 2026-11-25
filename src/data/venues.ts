@@ -43,7 +43,7 @@ export const NYC_JAZZ_VENUES: VenueFeature[] = [
       closing_reason: 'Ownership dispute & building sale amid Sugar Hill property price surge',
       quote: 'Monday night jam sessions ran until 4 AM with generations of masters trading choruses.',
       notes: 'Historic Sugar Hill cornerstone dating back to the late 1930s (formerly Duke’s Bar).',
-      description: "Located in the historic Sugar Hill neighborhood, this venue served as an informal jazz gathering place. Its Monday night jam sessions ran late and emphasized direct, energetic ensemble playing.\n\nNotable Musicians: Olu Dara, James Carter, Bill Saxton, Hamiet Bluiett, and Patience Higgins.\n\nMusic: Patience Higgins and his Sugar Hill Quartet recorded Live In Harlem at the club, including performances of Thelonious Monk's \"Let's Cool One\" and Sonny Rollins' \"Sonny Moon For Two\". The room was known for a raw acoustic environment and what observers called \"no-nonsense blowing\"."
+      description: "Located in the historic Sugar Hill neighborhood, this venue served as an informal jazz gathering place. Its Monday night jam sessions ran late and emphasized direct, energetic ensemble playing.\n\nNotable Musicians: Olu Dara, James Carter, Bill Saxton, Hamiet Bluiett, and Patience Higgins.\n\nMusic: Patience Higgins and his Sugar Hill Quartet recorded Live In Harlem at the club, including performances of Thelonious Monk's \"Let's Cool One\" and Sonny Rollins' \"Sonny Moon For Two\". The club was known for a raw acoustic environment and what observers called \"no-nonsense blowing\"."
     }
   },
   {
@@ -103,9 +103,9 @@ export const NYC_JAZZ_VENUES: VenueFeature[] = [
       close_year: 1950,
       status: 'closed',
       closing_reason: 'Demolition of 52nd Street brownstones for modern corporate skyscraper office towers',
-      quote: 'A musician-backed Swing Street room where Billie Holiday and Count Basie drew large audiences.',
+      quote: 'A musician-backed Swing Street club where Billie Holiday and Count Basie drew large audiences.',
       notes: 'Part of the mid-century corporate clearing of 52nd Street for CBS Black Rock and corporate headquarters.',
-      description: "A crown jewel of the heavily concentrated \"Swing Street\" (52nd Street), this compact venue blurred the line between audience and bandstand, generating an electric, intimate atmosphere. Because clubs were stacked so closely together, musicians could easily finish a set here and walk across the street to jump into another jam session.\n\nNotable Musicians: Count Basie, Billie Holiday, Lester Young, Art Tatum, and Coleman Hawkins.\n\nMusic: With the help of agent Willard Alexander, Count Basie secured a national NBC radio wire for the club, broadcasting his band's signature \"flagwavers\"—blistering, fast-paced tunes like \"Jumpin' at the Woodside\" designed specifically to feature soloists like Lester Young and excite the crowd. Billie Holiday also delivered profoundly emotional performances of classics like \"Strange Fruit\" and \"God Bless the Child\" in this very room."
+      description: "A crown jewel of the heavily concentrated \"Swing Street\" (52nd Street), this compact venue blurred the line between audience and bandstand, generating an electric, intimate atmosphere. Because clubs were stacked so closely together, musicians could easily finish a set here and walk across the street to jump into another jam session.\n\nNotable Musicians: Count Basie, Billie Holiday, Lester Young, Art Tatum, and Coleman Hawkins.\n\nMusic: With the help of agent Willard Alexander, Count Basie secured a national NBC radio wire for the club, broadcasting his band's signature \"flagwavers\", blistering, fast-paced tunes like \"Jumpin' at the Woodside\" designed specifically to feature soloists like Lester Young and excite the crowd. Billie Holiday also delivered profoundly emotional performances of classics like \"Strange Fruit\" and \"God Bless the Child\" in this very club."
     }
   },
   {
@@ -125,7 +125,7 @@ export const NYC_JAZZ_VENUES: VenueFeature[] = [
       closing_reason: '52nd Street corporate redevelopment and post-war tax pressures',
       quote: 'Dizzy Gillespie and Max Roach led the first modern bebop combos here in 1944.',
       notes: 'Demolished alongside neighboring clubs for Rockefeller Center expansion.',
-      description: "Opened initially as a musicians' speakeasy in 1927 at 62 W 52nd St, the Onyx Club became a central room on Midtown Manhattan’s Swing Street. The intimate cellar club served as a meeting place for studio and big-band instrumentalists before becoming one of the first 52nd Street spaces to host early bebop groups.\n\nNotable Musicians: Dizzy Gillespie, Max Roach, Art Tatum, Stuff Smith, and Roy Eldridge.\n\nMusic: In 1944, Dizzy Gillespie and Max Roach co-led an early modern bebop combo on 52nd Street here, introducing compositions including \"Woody 'n' You\" and \"Night in Tunisia\" to Manhattan audiences."
+      description: "Opened initially as a musicians' speakeasy in 1927 at 62 W 52nd St, the Onyx Club became a central club on Midtown Manhattan’s Swing Street. The intimate cellar club served as a meeting place for studio and big-band instrumentalists before becoming one of the first 52nd Street spaces to host early bebop groups.\n\nNotable Musicians: Dizzy Gillespie, Max Roach, Art Tatum, Stuff Smith, and Roy Eldridge.\n\nMusic: In 1944, Dizzy Gillespie and Max Roach co-led an early modern bebop combo on 52nd Street here, introducing compositions including \"Woody 'n' You\" and \"Night in Tunisia\" to Manhattan audiences."
     }
   },
 
@@ -207,7 +207,7 @@ export const NYC_JAZZ_VENUES: VenueFeature[] = [
       closing_reason: 'Sharp commercial rent escalation and post-9/11 downturn in downtown nightlife',
       quote: 'A weekly residence for Gil Evans and Art Blakey’s Jazz Messengers throughout the 1980s.',
       notes: 'Produced an extensive catalog of live recordings before losing its lease.',
-      description: "Opened in 1974 at 88 7th Ave South in Greenwich Village, Sweet Basil was a prominent jazz supper club through the 1980s and 1990s. The room paired an intimate wood-and-brick interior with acoustics suited to small groups and big bands.\n\nNotable Musicians: Art Blakey & The Jazz Messengers, Gil Evans, McCoy Tyner, David Murray, and Cedar Walton.\n\nMusic: The club served as the weekend home for the Gil Evans Orchestra and Art Blakey's Jazz Messengers, yielding live recordings such as Art Blakey's Album of the Year and Gil Evans' Live at Sweet Basil."
+      description: "Opened in 1974 at 88 7th Ave South in Greenwich Village, Sweet Basil was a prominent jazz supper club through the 1980s and 1990s. The club paired an intimate wood-and-brick interior with acoustics suited to small groups and big bands.\n\nNotable Musicians: Art Blakey & The Jazz Messengers, Gil Evans, McCoy Tyner, David Murray, and Cedar Walton.\n\nMusic: The club served as the weekend home for the Gil Evans Orchestra and Art Blakey's Jazz Messengers, yielding live recordings such as Art Blakey's Album of the Year and Gil Evans' Live at Sweet Basil."
     }
   },
   {
@@ -247,7 +247,7 @@ export const NYC_JAZZ_VENUES: VenueFeature[] = [
       closing_reason: 'Demolition of Bowery/Cooper Square tenements for urban development',
       quote: 'Where Thelonious Monk and John Coltrane spent the summer of 1957 changing the course of Western music.',
       notes: 'The spiritual birthplace of free jazz where Ornette Coleman made his explosive New York debut in 1959.',
-      description: "The Five Spot began at 5 Cooper Square in 1956 and later continued at 2 St. Marks Place. Run by the Termini brothers, it brought abstract expressionist painters, Beat writers, and avant-garde jazz musicians into the same informal room and supported extended engagements.\n\nNotable Musicians: Thelonious Monk, John Coltrane, Ornette Coleman, Cecil Taylor, and Eric Dolphy.\n\nMusic: Thelonious Monk and John Coltrane's documented 1957 residency became an important chapter in both musicians' development, while Ornette Coleman's 1959 engagement introduced his quartet to New York audiences."
+      description: "The Five Spot began at 5 Cooper Square in 1956 and later continued at 2 St. Marks Place. Run by the Termini brothers, it brought abstract expressionist painters, Beat writers, and avant-garde jazz musicians into the same informal venue and supported extended engagements.\n\nNotable Musicians: Thelonious Monk, John Coltrane, Ornette Coleman, Cecil Taylor, and Eric Dolphy.\n\nMusic: Thelonious Monk and John Coltrane's documented 1957 residency became an important chapter in both musicians' development, while Ornette Coleman's 1959 engagement introduced his quartet to New York audiences."
     }
   },
   {
@@ -267,7 +267,7 @@ export const NYC_JAZZ_VENUES: VenueFeature[] = [
       closing_reason: 'Neighborhood crime wave and the tragic backstage death of trumpeter Lee Morgan in 1972',
       quote: 'The fiercest proving ground for hard bop and avant-garde pioneers like Albert Ayler and Sun Ra.',
       notes: 'Avenue B hangout for bohemian writers, artists, and musicians.',
-      description: "Operating from 1964 to 1972 at 242 E 3rd Street in the East Village/Lower East Side, Slugs' was a dark, gritty saloon that became a crucial proving ground for hard bop and avant-garde jazz. Despite its hazardous neighborhood location, musicians revered the room for its long sets and uncompromising crowd.\n\nNotable Musicians: Lee Morgan, Albert Ayler, Sun Ra, Wayne Shorter, Freddie Hubbard, and McCoy Tyner.\n\nMusic: Known for ferocious, extended solos and raw acoustic projection, Slugs' hosted Sun Ra’s Arkestra on Monday nights and was the venue where trumpeter Lee Morgan performed his final sets in 1972."
+      description: "Operating from 1964 to 1972 at 242 E 3rd Street in the East Village/Lower East Side, Slugs' was a dark, gritty saloon that became a crucial proving ground for hard bop and avant-garde jazz. Despite its hazardous neighborhood location, musicians revered the club for its long sets and uncompromising crowd.\n\nNotable Musicians: Lee Morgan, Albert Ayler, Sun Ra, Wayne Shorter, Freddie Hubbard, and McCoy Tyner.\n\nMusic: Known for ferocious, extended solos and raw acoustic projection, Slugs' hosted Sun Ra’s Arkestra on Monday nights and was the venue where trumpeter Lee Morgan performed his final sets in 1972."
     }
   },
 
@@ -284,7 +284,7 @@ export const NYC_JAZZ_VENUES: VenueFeature[] = [
       neighborhood: 'NoHo',
       address: '24 Bond St',
       open_year: 1970,
-      close_year: 1980,
+      close_year: 1978,
       status: 'closed',
       closing_reason: 'SoHo/NoHo industrial real estate re-zoning & conversion into multi-million dollar luxury lofts',
       quote: 'Sam and Bea Rivers turned a derelict garment warehouse into the international nucleus of free improvisation.',

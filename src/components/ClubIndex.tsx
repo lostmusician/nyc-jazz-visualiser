@@ -20,7 +20,7 @@ export function ClubIndex({ venues, onHover, onSelect }: {
             onMouseLeave={() => onHover(null)}
             onClick={() => onSelect(venue.properties.id)}
           >
-            <span>{venue.properties.open_year ?? '—'}–{venue.properties.close_year ?? 'now'}</span>
+            <span>{venue.properties.open_year ?? '?'}–{venue.properties.close_year ?? 'now'}</span>
             <strong>{venue.properties.name}</strong>
             <small>{venue.properties.neighborhood}</small>
           </button>

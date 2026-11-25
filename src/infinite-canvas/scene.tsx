@@ -22,6 +22,8 @@ import {
   VELOCITY_DECAY,
   VELOCITY_LERP,
 } from './constants';
+import type { DecadeTransitionState } from '../gallery/decade-transition';
+import { CardErosion } from './card-erosion';
 import { getCardTexture } from './texture-manager';
 import type { ChunkData, ClubMediaItem, InfiniteCanvasProps, PlaneData } from './types';
 import { generateChunkPlanesCached, getChunkUpdateThrottleMs, shouldThrottleUpdate } from './utils';
@@ -53,6 +55,7 @@ function ClubPlane({
   media,
   chunk,
   cameraGridRef,
+  transition,
   hoveredVenueId,
   onHoverVenue,
   onSelectVenue,
@@ -61,6 +64,7 @@ function ClubPlane({
   media: ClubMediaItem;
   chunk: ChunkData;
   cameraGridRef: React.RefObject<CameraGridState>;
+  transition?: DecadeTransitionState | null;
   hoveredVenueId: string | null;
   onHoverVenue: (venueId: string | null) => void;
   onSelectVenue: (venueId: string) => void;
@@ -70,6 +74,8 @@ function ClubPlane({
   const borderRef = React.useRef<THREE.MeshBasicMaterial>(null);
   const opacityRef = React.useRef(0);
   const texture = React.useMemo(() => getCardTexture(media), [media]);
+  const closing = Boolean(transition?.change.closing.some((venue) => venue.properties.id === media.venue.properties.id));
+  const changing = closing || Boolean(transition?.change.opening.some((venue) => venue.properties.id === media.venue.properties.id));
   const isHighlighted = hoveredVenueId === media.venue.properties.id;
   const aspect = media.width / media.height;
   const displayScale = React.useMemo(() => new THREE.Vector3(plane.scale.y * aspect, plane.scale.y, 1), [aspect, plane.scale.y]);
@@ -101,8 +107,10 @@ function ClubPlane({
     opacityRef.current = target < INVIS_THRESHOLD && opacityRef.current < INVIS_THRESHOLD
       ? 0
       : lerp(opacityRef.current, target, 0.18);
-    material.opacity = opacityRef.current;
-    border.opacity = opacityRef.current * (isHighlighted ? 1 : 0.82);
+    material.opacity = changing ? 0 : opacityRef.current;
+    // The card texture already contains its frame. Hide the backing quad too,
+    // otherwise it would fill the holes left by the dissolve.
+    border.opacity = changing ? 0 : opacityRef.current * (isHighlighted ? 1 : 0.82);
     mesh.visible = opacityRef.current > INVIS_THRESHOLD;
     const emphasis = isHighlighted ? 1.08 : 1;
     mesh.scale.lerp(new THREE.Vector3(displayScale.x * emphasis, displayScale.y * emphasis, 1), 0.12);
@@ -110,6 +118,7 @@ function ClubPlane({
 
   const stopAndHover = (event: ThreeEvent<PointerEvent>) => {
     event.stopPropagation();
+    if (transition) return;
     document.body.style.cursor = 'pointer';
     onHoverVenue(media.venue.properties.id);
   };
@@ -123,8 +132,9 @@ function ClubPlane({
       geometry={PLANE_GEOMETRY}
       onPointerOver={stopAndHover}
       onPointerOut={(event) => { event.stopPropagation(); document.body.style.cursor = ''; onHoverVenue(null); }}
-      onClick={(event) => { event.stopPropagation(); onSelectVenue(media.venue.properties.id); }}
+      onClick={(event) => { event.stopPropagation(); if (!transition) onSelectVenue(media.venue.properties.id); }}
     >
+      {changing && transition && <CardErosion texture={texture} closing={closing} transition={transition} opacity={opacityRef} />}
       <meshBasicMaterial ref={materialRef} map={texture} transparent opacity={0} side={THREE.DoubleSide} toneMapped={false} />
       <mesh position={[0, 0, -0.04]} scale={[1.045, 1.035, 1]} geometry={PLANE_GEOMETRY}>
         <meshBasicMaterial ref={borderRef} color={isHighlighted ? '#ffd785' : '#6d482e'} transparent opacity={0} side={THREE.DoubleSide} />
@@ -136,14 +146,18 @@ function ClubPlane({
 function Chunk({
   chunk,
   media,
+  catalog,
   cameraGridRef,
+  transition,
   hoveredVenueId,
   onHoverVenue,
   onSelectVenue,
 }: {
   chunk: ChunkData;
   media: ClubMediaItem[];
+  catalog?: ClubMediaItem[];
   cameraGridRef: React.RefObject<CameraGridState>;
+  transition?: DecadeTransitionState | null;
   hoveredVenueId: string | null;
   onHoverVenue: (venueId: string | null) => void;
   onSelectVenue: (venueId: string) => void;
@@ -159,10 +173,14 @@ function Chunk({
     const id = window.setTimeout(generate, 0);
     return () => { cancelled = true; window.clearTimeout(id); };
   }, [chunk.cx, chunk.cy, chunk.cz]);
+  const activeIds = React.useMemo(() => new Set(media.map((item) => item.venue.properties.id)), [media]);
   if (!planes || media.length === 0) return null;
   return <group>{planes.map((plane) => {
-    const item = media[plane.mediaIndex % media.length];
-    return <ClubPlane key={plane.id} plane={plane} media={item} chunk={chunk} cameraGridRef={cameraGridRef} hoveredVenueId={hoveredVenueId} onHoverVenue={onHoverVenue} onSelectVenue={onSelectVenue} />;
+    // Select from a fixed catalog so removing a venue never moves the survivors.
+    const registry = catalog ?? media;
+    const item = registry[plane.mediaIndex % registry.length];
+    if (!activeIds.has(item.venue.properties.id)) return null;
+    return <ClubPlane key={plane.id} plane={plane} media={item} chunk={chunk} cameraGridRef={cameraGridRef} transition={transition} hoveredVenueId={hoveredVenueId} onHoverVenue={onHoverVenue} onSelectVenue={onSelectVenue} />;
   })}</group>;
 }
 
@@ -189,10 +207,13 @@ const initialControllerState = (): ControllerState => ({
   touches: [], touchDistance: 0, lastChunkKey: '', lastChunkUpdate: 0, pendingChunk: null,
 });
 
-function SceneController(props: Pick<InfiniteCanvasProps, 'media' | 'hoveredVenueId' | 'onHoverVenue' | 'onSelectVenue' | 'onTextureProgress' | 'entryDepthImpulse'>) {
+function SceneController(props: Pick<InfiniteCanvasProps, 'media' | 'catalog' | 'transition' | 'paused' | 'onTransitionReady' | 'hoveredVenueId' | 'onHoverVenue' | 'onSelectVenue' | 'onTextureProgress' | 'entryDepthImpulse'>) {
   const { camera, gl } = useThree();
+  const { paused, transition, onTransitionReady } = props;
   const [, getKeys] = useKeyboardControls<keyof KeyboardKeys>();
   const state = React.useRef(initialControllerState());
+  const blockedRef = React.useRef(false);
+  blockedRef.current = Boolean(props.paused || props.transition);
   const cameraGridRef = React.useRef<CameraGridState>({ cx: 0, cy: 0, cz: 0, camZ: camera.position.z });
   const [chunks, setChunks] = React.useState<ChunkData[]>([]);
   const reducedMotion = React.useMemo(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches, []);
@@ -201,6 +222,20 @@ function SceneController(props: Pick<InfiniteCanvasProps, 'media' | 'hoveredVenu
   const entryImpulseAppliedRef = React.useRef(false);
 
   React.useEffect(() => { textureProgressCallback?.(100); }, [textureProgressCallback, mediaForProgress]);
+  React.useEffect(() => {
+    const controller = state.current;
+    controller.scroll = 0;
+    controller.dragging = false;
+    controller.velocity = { x: 0, y: 0, z: 0 };
+    controller.targetVelocity = { x: 0, y: 0, z: 0 };
+    if (!transition) return;
+    let secondFrame = 0;
+    const frame = requestAnimationFrame(() => {
+      secondFrame = requestAnimationFrame(() => onTransitionReady?.());
+    });
+    return () => { cancelAnimationFrame(frame); cancelAnimationFrame(secondFrame); };
+  }, [paused, transition, onTransitionReady]);
+
 
   React.useEffect(() => {
     if (entryImpulseAppliedRef.current || !props.entryDepthImpulse) return;
@@ -213,25 +248,29 @@ function SceneController(props: Pick<InfiniteCanvasProps, 'media' | 'hoveredVenu
     const controller = state.current;
     canvas.style.cursor = 'grab';
     const mouseDown = (event: MouseEvent) => {
+      if (blockedRef.current) return;
       controller.dragging = true;
       controller.lastMouse = { x: event.clientX, y: event.clientY };
       canvas.style.cursor = 'grabbing';
     };
     const mouseUp = () => { controller.dragging = false; canvas.style.cursor = 'grab'; };
     const mouseMove = (event: MouseEvent) => {
+      if (blockedRef.current) return;
       controller.mouse = { x: event.clientX / window.innerWidth * 2 - 1, y: -(event.clientY / window.innerHeight * 2 - 1) };
       if (!controller.dragging) return;
       controller.targetVelocity.x -= (event.clientX - controller.lastMouse.x) * 0.025;
       controller.targetVelocity.y += (event.clientY - controller.lastMouse.y) * 0.025;
       controller.lastMouse = { x: event.clientX, y: event.clientY };
     };
-    const wheel = (event: WheelEvent) => { event.preventDefault(); controller.scroll += event.deltaY * 0.006; };
+    const wheel = (event: WheelEvent) => { event.preventDefault(); if (blockedRef.current) return; controller.scroll += event.deltaY * 0.006; };
     const touchStart = (event: TouchEvent) => {
+      if (blockedRef.current) return;
       event.preventDefault();
       controller.touches = Array.from(event.touches) as Touch[];
       controller.touchDistance = getTouchDistance(controller.touches);
     };
     const touchMove = (event: TouchEvent) => {
+      if (blockedRef.current) return;
       event.preventDefault();
       const touches = Array.from(event.touches) as Touch[];
       if (touches.length === 1 && controller.touches.length >= 1) {
@@ -268,6 +307,7 @@ function SceneController(props: Pick<InfiniteCanvasProps, 'media' | 'hoveredVenu
   }, [gl]);
 
   useFrame(() => {
+    if (blockedRef.current) return;
     const controller = state.current;
     const keys = getKeys();
     if (keys.forward) controller.targetVelocity.z -= KEYBOARD_SPEED;
@@ -322,11 +362,15 @@ function SceneController(props: Pick<InfiniteCanvasProps, 'media' | 'hoveredVenu
     setChunks(CHUNK_OFFSETS.map((offset) => ({ key: `${offset.dx},${offset.dy},${offset.dz}`, cx: offset.dx, cy: offset.dy, cz: offset.dz })));
   }, []);
 
-  return <>{chunks.map((chunk) => <Chunk key={chunk.key} chunk={chunk} media={props.media} cameraGridRef={cameraGridRef} hoveredVenueId={props.hoveredVenueId} onHoverVenue={props.onHoverVenue} onSelectVenue={props.onSelectVenue} />)}</>;
+  return <>{chunks.map((chunk) => <Chunk key={chunk.key} chunk={chunk} media={props.media} catalog={props.catalog} transition={props.transition} cameraGridRef={cameraGridRef} hoveredVenueId={props.hoveredVenueId} onHoverVenue={props.onHoverVenue} onSelectVenue={props.onSelectVenue} />)}</>;
 }
 
 export function InfiniteCanvasScene({
   media,
+  catalog,
+  transition,
+  paused = false,
+  onTransitionReady,
   hoveredVenueId,
   onHoverVenue,
   onSelectVenue,
@@ -345,11 +389,11 @@ export function InfiniteCanvasScene({
   const dpr = Math.min(window.devicePixelRatio || 1, touch ? 1.25 : 1.5);
   return (
     <KeyboardControls map={KEYBOARD_MAP}>
-      <div className="infinite-canvas">
-        <Canvas camera={{ position: [0, 0, INITIAL_CAMERA_Z], fov: cameraFov, near: cameraNear, far: cameraFar }} dpr={dpr} flat gl={{ antialias: false, powerPreference: 'high-performance' }}>
+      <div className="infinite-canvas" style={{ visibility: paused ? 'hidden' : 'visible' }} data-gallery-transition={transition ? 'active' : undefined}>
+        <Canvas frameloop={paused ? 'never' : 'always'} camera={{ position: [0, 0, INITIAL_CAMERA_Z], fov: cameraFov, near: cameraNear, far: cameraFar }} dpr={dpr} flat gl={{ antialias: false, powerPreference: 'high-performance' }}>
           <color attach="background" args={[backgroundColor]} />
           <fog attach="fog" args={[fogColor, fogNear, fogFar]} />
-          <SceneController media={media} hoveredVenueId={hoveredVenueId} onHoverVenue={onHoverVenue} onSelectVenue={onSelectVenue} onTextureProgress={onTextureProgress} entryDepthImpulse={entryDepthImpulse} />
+          <SceneController media={media} catalog={catalog} transition={transition} paused={paused} onTransitionReady={onTransitionReady} hoveredVenueId={hoveredVenueId} onHoverVenue={onHoverVenue} onSelectVenue={onSelectVenue} onTextureProgress={onTextureProgress} entryDepthImpulse={entryDepthImpulse} />
         </Canvas>
         {showControls && <div className="canvas-controls" data-tour="controls" aria-hidden="true">{touch ? <><b>Drag</b> pan · <b>Pinch</b> depth</> : <><b>Drag / WASD</b> pan · <b>Scroll / EQ</b> depth</>}</div>}
       </div>

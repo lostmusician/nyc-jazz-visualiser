@@ -44,9 +44,9 @@ export function ClubDetail({ venue, profile, onClose }: {
         <div className="club-dialog-copy">
           <p className="eyebrow">{properties.neighborhood} · {properties.borough}</p>
           <h2 id="club-dialog-title">{properties.name}</h2>
-          <p className="club-years">{properties.open_year ?? 'Unknown'} — {properties.close_year ?? 'Present'} · {properties.status}</p>
+          <p className="club-years">{properties.open_year ?? 'Unknown'} – {properties.close_year ?? 'Present'} · {properties.status}</p>
           <p className="club-description">{description}</p>
-          {properties.closing_reason && <section><h3>Why the room changed</h3><p>{properties.closing_reason}</p></section>}
+          {properties.closing_reason && <section><h3>Why the venue changed</h3><p>{properties.closing_reason}</p></section>}
           {properties.quote && <blockquote>“{properties.quote}”</blockquote>}
           {profile?.tracks.length ? (
             <section className="listening-shelf" aria-label="Listening selections">
@@ -66,7 +66,7 @@ export function ClubDetail({ venue, profile, onClose }: {
                   </a>
                 ))}
               </div>
-              <p className="listening-note">These research selections open at their external listening source. “Representative” tracks evoke a documented performer or scene and are not claimed as recordings made in this room.</p>
+              <p className="listening-note">These research selections open at their external listening source. “Representative” tracks evoke a documented performer or scene and are not claimed as recordings made at this venue.</p>
             </section>
           ) : <p className="no-audio">Further listening research for this venue is still in progress.</p>}
           <footer>

@@ -12,8 +12,9 @@
   },
   "scripts": {
     "build:data": "node scripts/process_census_data.js",
-    "prebuild": "npm run build:data",
-    "dev": "npm run build:data && vite",
+    "predev": "node scripts/check_rent_data.js",
+    "dev": "vite",
+    "prebuild": "node scripts/check_rent_data.js",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "test": "tsx --test tests/*.test.ts",

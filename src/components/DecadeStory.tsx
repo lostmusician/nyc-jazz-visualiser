@@ -8,11 +8,13 @@ export function DecadeStory({
   activeBeat,
   onActiveBeat,
   onExplore,
+  onSkip,
 }: {
   story: DecadeStoryModel;
   activeBeat: number;
   onActiveBeat: (index: number) => void;
   onExplore: () => void;
+  onSkip: () => void;
 }) {
   const rootRef = React.useRef<HTMLDivElement>(null);
   const scrollerRef = React.useRef<HTMLDivElement>(null);
@@ -87,13 +89,13 @@ export function DecadeStory({
     <div ref={rootRef} className="decade-story" data-story-decade={story.decade}>
       <div className="story-ambient" aria-hidden="true" />
       <div className="story-decade-ghost" aria-hidden="true">{story.decade}</div>
-      <button type="button" className="story-skip" onClick={onExplore}>Skip and continue to map</button>
+      <button type="button" className="story-skip" onClick={onSkip}>Skip and continue to map</button>
       <div ref={scrollerRef} className="story-scroller" data-story-scroller>
         <header className="story-heading">
           <span>{story.historicalPhase} · {story.decade}s in New York</span>
           <h1 ref={headingRef} tabIndex={-1}>{story.title}</h1>
           <p>{story.subtitle}</p>
-          <small>Scroll to follow the rooms across the city</small>
+          <small>Scroll to follow the clubs across the city</small>
         </header>
         {story.beats.map((beat, index) => (
           <section
@@ -112,14 +114,16 @@ export function DecadeStory({
               <span>{String(index + 1).padStart(2, '0')} / {String(story.beats.length).padStart(2, '0')} · {beat.historicalContext}</span>
               <h2 id={`${beat.id}-title`}>{beat.title}</h2>
               <p>{beat.body}</p>
-              {beat.pullQuote && <blockquote>“{beat.pullQuote.text}”<cite>— {beat.pullQuote.speaker}, <a href={beat.pullQuote.url} target="_blank" rel="noreferrer">{beat.pullQuote.source}</a></cite></blockquote>}
+              {beat.pullQuote && <blockquote>“{beat.pullQuote.text}”<cite>{beat.pullQuote.speaker}, <a href={beat.pullQuote.url} target="_blank" rel="noreferrer">{beat.pullQuote.source}</a></cite></blockquote>}
               {beat.sources && (
                 <footer>
                   {beat.sources.map((source) => <a key={source.url} href={source.url} target="_blank" rel="noreferrer">{source.label} ↗</a>)}
                 </footer>
               )}
               {index === story.beats.length - 1 && (
-                <button type="button" className="story-explore" onClick={onExplore}>Explore the {story.decade}s</button>
+                <div className="story-ending-actions">
+                  <button type="button" className="story-explore" onClick={onExplore}>Explore the {story.decade}s</button>
+                </div>
               )}
             </article>
           </section>
