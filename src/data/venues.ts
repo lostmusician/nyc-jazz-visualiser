@@ -284,7 +284,7 @@ export const NYC_JAZZ_VENUES: VenueFeature[] = [
       neighborhood: 'NoHo',
       address: '24 Bond St',
       open_year: 1970,
-      close_year: 1980,
+      close_year: 1978,
       status: 'closed',
       closing_reason: 'SoHo/NoHo industrial real estate re-zoning & conversion into multi-million dollar luxury lofts',
       quote: 'Sam and Bea Rivers turned a derelict garment warehouse into the international nucleus of free improvisation.',
