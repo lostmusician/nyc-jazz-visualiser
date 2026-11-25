@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { CHUNK_OFFSETS, CHUNK_SIZE, RENDER_DISTANCE } from '../src/infinite-canvas/constants';
+import { CHUNK_OFFSETS, CHUNK_SIZE, PLANES_PER_CHUNK, RENDER_DISTANCE } from '../src/infinite-canvas/constants';
 import { generateChunkPlanes, generateChunkPlanesCached, getChunkUpdateThrottleMs, getPlaneCacheSize, shouldThrottleUpdate } from '../src/infinite-canvas/utils';
 
 test('chunk generation is deterministic and spatially bounded', () => {
   const first = generateChunkPlanes(2, -1, 3);
   const second = generateChunkPlanes(2, -1, 3);
   assert.deepEqual(first.map((plane) => plane.position.toArray()), second.map((plane) => plane.position.toArray()));
-  assert.equal(first.length, 5);
+  assert.equal(first.length, PLANES_PER_CHUNK);
   assert.ok(first.every((plane) => plane.position.x >= 2 * CHUNK_SIZE && plane.position.x < 3 * CHUNK_SIZE));
 });
 

@@ -8,11 +8,13 @@ export function DecadeStory({
   activeBeat,
   onActiveBeat,
   onExplore,
+  onSkip,
 }: {
   story: DecadeStoryModel;
   activeBeat: number;
   onActiveBeat: (index: number) => void;
   onExplore: () => void;
+  onSkip: () => void;
 }) {
   const rootRef = React.useRef<HTMLDivElement>(null);
   const scrollerRef = React.useRef<HTMLDivElement>(null);
@@ -87,7 +89,7 @@ export function DecadeStory({
     <div ref={rootRef} className="decade-story" data-story-decade={story.decade}>
       <div className="story-ambient" aria-hidden="true" />
       <div className="story-decade-ghost" aria-hidden="true">{story.decade}</div>
-      <button type="button" className="story-skip" onClick={onExplore}>Skip and continue to map</button>
+      <button type="button" className="story-skip" onClick={onSkip}>Skip and continue to map</button>
       <div ref={scrollerRef} className="story-scroller" data-story-scroller>
         <header className="story-heading">
           <span>{story.historicalPhase} · {story.decade}s in New York</span>
@@ -120,7 +122,9 @@ export function DecadeStory({
                 </footer>
               )}
               {index === story.beats.length - 1 && (
-                <button type="button" className="story-explore" onClick={onExplore}>Explore the {story.decade}s</button>
+                <div className="story-ending-actions">
+                  <button type="button" className="story-explore" onClick={onExplore}>Explore the {story.decade}s</button>
+                </div>
               )}
             </article>
           </section>

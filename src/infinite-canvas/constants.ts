@@ -3,6 +3,9 @@
  * 4e710decd0a99b2e312c594668dd2ccc834764ee (MIT).
  */
 export const CHUNK_SIZE = 110;
+// The fixed citywide catalog leaves inactive slots empty. Extra slots retain
+// the original gallery density without moving surviving cards between eras.
+export const PLANES_PER_CHUNK = 20;
 export const RENDER_DISTANCE = 2;
 export const CHUNK_FADE_MARGIN = 1;
 export const MAX_VELOCITY = 3.2;

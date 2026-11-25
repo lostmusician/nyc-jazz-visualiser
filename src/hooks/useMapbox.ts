@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
-import { CPI_U_ANNUAL, RENT_2020_DOLLAR_STOPS, rentValues, type RentDataYear } from '../data/rent';
+import { CPI_U_ANNUAL, RENT_2020_DOLLAR_STOPS, RENT_PERIOD_LABELS, rentValues, type RentDataYear } from '../data/rent';
+import { changeProgress, type DecadeTransitionState } from '../gallery/decade-transition';
 import { HISTORICAL_VENUE_MIN_ZOOM, statusForDecade } from '../gallery/model';
 import type { MapCameraState, SceneMovement, VenueFeature } from '../types';
 
@@ -14,15 +15,27 @@ interface UseMapboxProps {
   lifecycleDecade?: number;
   selectedScene?: SceneMovement | 'all';
   interactionEnabled?: boolean;
+  transition?: DecadeTransitionState | null;
   onSelectVenue?: (venue: VenueFeature) => void;
   onHoverVenue?: (venueId: string | null) => void;
 }
 
 const rentDataYear = (year: number): RentDataYear => year >= 2020 ? 2020 : Math.max(1980, Math.floor(year / 10) * 10) as RentDataYear;
 
+export const getHistoricalVenueOpacity = (dimmed: number, matching: number): mapboxgl.Expression => [
+  'interpolate', ['linear'], ['zoom'],
+  HISTORICAL_VENUE_MIN_ZOOM, 0,
+  HISTORICAL_VENUE_MIN_ZOOM + 0.75, ['case', ['!', ['boolean', ['get', 'scene_match'], true]], dimmed, matching],
+];
+
 export const getChoroplethPaint = (year: number) => {
   const dataYear = rentDataYear(year);
-  const valueExpression: unknown[] = ['coalesce', ['get', `rent_2020_dollars_${dataYear}`], ['*', ['coalesce', ['get', `rent_${dataYear}`], 0], CPI_U_ANNUAL[2020] / CPI_U_ANNUAL[dataYear]]];
+  const valueExpression: unknown[] = [
+    'coalesce',
+    ['get', 'rent_2020_dollars'],
+    ['get', `rent_2020_dollars_${dataYear}`],
+    ['*', ['coalesce', ['get', 'rent'], ['get', `rent_${dataYear}`], 0], CPI_U_ANNUAL[2020] / CPI_U_ANNUAL[dataYear]],
+  ];
   const [a, b, c, d, e, f, g, h] = RENT_2020_DOLLAR_STOPS;
   return ['interpolate', ['linear'], valueExpression,
     0, 'rgba(11,8,7,0)', a, '#211814', b, '#35241d', c, '#513124', d, '#74452d',
@@ -59,11 +72,15 @@ export function useMapbox({
   lifecycleDecade = selectedYear,
   selectedScene = 'all',
   interactionEnabled = true,
+  transition,
   onSelectVenue,
   onHoverVenue,
 }: UseMapboxProps) {
   const mapRef = useRef<mapboxgl.Map | null>(null);
+  const lastTransitionRef = useRef<DecadeTransitionState | null>(null);
   const venuesRef = useRef(venues);
+  const interactionEnabledRef = useRef(interactionEnabled);
+  interactionEnabledRef.current = interactionEnabled;
   const activeVenueIdsRef = useRef(activeVenueIds);
   const lifecycleDecadeRef = useRef(lifecycleDecade);
   const selectedSceneRef = useRef(selectedScene);
@@ -99,7 +116,9 @@ export function useMapbox({
     map.on('load', () => {
       const firstSymbol = map.getStyle().layers?.find((layer) => layer.type === 'symbol')?.id;
       if (choroplethDataPath) {
-        map.addSource('rent-data', { type: 'geojson', data: choroplethDataPath, generateId: true });
+        const initialDataYear = rentDataYear(yearRef.current);
+        const initialPath = yearRef.current >= 1980 ? `/data/nyc_rent_${initialDataYear}.geojson` : choroplethDataPath;
+        map.addSource('rent-data', { type: 'geojson', data: initialPath, generateId: true });
         map.addLayer({
           id: 'rent-choropleth', type: 'fill', source: 'rent-data',
           paint: { 'fill-color': getChoroplethPaint(yearRef.current), 'fill-opacity': yearRef.current < 1980 ? 0 : 0.64, 'fill-opacity-transition': { duration: 700 } },
@@ -140,10 +159,7 @@ export function useMapbox({
         paint: {
           'circle-radius': 6,
           'circle-color': '#55392f',
-          'circle-opacity': ['case',
-            ['!', ['boolean', ['get', 'scene_match'], true]], 0.04,
-            ['interpolate', ['linear'], ['zoom'], HISTORICAL_VENUE_MIN_ZOOM, 0, HISTORICAL_VENUE_MIN_ZOOM + 0.75, 0.3],
-          ],
+          'circle-opacity': getHistoricalVenueOpacity(0.04, 0.3),
           'circle-blur': 0.35,
         },
       });
@@ -167,10 +183,7 @@ export function useMapbox({
           'circle-color': '#4b342c',
           'circle-stroke-width': 1,
           'circle-stroke-color': '#b79777',
-          'circle-opacity': ['case',
-            ['!', ['boolean', ['get', 'scene_match'], true]], 0.12,
-            ['interpolate', ['linear'], ['zoom'], HISTORICAL_VENUE_MIN_ZOOM, 0, HISTORICAL_VENUE_MIN_ZOOM + 0.75, 0.9],
-          ],
+          'circle-opacity': getHistoricalVenueOpacity(0.12, 0.9),
         },
       });
       map.addLayer({
@@ -185,12 +198,27 @@ export function useMapbox({
         layout: { 'text-field': ['get', 'display_label'], 'text-size': 9, 'text-offset': [0, 1.1], 'text-anchor': 'top', 'text-optional': true },
         paint: { 'text-color': '#bba589', 'text-halo-color': '#0b0807', 'text-halo-width': 2 },
       });
+      map.addSource('changing-venues', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+      for (const role of ['closing', 'surviving', 'opening']) {
+        map.addLayer({
+          id: `changing-venues-${role}`, type: 'circle', source: 'changing-venues',
+          filter: ['==', ['get', 'change_role'], role],
+          paint: {
+            'circle-radius': 4.5, 'circle-color': '#e7a04d', 'circle-opacity': role === 'opening' ? 0 : 1,
+            'circle-stroke-width': 1, 'circle-stroke-color': '#c3aa88', 'circle-stroke-opacity': role === 'opening' ? 0 : 1,
+            'circle-opacity-transition': { duration: 0 }, 'circle-radius-transition': { duration: 0 },
+            'circle-stroke-opacity-transition': { duration: 0 },
+          },
+        });
+      }
       const selectVenue = (event: mapboxgl.MapLayerMouseEvent) => {
         const venueId = String(event.features?.[0]?.properties?.venue_id ?? '');
+        if (!interactionEnabledRef.current) return;
         const venue = venuesRef.current.find((candidate) => candidate.properties.id === venueId);
         if (venue) selectRef.current?.(venue);
       };
       const hoverVenue = (event: mapboxgl.MapLayerMouseEvent) => {
+        if (!interactionEnabledRef.current) return;
         map.getCanvas().style.cursor = 'pointer';
         const venueId = event.features?.[0]?.properties?.venue_id;
         if (venueId) hoverRef.current?.(String(venueId));
@@ -199,7 +227,7 @@ export function useMapbox({
         map.getCanvas().style.cursor = '';
         hoverRef.current?.(null);
       };
-      for (const layerId of ['jazz-venue-pin', 'jazz-venue-historical-pin']) {
+      for (const layerId of ['jazz-venue-pin', 'jazz-venue-historical-pin', 'changing-venues-closing']) {
         map.on('click', layerId, selectVenue);
         map.on('mousemove', layerId, hoverVenue);
         map.on('mouseleave', layerId, leaveVenue);
@@ -207,18 +235,27 @@ export function useMapbox({
       if (choroplethDataPath) {
         map.on('mousemove', 'rent-choropleth', (event) => {
           if (yearRef.current < 1980 || !event.features?.[0]) return;
-          const year = rentDataYear(yearRef.current);
-          const nominal = Number(event.features[0].properties?.[`rent_${year}`]);
+          const props = event.features[0].properties;
+          // The previous snapshot can remain visible while setData loads the next one.
+          const year = (props?.year ?? rentDataYear(yearRef.current)) as RentDataYear;
+          const nominal = Number(props?.[`rent_${year}`] ?? props?.rent);
           if (!Number.isFinite(nominal) || nominal <= 0) return;
-          const values = rentValues(nominal, year);
+          const capFlag = props?.[`rent_is_capped_${year}`] ?? props?.rent_is_capped;
+          const isCapped = typeof capFlag === 'boolean' ? capFlag : undefined;
+          const values = rentValues(nominal, year, isCapped);
           const node = document.createElement('div');
           const place = document.createElement('strong');
-          place.textContent = String(event.features[0].properties?.boro ?? 'NYC tract');
+          place.textContent = String(props?.boro ?? 'NYC tract');
           const adjusted = document.createElement('span');
-          adjusted.textContent = `$${values.constant2020.toLocaleString()}/month in 2020 dollars`;
+          adjusted.textContent = `${values.displayConstant2020} / month in 2020 dollars`;
           const original = document.createElement('small');
-          original.textContent = `$${values.nominal.toLocaleString()} reported in ${year}`;
+          original.textContent = `${values.displayNominal} · ${RENT_PERIOD_LABELS[year]}`;
           node.append(place, adjusted, original);
+          if (year === 1980) {
+            const boundaryNote = document.createElement('small');
+            boundaryNote.textContent = 'Approximate location · shown on 1990 boundaries';
+            node.append(boundaryNote);
+          }
           rentPopup.setLngLat(event.lngLat).setDOMContent(node).addTo(map);
         });
         map.on('mouseleave', 'rent-choropleth', () => rentPopup.remove());
@@ -260,10 +297,66 @@ export function useMapbox({
     map.getCanvas().style.cursor = interactionEnabled ? '' : 'default';
   }, [interactionEnabled, isLoaded]);
 
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !isLoaded) return;
+    const normalLayers = ['jazz-venue-halo', 'jazz-venue-pin', 'jazz-venue-label', 'jazz-venue-historical-halo', 'jazz-venue-historical-pin', 'jazz-venue-historical-label'];
+    normalLayers.forEach((id) => map.setLayoutProperty(id, 'visibility', transition ? 'none' : 'visible'));
+    if (!transition) {
+      // Keep traces only in the destination decade; revisiting earlier history
+      // must not show clubs that had not yet opened or closed.
+      if (lastTransitionRef.current?.change.to !== lifecycleDecade) {
+        (map.getSource('changing-venues') as mapboxgl.GeoJSONSource).setData({ type: 'FeatureCollection', features: [] });
+        lastTransitionRef.current = null;
+      }
+      map.setFilter('changing-venues-closing', selectedScene === 'all'
+        ? ['==', ['get', 'change_role'], 'closing']
+        : ['all', ['==', ['get', 'change_role'], 'closing'], ['==', ['get', 'scene_movement'], selectedScene]]);
+      map.setPaintProperty('changing-venues-closing', 'circle-radius', 3.5);
+      map.setPaintProperty('changing-venues-closing', 'circle-opacity', 0);
+      map.setPaintProperty('changing-venues-closing', 'circle-stroke-opacity', .4);
+      map.setLayoutProperty('changing-venues-surviving', 'visibility', 'none');
+      map.setLayoutProperty('changing-venues-opening', 'visibility', 'none');
+      return;
+    }
+    map.stop();
+    lastTransitionRef.current = transition;
+    map.setFilter('changing-venues-closing', ['==', ['get', 'change_role'], 'closing']);
+    const source = map.getSource('changing-venues') as mapboxgl.GeoJSONSource;
+    source.setData({ type: 'FeatureCollection', features: (['closing', 'surviving', 'opening'] as const).flatMap((role) => transition.change[role].map((venue) => ({ ...venue, properties: { ...venue.properties, venue_id: venue.properties.id, change_role: role } }))) });
+    map.setPaintProperty('changing-venues-closing', 'circle-opacity', 1);
+    map.setPaintProperty('changing-venues-closing', 'circle-stroke-opacity', 1);
+    map.setPaintProperty('changing-venues-opening', 'circle-opacity', 0);
+    map.setPaintProperty('changing-venues-opening', 'circle-stroke-opacity', 0);
+    map.setLayoutProperty('changing-venues-surviving', 'visibility', 'visible');
+    map.setLayoutProperty('changing-venues-opening', 'visibility', 'visible');
+    let frame = 0;
+    let last = -100;
+    const update = (now: number) => {
+      if (now-last >= 32) {
+        last=now;
+        const p = changeProgress(transition.clock.seconds, transition.reducedMotion);
+        map.setPaintProperty('changing-venues-closing', 'circle-radius', 4.5-p.closing);
+        map.setPaintProperty('changing-venues-closing', 'circle-opacity', 1-p.closing);
+        map.setPaintProperty('changing-venues-closing', 'circle-stroke-opacity', 1-p.closing*.6);
+        map.setPaintProperty('changing-venues-opening', 'circle-opacity', p.opening);
+        map.setPaintProperty('changing-venues-opening', 'circle-stroke-opacity', p.opening);
+      }
+      frame=requestAnimationFrame(update);
+    };
+    frame=requestAnimationFrame(update);
+    return () => cancelAnimationFrame(frame);
+  }, [transition, isLoaded, lifecycleDecade, selectedScene]);
+
   const updateChoroplethYear = useCallback((year: number) => {
     yearRef.current = year;
     const map = mapRef.current;
     if (map?.getLayer('rent-choropleth')) {
+      const dataYear = rentDataYear(year);
+      const source = map.getSource('rent-data') as mapboxgl.GeoJSONSource | undefined;
+      if (source && year >= 1980) {
+        source.setData(`/data/nyc_rent_${dataYear}.geojson`);
+      }
       map.setPaintProperty('rent-choropleth', 'fill-color', getChoroplethPaint(year));
       map.setPaintProperty('rent-choropleth', 'fill-opacity', year < 1980 ? 0 : 0.64);
       map.setPaintProperty('rent-lines', 'line-opacity', year < 1980 ? 0 : 0.16);

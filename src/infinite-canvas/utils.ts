@@ -3,7 +3,7 @@
  * Canvas, commit 4e710decd0a99b2e312c594668dd2ccc834764ee (MIT).
  */
 import * as THREE from 'three';
-import { CHUNK_SIZE } from './constants';
+import { CHUNK_SIZE, PLANES_PER_CHUNK } from './constants';
 import type { PlaneData } from './types';
 
 const MAX_PLANE_CACHE = 256;
@@ -46,7 +46,7 @@ export const getChunkUpdateThrottleMs = (isZooming: boolean, zoomSpeed: number) 
 export const generateChunkPlanes = (cx: number, cy: number, cz: number): PlaneData[] => {
   const planes: PlaneData[] = [];
   const seed = hashString(`${cx},${cy},${cz}`);
-  for (let index = 0; index < 5; index += 1) {
+  for (let index = 0; index < PLANES_PER_CHUNK; index += 1) {
     const itemSeed = seed + index * 1000;
     const random = (offset: number) => seededRandom(itemSeed + offset);
     const size = 12 + random(4) * 8;

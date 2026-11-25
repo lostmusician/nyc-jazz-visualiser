@@ -1,6 +1,7 @@
 import React from 'react';
 import { ClubDetail } from './components/ClubDetail';
 import { ClubIndex } from './components/ClubIndex';
+import { getDecadeChange, type DecadeTransitionState } from './gallery/decade-transition';
 import { DecadeStory } from './components/DecadeStory';
 import { DecadeTimeline } from './components/DecadeTimeline';
 import { GalleryIntro } from './components/GalleryIntro';
@@ -15,6 +16,12 @@ import type { ClubMediaItem } from './infinite-canvas/types';
 import { useGallerySoundtrack } from './hooks/useGallerySoundtrack';
 import type { SceneMovement } from './types';
 
+const DecadeTransition = React.lazy(() => import('./components/DecadeTransition').then((module) => ({ default: module.DecadeTransition })));
+const GALLERY_MEDIA: ClubMediaItem[] = NYC_JAZZ_VENUES.flatMap((venue) => {
+  const profile = GALLERY_PROFILE_BY_ID.get(venue.properties.id);
+  return profile ? [{ venue, profile, width: 768, height: 1000 }] : [];
+});
+
 const CentralMap = React.lazy(() => import('./components/CentralMap').then((module) => ({ default: module.CentralMap })));
 const TOUR_STORAGE_KEY = 'nyc-jazz-gallery-tour-v2';
 
@@ -24,6 +31,9 @@ export const App = () => {
   const [storyDecade, setStoryDecade] = React.useState<Decade | null>(null);
   const [soundtrackSelection, setSoundtrackSelection] = React.useState<Decade | 'gallery'>('gallery');
   const [activeStoryBeat, setActiveStoryBeat] = React.useState(0);
+  const [transitionReady, setTransitionReady] = React.useState(false);
+  const markTransitionReady = React.useCallback(() => setTransitionReady(true), []);
+  const [decadeTransition, setDecadeTransition] = React.useState<DecadeTransitionState | null>(null);
   const [scene, setScene] = React.useState<SceneMovement | 'all'>('all');
   const [hoveredVenueId, setHoveredVenueId] = React.useState<string | null>(null);
   const [selectedVenueId, setSelectedVenueId] = React.useState<string | null>(null);
@@ -43,10 +53,11 @@ export const App = () => {
     () => filterGalleryVenues(NYC_JAZZ_VENUES, GALLERY_VENUE_IDS, decade, scene),
     [decade, scene],
   );
-  const media = React.useMemo<ClubMediaItem[]>(() => galleryVenues.flatMap((venue) => {
-    const profile = GALLERY_PROFILE_BY_ID.get(venue.properties.id);
-    return profile ? [{ venue, profile, width: 768, height: 1000 }] : [];
-  }), [galleryVenues]);
+  const media = React.useMemo(() => {
+    const venues = decadeTransition ? [...decadeTransition.change.closing, ...decadeTransition.change.surviving, ...decadeTransition.change.opening] : galleryVenues;
+    const ids = new Set(venues.map((venue) => venue.properties.id));
+    return GALLERY_MEDIA.filter((item) => ids.has(item.venue.properties.id));
+  }, [galleryVenues, decadeTransition]);
   const selectedVenue = selectedVenueId
     ? NYC_JAZZ_VENUES.find((venue) => venue.properties.id === selectedVenueId) ?? null
     : null;
@@ -64,6 +75,7 @@ export const App = () => {
 
   const selectDecade = (nextDecade: Decade) => {
     if (document.activeElement instanceof HTMLElement) returnFocusRef.current = document.activeElement;
+    setDecadeTransition(null);
     setDecade(nextDecade);
     setStoryDecade(nextDecade);
     setSoundtrackSelection(nextDecade);
@@ -128,7 +140,7 @@ export const App = () => {
     setActiveStoryBeat(0);
   }, [tourRequired]);
 
-  const exploreStory = React.useCallback(() => {
+  const skipStory = React.useCallback(() => {
     setStoryDecade(null);
     setActiveStoryBeat(0);
     window.requestAnimationFrame(() => {
@@ -136,24 +148,47 @@ export const App = () => {
     });
   }, [decade]);
 
+  const finishChange = React.useCallback(() => {
+    if (!decadeTransition) return;
+    const next = decadeTransition.change.to;
+    setDecade(next);
+    setDecadeTransition(null);
+    setSoundtrackSelection(next);
+    window.requestAnimationFrame(() => document.querySelector<HTMLElement>(`[data-decade="${next}"]`)?.focus());
+  }, [decadeTransition]);
+
+  const exploreStory = React.useCallback(() => {
+    const change = getDecadeChange(NYC_JAZZ_VENUES, decade);
+    if (!change) { skipStory(); return; }
+    setStoryDecade(null);
+    setActiveStoryBeat(0);
+    setScene('all');
+    setSelectedVenueId(null);
+    setHoveredVenueId(null);
+    setBrowserOpen(false);
+    setTransitionReady(false);
+    setDecadeTransition({ change, clock: { seconds: 0 }, reducedMotion });
+  }, [decade, skipStory, reducedMotion]);
+
   return (
     <div className="experience-shell">
     {entryPhase !== 'intro' && <main className={`gallery-app${entryPhase === 'transitioning' ? ' is-entering' : ''}${story ? ' has-story' : ''}`}>
       <div className="gallery-surface" inert={tourStep !== null && tourRequired ? true : undefined}>
       <a className="skip-link" href="#club-index">Skip to filters and club index</a>
-      {!story && <InfiniteCanvas media={media} hoveredVenueId={hoveredVenueId} onHoverVenue={setHoveredVenueId} onSelectVenue={openVenue} entryDepthImpulse={reducedMotion ? 0 : 1.45} />}
+      <InfiniteCanvas media={media} catalog={GALLERY_MEDIA} paused={Boolean(story)} transition={decadeTransition} onTransitionReady={markTransitionReady} hoveredVenueId={hoveredVenueId} onHoverVenue={setHoveredVenueId} onSelectVenue={openVenue} entryDepthImpulse={reducedMotion ? 0 : 1.45} />
       <div className="atmosphere" aria-hidden="true" />
       <React.Suspense fallback={<section className={`central-map${story ? ' central-map--story' : ''} map-loading`} aria-label="Loading the New York jazz-club map">Mapping the night…</section>}>
         <CentralMap
           venues={NYC_JAZZ_VENUES}
-          decade={decade}
+          decade={decadeTransition?.change.from ?? decade}
           scene={story ? 'all' : scene}
           hoveredVenueId={hoveredVenueId}
           selectedVenueId={selectedVenueId}
           mode={story ? 'story' : 'gallery'}
           cameraTarget={storyBeat?.camera}
           highlightedVenueIds={storyBeat?.venueIds}
-          interactionEnabled={!story}
+          transition={decadeTransition}
+          interactionEnabled={!story && !decadeTransition}
           reducedMotion={reducedMotion}
           onHoverVenue={setHoveredVenueId}
           onSelectVenue={openVenue}
@@ -161,7 +196,7 @@ export const App = () => {
       </React.Suspense>
       <DecadeTimeline value={decade} activeBeat={story ? activeStoryBeat : undefined} beatCount={story?.beats.length} onChange={selectDecade} />
       <SoundtrackToggle audio={audio} decade={decade} />
-      {!story && <>
+      {!story && !decadeTransition && <>
       <button className="browser-toggle" type="button" data-ui-layer data-tour="filter" aria-label="Browse and filter clubs" aria-expanded={browserOpen} aria-controls="club-browser" onClick={() => setBrowserOpen((open) => !open)}>
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10M14 4v6M6 14v6" /></svg>
         <span>{galleryVenues.length}</span>
@@ -182,8 +217,10 @@ export const App = () => {
           activeBeat={activeStoryBeat}
           onActiveBeat={setActiveStoryBeat}
           onExplore={exploreStory}
+          onSkip={skipStory}
         />
       )}
+      {decadeTransition && <React.Suspense fallback={<div className="canvas-loading" role="status">Preparing the changing city…</div>}><DecadeTransition transition={decadeTransition} ready={transitionReady} onComplete={finishChange} /></React.Suspense>}
       </div>
       {tourStep !== null && <GalleryTour step={tourStep} required={tourRequired} onStep={setTourStep} onFinish={finishTour} />}
     </main>}

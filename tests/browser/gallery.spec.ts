@@ -323,7 +323,7 @@ test('decade and scene controls filter the accessible club index', async ({ page
   const downtownCount = await index.locator('.club-index-list button').count();
   expect(downtownCount).toBeGreaterThan(0);
 
-  const decade2020 = page.getByRole('button', { name: '2020' });
+  const decade2020 = page.getByRole('button', { name: '2020', exact: true });
   const gallerySoundtrackPosition = await page.locator('.soundtrack-toggle').boundingBox();
   await expect(page.locator('.soundtrack-toggle')).toHaveAttribute('title', /Bitches Brew/);
   await decade2020.click();
@@ -340,7 +340,7 @@ test('decade and scene controls filter the accessible club index', async ({ page
   await story.getByRole('button', { name: 'Skip and continue to map' }).click();
   await expect(page.locator('.soundtrack-toggle')).toHaveAttribute('title', /Linger Awhile/);
   await expect(page.getByRole('button', { name: /2020s soundtrack/ })).toBeVisible();
-  await expect(page.getByRole('button', { name: '2020' })).toHaveClass(/active/);
+  await expect(page.getByRole('button', { name: '2020', exact: true })).toHaveClass(/active/);
   await expect(page.getByRole('region', { name: /New York jazz-club map in the 2020s/ })).toBeVisible();
 });
 

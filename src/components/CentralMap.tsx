@@ -1,4 +1,5 @@
 import React from 'react';
+import type { DecadeTransitionState } from '../gallery/decade-transition';
 import type { Decade } from '../gallery/model';
 import { useMapbox } from '../hooks/useMapbox';
 import type { MapCameraState, SceneMovement, VenueFeature } from '../types';
@@ -10,6 +11,7 @@ interface CentralMapProps {
   hoveredVenueId: string | null;
   selectedVenueId: string | null;
   mode?: 'gallery' | 'story';
+  transition?: DecadeTransitionState | null;
   cameraTarget?: MapCameraState;
   highlightedVenueIds?: string[];
   interactionEnabled?: boolean;
@@ -27,6 +29,7 @@ export function CentralMap({
   hoveredVenueId,
   selectedVenueId,
   mode = 'gallery',
+  transition,
   cameraTarget,
   highlightedVenueIds,
   interactionEnabled = true,
@@ -47,6 +50,7 @@ export function CentralMap({
     lifecycleDecade: decade,
     selectedScene: scene,
     interactionEnabled,
+    transition,
     onHoverVenue,
     onSelectVenue: (venue) => onSelectVenue(venue.properties.id),
   });
@@ -70,7 +74,7 @@ export function CentralMap({
     <section className={`central-map central-map--${mode}`} data-ui-layer data-tour="map" data-map-mode={mode} aria-label={`New York jazz-club map in the ${decade}s`}>
       <div ref={containerRef} className="central-map-canvas" />
       <div className="map-glass" aria-hidden="true" />
-      <small className="map-model-note">{decade < 1980 ? 'Historical housing context only · mapped rent begins in 1980' : `${decade} median residential contract rent · constant 2020 dollars · not commercial leases`}</small>
+      <small className="map-model-note">{decade < 1980 ? 'Historical housing context only · mapped rent begins in 1980' : `${decade} median residential contract rent · constant 2020 dollars · not commercial leases${decade === 1980 ? ' · approximate locations on 1990 boundaries' : ''}`}</small>
       {!configured && (
         <div className="map-token-fallback" role="status">
           <span>NEW YORK</span>

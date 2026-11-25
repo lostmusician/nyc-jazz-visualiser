@@ -1,0 +1,148 @@
+{
+  "1980": {
+    "sourcePositiveTracts": 2140,
+    "matchedUniqueTracts": 2118,
+    "positivePolygonFeatures": 2120,
+    "extraPolygonParts": 2,
+    "missingTractIds": [
+      "36047054600",
+      "36047060000",
+      "36047060600",
+      "36047061002",
+      "36047061600",
+      "36047062800",
+      "36047075800",
+      "36047119000",
+      "36047120200",
+      "36061004800",
+      "36061006400",
+      "36061021900",
+      "36061022300",
+      "36081045600",
+      "36081066400",
+      "36081076901",
+      "36081077300",
+      "36081126700",
+      "36085016400",
+      "36085017001",
+      "36085027700",
+      "36085029100"
+    ],
+    "boundaryYear": 1990,
+    "geographyValidated": false,
+    "aboveThresholdNonSentinel": [
+      {
+        "geoid": "36061001502",
+        "rawRent": 503
+      },
+      {
+        "geoid": "36061004402",
+        "rawRent": 514
+      },
+      {
+        "geoid": "36061005700",
+        "rawRent": 514
+      },
+      {
+        "geoid": "36061008600",
+        "rawRent": 508
+      },
+      {
+        "geoid": "36061010601",
+        "rawRent": 506
+      },
+      {
+        "geoid": "36061011201",
+        "rawRent": 510
+      },
+      {
+        "geoid": "36061011401",
+        "rawRent": 514
+      },
+      {
+        "geoid": "36061011800",
+        "rawRent": 502
+      },
+      {
+        "geoid": "36061012000",
+        "rawRent": 512
+      },
+      {
+        "geoid": "36061012800",
+        "rawRent": 504
+      },
+      {
+        "geoid": "36061013000",
+        "rawRent": 506
+      },
+      {
+        "geoid": "36061014200",
+        "rawRent": 506
+      },
+      {
+        "geoid": "36061014900",
+        "rawRent": 508
+      },
+      {
+        "geoid": "36061015001",
+        "rawRent": 512
+      },
+      {
+        "geoid": "36061015002",
+        "rawRent": 512
+      },
+      {
+        "geoid": "36081072700",
+        "rawRent": 512
+      },
+      {
+        "geoid": "36081073500",
+        "rawRent": 502
+      },
+      {
+        "geoid": "36085008900",
+        "rawRent": 525
+      }
+    ]
+  },
+  "1990": {
+    "sourcePositiveTracts": 2176,
+    "matchedUniqueTracts": 2176,
+    "positivePolygonFeatures": 2178,
+    "extraPolygonParts": 2,
+    "missingTractIds": [],
+    "boundaryYear": 1990,
+    "geographyValidated": true,
+    "aboveThresholdNonSentinel": []
+  },
+  "2000": {
+    "sourcePositiveTracts": 2154,
+    "matchedUniqueTracts": 2154,
+    "positivePolygonFeatures": 2154,
+    "extraPolygonParts": 0,
+    "missingTractIds": [],
+    "boundaryYear": 2000,
+    "geographyValidated": true,
+    "aboveThresholdNonSentinel": []
+  },
+  "2010": {
+    "sourcePositiveTracts": 2099,
+    "matchedUniqueTracts": 2099,
+    "positivePolygonFeatures": 2099,
+    "extraPolygonParts": 0,
+    "missingTractIds": [],
+    "boundaryYear": 2010,
+    "geographyValidated": true,
+    "aboveThresholdNonSentinel": []
+  },
+  "2020": {
+    "sourcePositiveTracts": 2185,
+    "matchedUniqueTracts": 2185,
+    "positivePolygonFeatures": 2185,
+    "extraPolygonParts": 0,
+    "missingTractIds": [],
+    "boundaryYear": 2020,
+    "geographyValidated": true,
+    "aboveThresholdNonSentinel": []
+  }
+}
