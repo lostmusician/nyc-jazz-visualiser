@@ -13,7 +13,7 @@ export const CURRENT_JAZZ_VENUE_IMPORT = {
   geocoderUrl: 'https://geosearch.planninglabs.nyc/',
   accessedOn: '2026-09-23',
   importedCount: 15,
-  scope: 'Dedicated or scene-defining Manhattan jazz rooms operating in 2026 and absent from the existing dataset.',
+  scope: 'Dedicated or scene-defining Manhattan jazz venues operating in 2026 and absent from the existing dataset.',
 } as const;
 
 export const CURRENT_JAZZ_VENUES: VenueFeature[] = [
@@ -23,7 +23,7 @@ export const CURRENT_JAZZ_VENUES: VenueFeature[] = [
       id: 'current-blue-note', name: 'Blue Note New York', venue_type: 'commercial_club',
       scene_movement: 'mainstream_jazz', borough: 'Manhattan', neighborhood: 'Greenwich Village',
       address: '131 W 3rd St', open_year: 1981, close_year: null, status: 'open', closing_reason: null,
-      quote: 'A globally recognized Village room that pairs established headliners with younger jazz, soul, and improvising artists.',
+      quote: 'A globally recognized Village club that pairs established headliners with younger jazz, soul, and improvising artists.',
       notes: 'The official history dates the club to 1981; Big Apple Jazz lists it as operating seven days a week.',
       source_url: 'https://www.bluenotejazz.com/nyc/about/', source_publisher: 'Blue Note New York',
       description: "Opened in 1981 by Danny Bensusan at 131 W 3rd Street in Greenwich Village, Blue Note New York is a long-running jazz club presenting established headliners in an intimate listening room.\n\nNotable Musicians: Sarah Vaughan, Dizzy Gillespie, Ray Charles, Oscar Peterson, Chick Corea, and Robert Glasper.\n\nMusic: Known for multi-night headliner residencies and live album recordings, including Oscar Peterson's Saturday Night at the Blue Note and Robert Glasper's annual fall residencies."
@@ -95,7 +95,7 @@ export const CURRENT_JAZZ_VENUES: VenueFeature[] = [
       id: 'current-dizzys-club', name: "Dizzy's Club", venue_type: 'commercial_club',
       scene_movement: 'mainstream_jazz', borough: 'Manhattan', neighborhood: 'Columbus Circle',
       address: '10 Columbus Circle, 5th Floor', open_year: 2004, close_year: null, status: 'open', closing_reason: null,
-      quote: 'Jazz at Lincoln Center’s intimate skyline room anchors nightly performance inside Frederick P. Rose Hall.',
+      quote: 'Jazz at Lincoln Center’s intimate skyline club anchors nightly performance inside Frederick P. Rose Hall.',
       notes: 'Jazz at Lincoln Center documents the club’s opening in October 2004.',
       source_url: 'https://press.jazz.org/press/2014/09/dizzys-club-coca-cola-october-2014-lineup-announced/', source_publisher: 'Jazz at Lincoln Center',
       description: "Opened in 2004 inside Jazz at Lincoln Center’s Frederick P. Rose Hall (10 Columbus Circle), Dizzy's Club pairs nightly jazz programming with views of Central Park and the Manhattan skyline.\n\nNotable Musicians: Wynton Marsalis, Jon Batiste, Cécile McLorin Salvant, Christian McBride, and Mulgrew Miller.\n\nMusic: Presents nightly sets by established artists, international ensembles, and emerging conservatory musicians under the musical direction of Jazz at Lincoln Center."
@@ -107,7 +107,7 @@ export const CURRENT_JAZZ_VENUES: VenueFeature[] = [
       id: 'current-mezzrow', name: 'Mezzrow', venue_type: 'commercial_club',
       scene_movement: 'mainstream_jazz', borough: 'Manhattan', neighborhood: 'West Village',
       address: '163 W 10th St', open_year: 2014, close_year: null, status: 'open', closing_reason: null,
-      quote: 'An intimate piano room inspired by Bradley’s, built around close listening and acoustic small-group performance.',
+      quote: 'An intimate piano club inspired by Bradley’s, built around close listening and acoustic small-group performance.',
       notes: 'SmallsLIVE dates the opening to September 2014.',
       source_url: 'https://www.smallslive.com/about/', source_publisher: 'SmallsLIVE',
       description: "Opened in 2014 by Mitch Borden and Spike Wilner at 163 W 10th Street in Greenwich Village, Mezzrow is a subterranean piano lounge and listening room named in honor of Mezz Mezzrow, designed as a companion venue to Smalls.\n\nNotable Musicians: Fred Hersch, Johnny O'Neal, Steve Kuhn, Dado Moroni, and Helen Sung.\n\nMusic: Built around a handmade Steinway concert grand piano, Mezzrow focuses exclusively on acoustic piano duos, trios, vocalists, and intimate chamber jazz."
@@ -119,7 +119,7 @@ export const CURRENT_JAZZ_VENUES: VenueFeature[] = [
       id: 'current-django', name: 'The Django', venue_type: 'commercial_club',
       scene_movement: 'mainstream_jazz', borough: 'Manhattan', neighborhood: 'Tribeca',
       address: '2 Avenue of the Americas', open_year: 2015, close_year: null, status: 'open', closing_reason: null,
-      quote: 'A vaulted cellar room in the Roxy Hotel presenting nightly jazz in a modern supper-club setting.',
+      quote: 'A vaulted cellar club in the Roxy Hotel presenting nightly jazz in a modern supper-club setting.',
       notes: 'A contemporary Tribeca report documents the club opening in September 2015.',
       source_url: 'https://tribecacitizen.com/2015/09/28/seen-heard-the-roxys-new-jazz-club-is-open/comment-page-1/', source_publisher: 'Tribeca Citizen',
       description: "Opened in 2015 beneath the Roxy Hotel at 2 Avenue of the Americas in Tribeca, The Django is a vaulted, Paris-inspired cellar venue with exposed brickwork and handcrafted cocktails.\n\nNotable Musicians: Mark Whitfield, Ken Fowser, Roxy Coss, Evan Sherman, and Mingus Big Band.\n\nMusic: Features nightly double-header jazz sets ranging from swing and Gypsy jazz to hard bop big bands and modern funk-jazz."
@@ -179,7 +179,7 @@ export const CURRENT_JAZZ_VENUES: VenueFeature[] = [
       id: 'current-jazzcultural', name: 'Jazzcultural', venue_type: 'commercial_club',
       scene_movement: 'mainstream_jazz', borough: 'Manhattan', neighborhood: 'Midtown West',
       address: '349 W 46th St', open_year: 2026, close_year: null, status: 'open', closing_reason: null,
-      quote: 'A new Restaurant Row room created by the Smalls team as a tribute to Barry Harris and the community-centered bebop tradition.',
+      quote: 'A new Restaurant Row club created by the Smalls team as a tribute to Barry Harris and the community-centered bebop tradition.',
       notes: 'Opened March 20, 2026 in the former Swing 46 space.',
       source_url: 'https://ukjazznews.com/new-club-jazzcultural-opens-in-nyc/', source_publisher: 'UK Jazz News',
       description: "Opened in 2026 by the SmallsLIVE team at 349 W 46th Street on Restaurant Row (in the former Swing 46 space), Jazzcultural pays homage to Barry Harris’ influential Jazz Cultural Theatre.\n\nNotable Musicians: Pasquale Grasso, Spike Wilner, Chris Byars, and musicians shaped by Barry Harris' teaching.\n\nMusic: Dedicated to preserving bebop pedagogy through harmonic instruction, vocal workshops, and straight-ahead swing dance jam sessions."

@@ -83,7 +83,7 @@ const paintCard = (context: CanvasRenderingContext2D, item: ClubMediaItem, image
 
   context.fillStyle = '#cdbda6';
   context.font = '32px Arial';
-  const years = `${venue.properties.open_year ?? 'Unknown'} — ${venue.properties.close_year ?? 'Present'}`;
+  const years = `${venue.properties.open_year ?? 'Unknown'} – ${venue.properties.close_year ?? 'Present'}`;
   context.fillText(years, 62, 945);
   context.fillStyle = accent;
   context.beginPath();

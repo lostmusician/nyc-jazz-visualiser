@@ -57,7 +57,7 @@ export const SCENES: SceneDefinition[] = [
   { id: 'loft_jazz', label: 'Loft jazz', shortLabel: 'Lofts', accent: '#d56d4c' },
   { id: 'downtown_avant_garde', label: 'Downtown avant-garde', shortLabel: 'Downtown', accent: '#c95646' },
   { id: 'brooklyn_continuation', label: 'Outer-borough networks', shortLabel: 'Boroughs', accent: '#75a092' },
-  { id: 'mainstream_jazz', label: 'Contemporary rooms', shortLabel: 'Contemporary', accent: '#8fa9c2' },
+  { id: 'mainstream_jazz', label: 'Contemporary clubs', shortLabel: 'Contemporary', accent: '#8fa9c2' },
 ];
 
 export function overlapsDecade(venue: VenueFeature, decade: Decade): boolean {

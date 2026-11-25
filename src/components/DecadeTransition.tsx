@@ -11,7 +11,7 @@ export function DecadeTransition({ transition, ready, onComplete }: {
 }) {
   const rootRef = React.useRef<HTMLDivElement>(null);
   const skipRef = React.useRef<HTMLButtonElement>(null);
-  const [phase, setPhase] = React.useState('The rooms between decades');
+  const [phase, setPhase] = React.useState('The clubs between decades');
   const noWebGL = new URLSearchParams(window.location.search).get('webgl') === 'off';
 
   React.useEffect(() => { skipRef.current?.focus(); }, []);
@@ -24,9 +24,9 @@ export function DecadeTransition({ transition, ready, onComplete }: {
       onUpdate: () => {
         const elapsed = transition.clock.seconds;
         if (rootRef.current) rootRef.current.dataset.elapsed = elapsed.toFixed(2);
-        const nextPhase = elapsed < .7 ? 'The rooms between decades' : elapsed < 3.05
-          ? (transition.change.closing.length ? 'Some rooms fall silent' : 'The music carries on')
-          : (transition.change.opening.length ? 'Other doors open' : 'The remaining rooms carry on');
+        const nextPhase = elapsed < .7 ? 'The clubs between decades' : elapsed < 3.05
+          ? (transition.change.closing.length ? 'Some clubs fall silent' : 'The music carries on')
+          : (transition.change.opening.length ? 'Other doors open' : 'The remaining clubs carry on');
         if (nextPhase !== previousPhase) { previousPhase = nextPhase; setPhase(nextPhase); }
       },
       onComplete,
@@ -44,6 +44,6 @@ export function DecadeTransition({ transition, ready, onComplete }: {
       <p role="status" aria-live="polite">{phase}</p>
       <button ref={skipRef} type="button" onClick={onComplete}>Skip transition</button>
     </div>
-    <p className="sr-status">Between the {from}s and {to}s, {closing.length} mapped rooms close, {surviving.length} continue, and {opening.length} open.</p>
+    <p className="sr-status">Between the {from}s and {to}s, {closing.length} mapped clubs close, {surviving.length} continue, and {opening.length} open.</p>
   </div>;
 }

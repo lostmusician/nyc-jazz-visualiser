@@ -20,6 +20,6 @@ export function InfiniteCanvas(props: InfiniteCanvasProps) {
   React.useEffect(() => {
     if (!available) { textureProgressCallback?.(100); onTransitionReady?.(); }
   }, [available, textureProgressCallback, onTransitionReady, transition]);
-  if (!available) return <div className="canvas-loading" role="status">WebGL unavailable — use the club index to explore the gallery.</div>;
+  if (!available) return <div className="canvas-loading" role="status">WebGL unavailable. Use the club index to explore the gallery.</div>;
   return <Suspense fallback={<div className="canvas-loading">Loading the night gallery…</div>}><LazyScene {...props} /></Suspense>;
 }

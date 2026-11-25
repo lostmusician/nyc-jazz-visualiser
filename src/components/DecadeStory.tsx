@@ -95,7 +95,7 @@ export function DecadeStory({
           <span>{story.historicalPhase} · {story.decade}s in New York</span>
           <h1 ref={headingRef} tabIndex={-1}>{story.title}</h1>
           <p>{story.subtitle}</p>
-          <small>Scroll to follow the rooms across the city</small>
+          <small>Scroll to follow the clubs across the city</small>
         </header>
         {story.beats.map((beat, index) => (
           <section
@@ -114,7 +114,7 @@ export function DecadeStory({
               <span>{String(index + 1).padStart(2, '0')} / {String(story.beats.length).padStart(2, '0')} · {beat.historicalContext}</span>
               <h2 id={`${beat.id}-title`}>{beat.title}</h2>
               <p>{beat.body}</p>
-              {beat.pullQuote && <blockquote>“{beat.pullQuote.text}”<cite>— {beat.pullQuote.speaker}, <a href={beat.pullQuote.url} target="_blank" rel="noreferrer">{beat.pullQuote.source}</a></cite></blockquote>}
+              {beat.pullQuote && <blockquote>“{beat.pullQuote.text}”<cite>{beat.pullQuote.speaker}, <a href={beat.pullQuote.url} target="_blank" rel="noreferrer">{beat.pullQuote.source}</a></cite></blockquote>}
               {beat.sources && (
                 <footer>
                   {beat.sources.map((source) => <a key={source.url} href={source.url} target="_blank" rel="noreferrer">{source.label} ↗</a>)}

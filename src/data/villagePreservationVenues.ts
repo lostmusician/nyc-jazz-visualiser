@@ -131,7 +131,7 @@ export const VILLAGE_PRESERVATION_VENUES: VenueFeature[] = [
       scene_movement: 'bebop_mainstream', borough: 'Manhattan', neighborhood: 'Greenwich Village',
       address: '47 W 3rd St', open_year: 1945, close_year: 1958, status: 'relocated',
       closing_reason: 'The West 3rd Street lease expired, and Condon moved the club to 330 E 56th St.',
-      notes: `${sourceNote('1945–1961')}. The original downtown room actually ended in 1958; the later date conflates it with the uptown incarnation.`,
+      notes: `${sourceNote('1945–1961')}. The original downtown club actually ended in 1958; the later date conflates it with the uptown incarnation.`,
       source_url: 'https://chiaroscurojazz.org/eddie-condon/',
       source_publisher: 'Chiaroscuro Jazz / WVIA Public Media',
       description: "Established in 1945 by rhythm guitarist Eddie Condon at 47 W 3rd Street, this Greenwich Village club was the World War II and postwar headquarters for Condon-style Chicago and traditional Dixieland jazz.\n\nNotable Musicians: Eddie Condon, Wild Bill Davison, Pee Wee Russell, Bud Freeman, and Edmond Hall.\n\nMusic: Famed for ensemble counterpoint, blistering tempos, and unscripted jam sessions that kept traditional swing alive during the height of the bebop era."
@@ -172,7 +172,7 @@ export const VILLAGE_PRESERVATION_VENUES: VenueFeature[] = [
       notes: `${sourceNote('1981–1985')}. Leonard Feather identified the no-horns rule as the cause.`,
       source_url: 'https://www.latimes.com/archives/la-xpm-1986-05-11-ca-5382-story.html',
       source_publisher: 'Los Angeles Times',
-      description: "Operating from 1981 to 1985 at 184 Thompson Street in Greenwich Village, Lush Life was a contemporary jazz room that presented established modern jazz artists before closing under NYC cabaret restrictions.\n\nNotable Musicians: McCoy Tyner, Chet Baker, Bobby Hutcherson, Joe Henderson, and Gary Burton.\n\nMusic: Focused on acoustic small groups, including residencies by McCoy Tyner and Chet Baker’s return engagements in New York."
+      description: "Operating from 1981 to 1985 at 184 Thompson Street in Greenwich Village, Lush Life was a contemporary jazz club that presented established modern jazz artists before closing under NYC cabaret restrictions.\n\nNotable Musicians: McCoy Tyner, Chet Baker, Bobby Hutcherson, Joe Henderson, and Gary Burton.\n\nMusic: Focused on acoustic small groups, including residencies by McCoy Tyner and Chet Baker’s return engagements in New York."
     },
   },
   {
@@ -183,10 +183,10 @@ export const VILLAGE_PRESERVATION_VENUES: VenueFeature[] = [
       scene_movement: 'bebop_mainstream', borough: 'Manhattan', neighborhood: 'West Village',
       address: '140 7th Ave S', open_year: 1922, close_year: 1963, status: 'closed',
       closing_reason: 'The final incarnation lost its lease after years of waning demand for Dixieland jazz.',
-      notes: `${sourceNote('1922–1963')}. The directory record combines several locations; the documented closure concerns the final Seventh Avenue South room.`,
+      notes: `${sourceNote('1922–1963')}. The directory record combines several locations; the documented closure concerns the final Seventh Avenue South club.`,
       source_url: 'https://www.villagevoice.com/dixieland-in-the-village-old-nicks-is-nixed/',
       source_publisher: 'The Village Voice',
-      description: "Founded in 1922 by Nick Rongetti at 140 7th Ave South, Nick's was a cornerstone West Village institution for traditional Dixieland jazz, thick steaks, and hot jam sessions for over four decades.\n\nNotable Musicians: Muggsy Spanier, Bobby Hackett, Pee Wee Russell, Eddie Condon, and Miff Mole.\n\nMusic: Muggsy Spanier’s Ragtime Band made historic recordings associated with the room, defining the crisp, driving \"Nicksieland\" sound."
+      description: "Founded in 1922 by Nick Rongetti at 140 7th Ave South, Nick's was a cornerstone West Village institution for traditional Dixieland jazz, thick steaks, and hot jam sessions for over four decades.\n\nNotable Musicians: Muggsy Spanier, Bobby Hackett, Pee Wee Russell, Eddie Condon, and Miff Mole.\n\nMusic: Muggsy Spanier’s Ragtime Band made historic recordings associated with the club, defining the crisp, driving \"Nicksieland\" sound."
     },
   },
   {
@@ -198,7 +198,7 @@ export const VILLAGE_PRESERVATION_VENUES: VenueFeature[] = [
       address: '55 W 3rd St', open_year: 1950, close_year: 1959, status: 'closed', closing_reason: null,
       notes: sourceNote('1950s (normalized to 1950–1959)'), source_url: VILLAGE_PRESERVATION_IMPORT.sourceUrl,
       source_publisher: VILLAGE_PRESERVATION_IMPORT.sourcePublisher,
-      description: "Located at 55 W 3rd Street in Greenwich Village during the 1950s, the Open Door was a casual, bohemian jazz room favored by Charlie Parker and young bebop players.\n\nNotable Musicians: Charlie Parker, Thelonious Monk, Roy Haynes, Charles Mingus, and Art Blakey.\n\nMusic: Charlie Parker performed numerous Sunday afternoon jam sessions here, recorded on rare bootleg tapes that capture his late-period live brilliance."
+      description: "Located at 55 W 3rd Street in Greenwich Village during the 1950s, the Open Door was a casual, bohemian jazz club favored by Charlie Parker and young bebop players.\n\nNotable Musicians: Charlie Parker, Thelonious Monk, Roy Haynes, Charles Mingus, and Art Blakey.\n\nMusic: Charlie Parker performed numerous Sunday afternoon jam sessions here, recorded on rare bootleg tapes that capture his late-period live brilliance."
     },
   },
   {
@@ -222,7 +222,7 @@ export const VILLAGE_PRESERVATION_VENUES: VenueFeature[] = [
       address: '21 7th Ave S', open_year: 1977, close_year: 1987, status: 'closed', closing_reason: null,
       notes: sourceNote('1977–1987'), source_url: VILLAGE_PRESERVATION_IMPORT.sourceUrl,
       source_publisher: VILLAGE_PRESERVATION_IMPORT.sourcePublisher,
-      description: "Founded in 1977 by brothers Michael and Randy Brecker at 21 7th Ave South, Seventh Avenue South was the flagship West Village room for 1970s and 80s jazz-fusion, funk-jazz, and studio virtuosity.\n\nNotable Musicians: The Brecker Brothers, Jaco Pastorius, Mike Stern, Dave Weckl, Bob Mintzer, and Steps Ahead.\n\nMusic: The club was the incubator for the electric fusion supergroup Steps Ahead and hosted Jaco Pastorius’ late-night jam sessions."
+      description: "Founded in 1977 by brothers Michael and Randy Brecker at 21 7th Ave South, Seventh Avenue South was the flagship West Village venue for 1970s and 80s jazz-fusion, funk-jazz, and studio virtuosity.\n\nNotable Musicians: The Brecker Brothers, Jaco Pastorius, Mike Stern, Dave Weckl, Bob Mintzer, and Steps Ahead.\n\nMusic: The club was the incubator for the electric fusion supergroup Steps Ahead and hosted Jaco Pastorius’ late-night jam sessions."
     },
   },
   {

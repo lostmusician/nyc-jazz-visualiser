@@ -371,7 +371,7 @@ test('decade and scene controls filter the accessible club index', async ({ page
   expect(storySoundtrackPosition?.x).toBe(gallerySoundtrackPosition?.x);
   expect(storySkipPosition && storySoundtrackPosition && storySkipPosition.y).toBeGreaterThan(storySoundtrackPosition!.y + storySoundtrackPosition!.height);
   await expect(page.locator('.soundtrack-toggle')).toHaveAttribute('title', /Linger Awhile/);
-  await expect(story).toContainText('The pandemic empties the rooms');
+  await expect(story).toContainText('The pandemic empties the clubs');
   await expect(page.locator('[data-map-mode="story"]')).toBeVisible();
   await story.getByRole('button', { name: 'Skip and continue to map' }).click();
   await expect(page.locator('.soundtrack-toggle')).toHaveAttribute('title', /Linger Awhile/);

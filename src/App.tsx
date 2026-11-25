@@ -211,7 +211,7 @@ export const App = () => {
       </button>
       <button className="tour-toggle" type="button" data-ui-layer aria-label="Show gallery tour" onClick={() => { setBrowserOpen(false); setTourRequired(false); setTourStep(0); }}>?</button>
       <aside id="club-browser" className={`club-browser${browserOpen ? ' is-open' : ''}`} data-ui-layer aria-hidden={!browserOpen}>
-        <div className="browser-heading"><span>Find a room</span><button type="button" aria-label="Close filters" onClick={() => setBrowserOpen(false)}>×</button></div>
+        <div className="browser-heading"><span>Find a club</span><button type="button" aria-label="Close filters" onClick={() => setBrowserOpen(false)}>×</button></div>
         <nav className="scene-nav" aria-label="Scenes and places">
           {SCENES.map((item) => <button key={item.id} type="button" className={scene === item.id ? 'active' : ''} style={{ '--scene-accent': item.accent } as React.CSSProperties} onClick={() => selectScene(item.id)}><i />{item.shortLabel}</button>)}
         </nav>

@@ -6,16 +6,16 @@ const youtubeSearch = (query: string) => `https://www.youtube.com/results?search
 export const CLUB_PROFILES: ClubProfile[] = [
   {
     venueId: '0001',
-    description: 'A Harlem Art Deco room whose Zebra Room made elegance, intimacy, and late-night improvisation part of the same ritual.',
+    description: 'A Harlem Art Deco club whose Zebra Room made elegance, intimacy, and late-night improvisation part of the same ritual.',
     image: '/images/venues/0001.jpg',
     imageAlt: 'Exterior neon facade of the historic Lenox Lounge in Harlem.',
     imageCredit: 'Wikimedia Commons / Lenoxlounge.jpg (Public Domain / CC)',
     imageSourceUrl: 'https://commons.wikimedia.org/wiki/File:Lenoxlounge.jpg',
-    tracks: [{ id: 'lenox-holiday', title: 'God Bless the Child', artist: 'Billie Holiday', year: 1941, relationship: 'representative-of-scene', listenUrl: youtubeSearch('Billie Holiday God Bless the Child official audio'), evidenceUrl: 'https://www.cbsnews.com/newyork/news/historic-lenox-lounge-in-harlem-to-close-on-new-years-eve/', note: 'Holiday performed at the Lenox Lounge; this recording evokes the room rather than documenting a specific set.' }],
+    tracks: [{ id: 'lenox-holiday', title: 'God Bless the Child', artist: 'Billie Holiday', year: 1941, relationship: 'representative-of-scene', listenUrl: youtubeSearch('Billie Holiday God Bless the Child official audio'), evidenceUrl: 'https://www.cbsnews.com/newyork/news/historic-lenox-lounge-in-harlem-to-close-on-new-years-eve/', note: 'Holiday performed at the Lenox Lounge; this recording evokes the club rather than documenting a specific set.' }],
   },
   {
     venueId: '0002',
-    description: 'A Sugar Hill neighborhood room remembered for Monday jam sessions that carried several generations into the early morning.',
+    description: 'A Sugar Hill neighborhood club remembered for Monday jam sessions that carried several generations into the early morning.',
     image: '/images/venues/0002.jpg',
     imageAlt: 'Luckey Roberts, Harlem stride pianist and owner of Lucky’s Rendezvous (later St. Nick’s Pub), with Willie "The Lion" Smith in 1958.',
     imageCredit: 'Wikimedia Commons / Historic photograph (1958)',
@@ -42,7 +42,7 @@ export const CLUB_PROFILES: ClubProfile[] = [
   },
   {
     venueId: '0021',
-    description: 'A musician-backed 52nd Street room whose signed door documented many of the players associated with Swing Street.',
+    description: 'A musician-backed 52nd Street club whose signed door documented many of the players associated with Swing Street.',
     image: '/images/venues/0021.jpg',
     imageAlt: 'Portrait of Dizzy Gillespie performing at the Famous Door on 52nd Street, photographed by William P. Gottlieb, ca. June 1946.',
     imageCredit: 'William P. Gottlieb / Library of Congress (ca. June 1946)',
@@ -69,7 +69,7 @@ export const CLUB_PROFILES: ClubProfile[] = [
   },
   {
     venueId: '0025',
-    description: 'A legendary Bowery and Cooper Square vanguard room where Monk’s return, Coltrane’s breakthrough, and Ornette Coleman’s historic 1959 debut ignited the free jazz revolution.',
+    description: 'A legendary Bowery and Cooper Square vanguard club where Monk’s return, Coltrane’s breakthrough, and Ornette Coleman’s historic 1959 debut ignited the free jazz revolution.',
     image: '/images/venues/0025.jpg',
     imageAlt: 'Ornette Coleman playing his white plastic Grafton alto saxophone before a dense, captivated crowd in the smoky Five Spot Café in 1959.',
     imageCredit: 'Five Spot Café / Historic performance photograph (1959)',
@@ -96,7 +96,7 @@ export const CLUB_PROFILES: ClubProfile[] = [
   },
   {
     venueId: '0012',
-    description: 'Rashied Ali’s Greene Street loft joined performance, rehearsal, recording, and community in one artist-controlled room.',
+    description: 'Rashied Ali’s Greene Street loft joined performance, rehearsal, recording, and community in one artist-controlled venue.',
     image: '/images/venues/0012.jpg',
     imageAlt: 'Drummer Rashied Ali at the drumkit, founder of Ali’s Alley at 77 Greene Street in SoHo.',
     imageCredit: 'Wikimedia Commons / Photograph by Jef Harris (Creative Commons Attribution-Share Alike 3.0)',
@@ -114,7 +114,7 @@ export const CLUB_PROFILES: ClubProfile[] = [
   },
   {
     venueId: '0019',
-    description: 'The original Houston Street room put improvisers, composers, noise bands, and downtown experimenters onto the same tiny stage.',
+    description: 'The original Houston Street venue put improvisers, composers, noise bands, and downtown experimenters onto the same tiny stage.',
     image: '/images/venues/0019.jpg',
     imageAlt: 'The Knitting Factory marquee and entrance, iconic downtown experimental venue.',
     imageCredit: 'Wikimedia Commons / Photograph (Creative Commons Attribution-Share Alike 3.0)',
@@ -137,7 +137,7 @@ export const CLUB_PROFILES: ClubProfile[] = [
     imageAlt: 'Live jazz quintet performing in the intimate back room of Barbès beneath ornate pressed-tin ceilings, featuring two saxophonists, drummer, upright bassist, and pianist before a red velvet backdrop and seated crowd.',
     imageCredit: 'Barbès / Live performance photograph',
     imageSourceUrl: 'https://www.barbesbrooklyn.com/',
-    tracks: [{ id: 'barbes-slavic', title: 'Taketron', artist: 'Slavic Soul Party!', year: 2015, relationship: 'documented-performance', listenUrl: youtubeSearch('Slavic Soul Party Taketron'), evidenceUrl: 'https://www.barbesbrooklyn.com/about', note: 'Slavic Soul Party!’s long-running Barbès residency embodies the room’s cross-genre identity.' }],
+    tracks: [{ id: 'barbes-slavic', title: 'Taketron', artist: 'Slavic Soul Party!', year: 2015, relationship: 'documented-performance', listenUrl: youtubeSearch('Slavic Soul Party Taketron'), evidenceUrl: 'https://www.barbesbrooklyn.com/about', note: 'Slavic Soul Party!’s long-running Barbès residency embodies the club’s cross-genre identity.' }],
   },
   {
     venueId: '0027',
@@ -547,7 +547,7 @@ export const ADDITIONAL_VENUE_PROFILES: ClubProfile[] = [
         relationship: 'representative-of-scene',
         listenUrl: youtubeSearch('Stephane Wrembel Bistro Fada live jazz'),
         evidenceUrl: 'https://chelseatableandstage.com/',
-        note: 'Guitar virtuoso Stephane Wrembel is among the frequent headliners performing gypsy jazz and contemporary improvisation in the room.',
+        note: 'Guitar virtuoso Stephane Wrembel is among the frequent headliners performing gypsy jazz and contemporary improvisation at the club.',
       },
     ],
   },
@@ -727,7 +727,7 @@ export const ADDITIONAL_VENUE_PROFILES: ClubProfile[] = [
         relationship: 'representative-of-scene',
         listenUrl: youtubeSearch('The Pocket NYC jazz club live session'),
         evidenceUrl: 'https://thepocketjazz.com/',
-        note: 'The Pocket brings tight rhythm sections and acoustic swing into an intimate subterranean room steps from Times Square.',
+        note: 'The Pocket brings tight rhythm sections and acoustic swing into an intimate subterranean venue steps from Times Square.',
       },
     ],
   },
@@ -1093,7 +1093,7 @@ export const ADDITIONAL_VENUE_PROFILES: ClubProfile[] = [
   },
   {
     venueId: 'vp-lush-life',
-    description: 'Operating from 1981 to 1985 at 184 Thompson Street in Greenwich Village, Lush Life was a contemporary jazz room that presented established modern jazz artists before closing under NYC cabaret restrictions.\n\nNotable Musicians: McCoy Tyner, Chet Baker, Bobby Hutcherson, Joe Henderson, and Gary Burton.\n\nMusic: Focused on acoustic small groups, including residencies by McCoy Tyner and Chet Baker’s return engagements in New York.',
+    description: 'Operating from 1981 to 1985 at 184 Thompson Street in Greenwich Village, Lush Life was a contemporary jazz club that presented established modern jazz artists before closing under NYC cabaret restrictions.\n\nNotable Musicians: McCoy Tyner, Chet Baker, Bobby Hutcherson, Joe Henderson, and Gary Burton.\n\nMusic: Focused on acoustic small groups, including residencies by McCoy Tyner and Chet Baker’s return engagements in New York.',
     image: '/images/venues/vp-lush-life.jpg',
     imageAlt: 'Archival and historical photograph associated with Lush Life at 184 Thompson St.',
     imageCredit: 'Wikimedia Commons / Historic photographic archive',
@@ -1113,7 +1113,7 @@ export const ADDITIONAL_VENUE_PROFILES: ClubProfile[] = [
   },
   {
     venueId: 'vp-open-door',
-    description: 'Located at 55 W 3rd Street in Greenwich Village during the 1950s, the Open Door was a casual, bohemian jazz room favored by Charlie Parker and young bebop players.\n\nNotable Musicians: Charlie Parker, Thelonious Monk, Roy Haynes, Charles Mingus, and Art Blakey.\n\nMusic: Charlie Parker performed numerous Sunday afternoon jam sessions here, recorded on rare bootleg tapes that capture his late-period live brilliance.',
+    description: 'Located at 55 W 3rd Street in Greenwich Village during the 1950s, the Open Door was a casual, bohemian jazz club favored by Charlie Parker and young bebop players.\n\nNotable Musicians: Charlie Parker, Thelonious Monk, Roy Haynes, Charles Mingus, and Art Blakey.\n\nMusic: Charlie Parker performed numerous Sunday afternoon jam sessions here, recorded on rare bootleg tapes that capture his late-period live brilliance.',
     image: '/images/venues/vp-open-door.jpg',
     imageAlt: 'Archival and historical photograph associated with Open Door at 55 W 3rd St.',
     imageCredit: 'Wikimedia Commons / Historic photographic archive',
@@ -1153,7 +1153,7 @@ export const ADDITIONAL_VENUE_PROFILES: ClubProfile[] = [
   },
   {
     venueId: 'vp-seventh-avenue-south',
-    description: 'Founded in 1977 by brothers Michael and Randy Brecker at 21 7th Ave South, Seventh Avenue South was the flagship West Village room for 1970s and 80s jazz-fusion, funk-jazz, and studio virtuosity.\n\nNotable Musicians: The Brecker Brothers, Jaco Pastorius, Mike Stern, Dave Weckl, Bob Mintzer, and Steps Ahead.\n\nMusic: The club was the incubator for the electric fusion supergroup Steps Ahead and hosted Jaco Pastorius’ late-night jam sessions.',
+    description: 'Founded in 1977 by brothers Michael and Randy Brecker at 21 7th Ave South, Seventh Avenue South was the flagship West Village venue for 1970s and 80s jazz-fusion, funk-jazz, and studio virtuosity.\n\nNotable Musicians: The Brecker Brothers, Jaco Pastorius, Mike Stern, Dave Weckl, Bob Mintzer, and Steps Ahead.\n\nMusic: The club was the incubator for the electric fusion supergroup Steps Ahead and hosted Jaco Pastorius’ late-night jam sessions.',
     image: '/images/venues/vp-seventh-avenue-south.jpg',
     imageAlt: 'Archival and historical photograph associated with Seventh Avenue South at 21 7th Ave S.',
     imageCredit: 'Wikimedia Commons / Historic photographic archive',

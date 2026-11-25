@@ -35,7 +35,7 @@ export function SoundtrackToggle({
         data-audio-status={audio.status}
         data-audio-time={audio.currentTime.toFixed(2)}
         aria-label={label}
-        title={`${audio.activeTrack.title} — ${audio.activeTrack.artist ?? 'Artist not supplied'}`}
+        title={`${audio.activeTrack.title} · ${audio.activeTrack.artist ?? 'Artist not supplied'}`}
         disabled={isLoading}
         onClick={isError ? audio.retry : audio.toggleMuted}
       >

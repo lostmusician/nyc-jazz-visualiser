@@ -29,7 +29,7 @@ export const EARLY_JAZZ_VENUES: VenueFeature[] = [
       address: '644 Lenox Ave (at W 142nd St)', open_year: 1923, close_year: 1936,
       status: 'relocated', closing_reason: null,
       quote: 'A nationally broadcast showcase for Duke Ellington and Cab Calloway, performed by Black artists for a segregated white audience.',
-      notes: 'The original Harlem room operated from 1923 to 1936 before the Cotton Club name moved downtown. Closure economics are not inferred.',
+      notes: 'The original Harlem venue operated from 1923 to 1936 before the Cotton Club name moved downtown. Closure economics are not inferred.',
       ...LPC_SOURCE,
       description: "Operating from 1923 to 1936 at 644 Lenox Avenue (at 142nd St), the original Harlem Cotton Club was a nationally known Prohibition-era nightspot that presented Black performers to segregated, predominantly white audiences in a jungle-themed showroom.\n\nNotable Musicians: Duke Ellington, Cab Calloway, Ethel Waters, Ivie Anderson, and Louis Armstrong.\n\nMusic: Duke Ellington’s residency from 1927 to 1931 developed his \"jungle style\" compositions and reached nationwide audiences through NBC radio broadcasts."
     },
@@ -89,8 +89,8 @@ export const EARLY_JAZZ_VENUES: VenueFeature[] = [
       scene_movement: 'bebop_mainstream', borough: 'Manhattan', neighborhood: 'Midtown',
       address: '144 W 52nd St', open_year: 1933, close_year: 1968,
       status: 'closed', closing_reason: null,
-      quote: 'A long-running Swing Street steakhouse and jazz room associated with Joe Marsala and, later, Marian McPartland.',
-      notes: 'A 1963 New Yorker profile records that the owners rented and rebuilt the room in 1933, then marked its thirtieth anniversary.',
+      quote: 'A long-running Swing Street steakhouse and jazz club associated with Joe Marsala and, later, Marian McPartland.',
+      notes: 'A 1963 New Yorker profile records that the owners rented and rebuilt the venue in 1933, then marked its thirtieth anniversary.',
       source_url: 'https://www.newyorker.com/magazine/1963/02/23/talent-scout-2',
       source_publisher: 'The New Yorker',
       description: "Operating from 1933 to 1968 at 144 W 52nd St, Hickory House was a popular Swing Street steakhouse where patrons sat around a large circular bar with an elevated bandstand built right in the center.\n\nNotable Musicians: Joe Marsala, Marian McPartland, Adele Girard, Mary Lou Williams, and J.C. Higginbotham.\n\nMusic: Clarinetist Joe Marsala led one of 52nd Street’s early integrated swing groups here in the 1930s, and pianist Marian McPartland maintained a celebrated long-term trio residency through the 1950s and 1960s."
@@ -105,7 +105,7 @@ export const EARLY_JAZZ_VENUES: VenueFeature[] = [
       address: '53 W 52nd St', open_year: 1934, close_year: 1962,
       status: 'relocated', closing_reason: null,
       quote: 'A 52nd Street center for traditional jazz and Sunday jam sessions that outlasted most of its Swing Street neighbors.',
-      notes: 'The record describes the original 52nd Street room only; it relocated to West 54th Street in 1962. LOC photographs document its 1940s jazz program.',
+      notes: 'The record describes the original 52nd Street club only; it relocated to West 54th Street in 1962. LOC photographs document its 1940s jazz program.',
       source_url: 'https://www.loc.gov/item/2023868400/',
       source_publisher: 'Library of Congress',
       description: "Located at 53 W 52nd St from 1934 to 1962, Jimmy Ryan’s was the steadfast home for Dixieland, traditional New Orleans, and Chicago-style swing on a street that increasingly favored modern bebop.\n\nNotable Musicians: Sidney Bechet, Roy Eldridge, Coleman Hawkins, Zutty Singleton, and Wilbur De Paris.\n\nMusic: Dedicated to unamplified traditional jazz, the club was famous for its energetic Sunday jam sessions and Sidney Bechet’s soaring soprano saxophone performances."
@@ -134,7 +134,7 @@ export const EARLY_JAZZ_VENUES: VenueFeature[] = [
       scene_movement: 'bebop_mainstream', borough: 'Manhattan', neighborhood: 'Midtown',
       address: '66 W 52nd St', open_year: 1944, close_year: 1948,
       status: 'closed', closing_reason: null,
-      quote: 'A compact 52nd Street room photographed with Billie Holiday, Sarah Vaughan, Dizzy Gillespie, and Art Tatum on its stage.',
+      quote: 'A compact 52nd Street club photographed with Billie Holiday, Sarah Vaughan, Dizzy Gillespie, and Art Tatum on its stage.',
       notes: 'The Library of Congress identifies the Downbeat Club at this address from 1944 to 1948.',
       source_url: 'https://www.loc.gov/static/collections/gerry-mulligan/articles-and-essays/jeru-in-the-words-of-gerry-mulligan/charlie-parker.html',
       source_publisher: 'Library of Congress',
